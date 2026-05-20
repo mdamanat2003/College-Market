@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
+import { PlaceholderImage } from '../components/ui/PlaceholderImage';
 import { COLORS, SPACING, RADIUS } from '../theme/colors';
 
 export default function MessagesInboxScreen() {
@@ -23,8 +24,7 @@ export default function MessagesInboxScreen() {
 
   const renderItem = ({ item }: { item: any }) => {
     const otherUser = getOtherParticipant(item.participants);
-    // Agar product image na ho toh fallback
-    const productImg = item.product?.images?.[0] || 'https://via.placeholder.com/100';
+    const productImg = item.product?.images?.[0];
 
     return (
       <TouchableOpacity 
@@ -60,7 +60,11 @@ export default function MessagesInboxScreen() {
 
         {/* Product Thumbnail & Unread Badge */}
         <View style={styles.rightSection}>
-          <Image source={{ uri: productImg }} style={styles.productThumb} />
+          {productImg ? (
+            <Image source={{ uri: productImg }} style={styles.productThumb} />
+          ) : (
+            <PlaceholderImage style={styles.productThumb} label="" size={18} />
+          )}
           {item.unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadCount}>{item.unreadCount}</Text>

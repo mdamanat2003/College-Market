@@ -5,7 +5,32 @@ import Conversation from '../models/Conversation';
 // User tracking: user_id map to socket_id
 const onlineUsers = new Map<string, string>();
 
+// Keep a module-level reference to io so other modules can emit events
+let ioServer: Server | null = null;
+
+export const getIo = () => ioServer;
+
+export const notifyUser = (userId: string, payload: any) => {
+  if (!ioServer) return;
+  try {
+    ioServer.to(userId).emit('new_notification', payload);
+  } catch (err) {
+    console.error('notifyUser emit error', err);
+  }
+};
+
+export const notifyUsers = (userIds: string[], payload: any) => {
+  if (!ioServer) return;
+  try {
+    userIds.forEach((uid) => ioServer?.to(uid).emit('new_notification', payload));
+  } catch (err) {
+    console.error('notifyUsers emit error', err);
+  }
+};
+
 export const setupSocket = (io: Server) => {
+  ioServer = io;
+
   io.on('connection', (socket: Socket) => {
     console.log(`🔌 New Socket Connected: ${socket.id}`);
 
@@ -24,24 +49,37 @@ export const setupSocket = (io: Server) => {
 
     // 3. Naya message bhejna
     socket.on('send_message', async (data) => {
-      const { conversationId, senderId, receiverId, text } = data;
+      const { conversationId, senderId, receiverId, text, clientTempId } = data;
 
       try {
+        if (!conversationId || !senderId || !text?.trim()) {
+          return;
+        }
+
         // DB me save karein
         const message = await Message.create({
           conversation: conversationId,
           sender: senderId,
-          text: text,
+          text: text.trim(),
         });
 
         // Conversation update karein
         await Conversation.findByIdAndUpdate(conversationId, {
-          lastMessage: text,
+          lastMessage: text.trim(),
           updatedAt: new Date()
         });
 
-        // Receiver ko live message bhejein agar wo room me hai
-        io.to(conversationId).emit('receive_message', message);
+        const outgoingMessage = {
+          ...message.toObject(),
+          clientTempId,
+        };
+
+        // Room me sender aur receiver dono ko synced DB message bhejein
+        io.to(conversationId).emit('receive_message', outgoingMessage);
+
+        if (receiverId) {
+          io.to(receiverId).emit('new_notification');
+        }
         
         // Receiver ko notification bhejein agar wo room me nahi hai
         // Notification system hum aage build karenge

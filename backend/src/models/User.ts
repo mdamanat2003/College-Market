@@ -1,5 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose, { Document, Schema } from "mongoose";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
   name: string;
@@ -8,7 +8,13 @@ export interface IUser extends Document {
   phone: string;
   college?: string;
   avatar?: string;
-  role: 'student' | 'admin';
+  role: "student" | "admin";
+  rating?: number;
+  ratingCount?: number;
+  // 👇 Ye 2 lines nayi add karni hain
+  resetOtp?: string | null;
+  resetOtpExpires?: Date | null;
+  
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
@@ -18,16 +24,27 @@ const userSchema: Schema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, select: false }, // select: false prevents password from returning in queries by default
     phone: { type: String, required: true },
-    college: { type: String, default: '' },
-    avatar: { type: String, default: '' },
-    role: { type: String, enum: ['student', 'admin'], default: 'student' },
+    college: { type: String, default: "" },
+    avatar: { type: String, default: "" },
+    role: { type: String, enum: ["student", "admin"], default: "student" },
+    rating: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
+    isBlocked: { type: Boolean, default: false },
+    resetOtp: {
+      type: String,
+      default: null,
+    },
+    resetOtpExpires: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Hash password before saving
-userSchema.pre<IUser>('save', async function () {
-  if (!this.isModified('password')) {
+userSchema.pre<IUser>("save", async function () {
+  if (!this.isModified("password")) {
     return;
   }
   const salt = await bcrypt.genSalt(10);
@@ -39,4 +56,4 @@ userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export default mongoose.model<IUser>('User', userSchema);
+export default mongoose.model<IUser>("User", userSchema);

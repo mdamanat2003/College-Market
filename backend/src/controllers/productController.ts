@@ -1,11 +1,67 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
+import Notification from '../models/Notification'; // Naya Notification model
 import { asyncHandler } from '../utils/asyncHandler';
 
 // Auth Request type jisme user object hoga
 interface AuthRequest extends Request {
   user?: any;
 }
+
+// @desc    Toggle Wishlist (Add/Remove) & Send Notification
+// @route   POST /api/products/:id/wishlist
+export const toggleWishlist = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const productId = req.params.id;
+  const buyerId = req.user._id;
+
+  const product = await Product.findById(productId);
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  // Agar purane products me wishlistedBy array nahi hai, toh empty array bana do
+  if (!product.wishlistedBy) {
+    product.wishlistedBy = [];
+  }
+
+  const isWishlisted = product.wishlistedBy.some((id: any) => id.toString() === buyerId.toString());
+
+  if (isWishlisted) {
+    // 1. Agar pehle se hai, toh remove kar do (Unlike)
+    product.wishlistedBy = product.wishlistedBy.filter(
+      (id: any) => id.toString() !== buyerId.toString()
+    );
+    await product.save();
+    
+    res.status(200).json({ success: true, message: "Removed from wishlist", isWishlisted: false });
+  } else {
+    // 2. Agar nahi hai, toh add kar do (Like)
+    product.wishlistedBy.push(buyerId);
+    await product.save();
+
+    // 3. Seller ko Notification bhejo (Agar seller khud apna product like na kar raha ho)
+    if (product.seller.toString() !== buyerId.toString()) {
+      try {
+        const notification = await Notification.create({
+          recipient: product.seller,
+          sender: buyerId,
+          relatedId: product._id as any,
+          type: 'Wishlist',
+          title: 'Product added to wishlist',
+          message: `${req.user.name || 'A user'} ne aapke product "${product.title}" ko wishlist me add kiya hai`,
+        });
+
+        const io = req.app.get('io');
+        io.to(product.seller.toString()).emit('new_notification', notification);
+      } catch (err) {
+        console.error("Socket or Notification error:", err);
+      }
+    }
+
+    res.status(200).json({ success: true, message: "Added to wishlist", isWishlisted: true });
+  }
+});
 
 // @desc    Get all available products
 // @route   GET /api/products

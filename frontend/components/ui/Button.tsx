@@ -8,9 +8,10 @@ interface ButtonProps {
   loading?: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
   disabled?: boolean;
+  style?: any;
 }
 
-export const Button = ({ title, onPress, loading, variant = 'primary', disabled }: ButtonProps) => {
+export const Button = ({ title, onPress, loading, variant = 'primary', disabled , style}: ButtonProps) => {
   const isOutline = variant === 'outline';
 
   return (

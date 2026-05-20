@@ -2,34 +2,45 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useChatStore } from '../../store/chatStore';
 
+import { useChatStore } from '../../store/chatStore';
 import { useProductStore } from '../../store/productStore';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
+import { PlaceholderImage } from '../../components/ui/PlaceholderImage';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { fetchProductById, isLoading } = useProductStore();
+  const { fetchProductById, isLoading, toggleWishlist } = useProductStore();
   const { user } = useAuthStore();
   const { width } = useWindowDimensions();
   const { startConversation } = useChatStore();
-  
+
   const [product, setProduct] = useState<any>(null);
+  const [isChatStarting, setIsChatStarting] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
 
   const isWebLarge = Platform.OS === 'web' && width > 768;
 
   useEffect(() => {
     const loadProduct = async () => {
-      if (id) {
-        const data = await fetchProductById(id as string);
-        setProduct(data);
+      if (!id) return;
+
+      const data = await fetchProductById(id as string);
+      setProduct(data);
+
+      if (data && user) {
+        const wishlistIds = Array.isArray(data.wishlistedBy) ? data.wishlistedBy : [];
+        const wishlisted = wishlistIds.some((wishlistedUserId: any) => wishlistedUserId?.toString() === user._id);
+        setIsWishlisted(wishlisted);
       }
     };
+
     loadProduct();
-  }, [id, fetchProductById]);
+  }, [id, fetchProductById, user]);
 
   if (isLoading || !product) {
     return (
@@ -39,21 +50,51 @@ export default function ProductDetailsScreen() {
     );
   }
 
-  const isOwner = user?._id === product.seller?._id;
-  const mainImage = product.images?.length > 0 ? product.images[0] : 'https://via.placeholder.com/600x400.png?text=No+Image';
+  const sellerId = typeof product.seller === 'object' ? product.seller?._id : product.seller;
+  const isOwner = user?._id === sellerId;
+  const canChat = Boolean(sellerId) && !isOwner;
+  const mainImage = product.images?.[0];
+
+  const handleWishlist = async () => {
+    if (!user) {
+      router.push('/(auth)/login');
+      return;
+    }
+
+    setIsWishlistLoading(true);
+    const previousState = isWishlisted;
+    setIsWishlisted((current) => !current);
+
+    try {
+      const result = await toggleWishlist(product._id);
+      if (result === null) {
+        setIsWishlisted(previousState);
+      } else {
+        setIsWishlisted(result);
+      }
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
 
   const handleChat = async () => {
     if (!user) {
       router.push('/(auth)/login');
       return;
     }
-    
-    // Create or fetch conversation
-    const conversationId = await startConversation(product._id, product.seller._id);
-    
-    if (conversationId) {
-      // Navigate to chat room
-      router.push(`/chat/${conversationId}`);
+
+    if (!sellerId) {
+      return;
+    }
+
+    setIsChatStarting(true);
+    try {
+      const conversationId = await startConversation(product._id, sellerId);
+      if (conversationId) {
+        router.push(`/chat/${conversationId}`);
+      }
+    } finally {
+      setIsChatStarting(false);
     }
   };
 
@@ -62,32 +103,36 @@ export default function ProductDetailsScreen() {
       router.push('/(auth)/login');
       return;
     }
-    // Checkout screen par bhej do
+
     router.push(`/checkout/${product._id}`);
   };
 
   return (
     <View style={styles.container}>
-      {/* Premium Sticky Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{product.title}</Text>
-        <TouchableOpacity style={styles.backBtn}>
-          <Ionicons name="heart-outline" size={24} color={COLORS.text} />
+        <TouchableOpacity onPress={handleWishlist} style={styles.backBtn} disabled={isWishlistLoading}>
+          <Ionicons
+            name={isWishlisted ? 'heart' : 'heart-outline'}
+            size={24}
+            color={isWishlisted ? 'red' : COLORS.text}
+          />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.mainLayout, isWebLarge && styles.mainLayoutWeb]}>
-          
-          {/* Image Gallery Area */}
           <View style={[styles.imageSection, isWebLarge && { flex: 1 }]}>
-            <Image source={{ uri: mainImage }} style={styles.mainImage} resizeMode="cover" />
+            {mainImage ? (
+              <Image source={{ uri: mainImage }} style={styles.mainImage} resizeMode="cover" />
+            ) : (
+              <PlaceholderImage style={styles.mainImage} size={42} />
+            )}
           </View>
 
-          {/* Product Details Area */}
           <View style={[styles.detailsSection, isWebLarge && { flex: 1, paddingLeft: SPACING.xl }]}>
             <Text style={styles.title}>{product.title}</Text>
             <Text style={styles.price}>₹{product.price}</Text>
@@ -107,23 +152,35 @@ export default function ProductDetailsScreen() {
               </View>
               <View style={styles.sellerInfo}>
                 <Text style={styles.sellerName}>{product.seller?.name}</Text>
-                <Text style={styles.sellerCollege}><Ionicons name="location-outline" size={14} /> {product.seller?.college}</Text>
+                <View style={styles.sellerCollegeRow}>
+                  <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
+                  <Text style={styles.sellerCollege}>{product.seller?.college}</Text>
+                </View>
+                <View style={styles.ratingRow}>
+                  <Ionicons name="star" size={14} color="#F59E0B" />
+                  <Text style={styles.ratingText}>
+                    {product.seller?.rating ? `${Number(product.seller.rating).toFixed(1)} / 5` : 'No ratings yet'}
+                  </Text>
+                  {product.seller?.ratingCount ? (
+                    <Text style={styles.ratingCountText}>({product.seller.ratingCount})</Text>
+                  ) : null}
+                </View>
               </View>
             </View>
 
-            {/* Action Buttons */}
             <View style={styles.actionContainer}>
-              {!isOwner ? (
+              {canChat ? (
                 <>
-                  <Button title="Chat with Seller" variant="outline" onPress={handleChat} />
+                  <Button title="Chat with Seller" variant="outline" onPress={handleChat} loading={isChatStarting} />
                   <Button title="Book Now (Escrow)" onPress={handleBuyNow} />
                 </>
-              ) : (
+              ) : isOwner ? (
                 <Button title="Edit Listing" onPress={() => console.log('Edit')} variant="outline" />
+              ) : (
+                <Button title="Seller unavailable" onPress={() => {}} variant="outline" disabled />
               )}
             </View>
           </View>
-
         </View>
       </ScrollView>
     </View>
@@ -156,6 +213,10 @@ const styles = StyleSheet.create({
   sellerInitial: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   sellerInfo: { flex: 1 },
   sellerName: { fontSize: 16, fontWeight: '600', color: COLORS.text },
-  sellerCollege: { fontSize: 14, color: COLORS.textMuted, marginTop: 2 },
+  sellerCollegeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  sellerCollege: { fontSize: 14, color: COLORS.textMuted },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, flexWrap: 'wrap' },
+  ratingText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
+  ratingCountText: { fontSize: 12, color: COLORS.textMuted },
   actionContainer: { gap: SPACING.md },
 });

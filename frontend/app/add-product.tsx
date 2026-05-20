@@ -39,7 +39,7 @@ export default function AddProductScreen() {
     });
 
     if (success) {
-      router.replace('/');
+      router.replace('/(tabs)');
     }
   };
 

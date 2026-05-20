@@ -7,7 +7,10 @@ interface User {
   name: string;
   email: string;
   phone: string;
-  role: string;
+  role: 'student' | 'admin' | 'user' | string;
+  college?: string;
+  rating?: number;
+  ratingCount?: number;
 }
 
 interface AuthState {
@@ -76,7 +79,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = await api.get('/auth/me');
       set({ user: response.data.user, token });
-    } catch (error) {
+    } catch {
       await AsyncStorage.removeItem('userToken');
       set({ user: null, token: null });
     }

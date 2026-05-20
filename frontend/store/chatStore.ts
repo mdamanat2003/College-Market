@@ -2,13 +2,18 @@ import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
 import { api } from '../services/api';
 
-const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+// Ensure the socket points to the base server, not the /api route.
+const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL
+  || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '')
+  || 'http://localhost:3001';
 
 interface Message {
   _id: string;
-  sender: string;
+  sender: string | { _id: string; name?: string; avatar?: string };
   text: string;
   createdAt: string;
+  conversation?: string;
+  clientTempId?: string;
 }
 
 interface ChatState {
@@ -16,6 +21,7 @@ interface ChatState {
   conversations: any[];
   currentMessages: Message[];
   isTyping: boolean;
+  unreadNotifications: number;
   
   // Actions
   connectSocket: (userId: string) => void;
@@ -23,7 +29,10 @@ interface ChatState {
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
   sendMessage: (conversationId: string, receiverId: string, senderId: string, text: string) => void;
-  startConversation: (productId: string, sellerId: string) => Promise<string | null>; // <-- Naya action add kiya
+  startConversation: (productId: string, otherUserId: string) => Promise<string | null>;
+  clearMessages: () => void; // <-- Naya: chat screen se bahar aane par messages clear karne ke liye
+  fetchUnreadNotificationsCount: () => Promise<void>;
+  setUnreadNotifications: (count: number) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -31,6 +40,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   currentMessages: [],
   isTyping: false,
+  unreadNotifications: 0,
 
   // 1. Initialize Global Socket Connection
   connectSocket: (userId) => {
@@ -44,14 +54,37 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // Live message listener
     socket.on('receive_message', (newMessage: Message) => {
-      set((state) => ({
-        currentMessages: [...state.currentMessages, newMessage],
-      }));
+      set((state) => {
+        // ✅ BUG FIX: Prevent duplicate messages from appearing
+        const isDuplicate = state.currentMessages.some((msg) => msg._id === newMessage._id);
+        if (isDuplicate) return state;
+
+        const optimisticIndex = newMessage.clientTempId
+          ? state.currentMessages.findIndex((msg) => msg._id === newMessage.clientTempId)
+          : -1;
+
+        if (optimisticIndex >= 0) {
+          const currentMessages = [...state.currentMessages];
+          currentMessages[optimisticIndex] = newMessage;
+          return {
+            currentMessages,
+            conversations: updateConversationPreview(state.conversations, newMessage),
+          };
+        }
+
+        return {
+          currentMessages: [...state.currentMessages, newMessage],
+          conversations: updateConversationPreview(state.conversations, newMessage),
+        };
+      });
     });
 
     // Typing indicators
     socket.on('typing', () => set({ isTyping: true }));
     socket.on('stop_typing', () => set({ isTyping: false }));
+    socket.on('new_notification', () => {
+      set((state) => ({ unreadNotifications: state.unreadNotifications + 1 }));
+    });
 
     set({ socket });
   },
@@ -61,7 +94,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { socket } = get();
     if (socket) {
       socket.disconnect();
-      set({ socket: null, conversations: [], currentMessages: [] });
+      set({ socket: null, conversations: [], currentMessages: [], unreadNotifications: 0 });
     }
   },
 
@@ -69,7 +102,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   fetchConversations: async () => {
     try {
       const response = await api.get('/chat/conversations');
-      set({ conversations: response.data.conversations });
+      set({ conversations: response.data.conversations || [] });
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     }
@@ -79,7 +112,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
   fetchMessages: async (conversationId) => {
     try {
       const response = await api.get(`/chat/${conversationId}`);
-      set({ currentMessages: response.data.messages });
+      set((state) => {
+        const conversation = response.data.conversation;
+        const conversations = conversation
+          ? mergeConversation(state.conversations, conversation)
+          : state.conversations;
+
+        return {
+          currentMessages: response.data.messages || [],
+          conversations,
+        };
+      });
       
       // Join the specific socket room for this chat
       const { socket } = get();
@@ -94,36 +137,87 @@ export const useChatStore = create<ChatState>((set, get) => ({
   // 5. Send a live message via Socket
   sendMessage: (conversationId, receiverId, senderId, text) => {
     const { socket } = get();
-    if (socket) {
+    if (socket && conversationId && senderId && text.trim()) {
+      // ✅ Generate a unique temporary ID for the optimistic UI
+      const tempId = `temp_${Date.now()}_${Math.random()}`;
+      
+      const optimisticMessage: Message = {
+        _id: tempId, 
+        sender: senderId,
+        text,
+        createdAt: new Date().toISOString(),
+        conversation: conversationId,
+      };
+      
+      // Optimistic UI Update (Turant screen par dikhao)
+      set((state) => ({
+        currentMessages: [...state.currentMessages, optimisticMessage],
+        conversations: updateConversationPreview(state.conversations, optimisticMessage),
+      }));
+
+      // Send to server
       socket.emit('send_message', {
         conversationId,
         receiverId,
         senderId,
         text,
+        clientTempId: tempId,
       });
-
-      // Optimistic UI Update (Turant screen par dikhao bina backend ka wait kiye)
-      const optimisticMessage: Message = {
-        _id: Math.random().toString(), // Temp ID
-        sender: senderId,
-        text,
-        createdAt: new Date().toISOString(),
-      };
-      
-      set((state) => ({
-        currentMessages: [...state.currentMessages, optimisticMessage],
-      }));
+    } else {
+      console.error("Socket is not connected!");
     }
   },
 
-  // 6. Start or fetch an existing conversation (Product details page se call hoga)
-  startConversation: async (productId, sellerId) => {
+  // 6. Start or fetch an existing conversation
+  startConversation: async (productId, otherUserId) => {
     try {
-      const response = await api.post('/chat', { productId, sellerId });
-      return response.data.conversation._id;
+      const response = await api.post('/chat', { productId, otherUserId });
+      const conversation = response.data.conversation;
+      if (conversation) {
+        set((state) => {
+          return {
+            conversations: mergeConversation(state.conversations, conversation),
+          };
+        });
+      }
+      return conversation?._id || null;
     } catch (error) {
       console.error('Failed to start conversation:', error);
       return null;
     }
   },
+
+  // 7. Clear current messages (Use when unmounting chat screen)
+  clearMessages: () => set({ currentMessages: [] }),
+
+  fetchUnreadNotificationsCount: async () => {
+    try {
+      const response = await api.get('/notifications');
+      set({ unreadNotifications: response.data.unreadCount || 0 });
+    } catch (error) {
+      console.error('Failed to fetch unread notifications count:', error);
+    }
+  },
+
+  setUnreadNotifications: (count) => set({ unreadNotifications: count }),
 }));
+
+const getConversationId = (message: Message) => message.conversation;
+
+const updateConversationPreview = (conversations: any[], message: Message) => {
+  const conversationId = getConversationId(message);
+  if (!conversationId) return conversations;
+
+  return conversations.map((conversation) => (
+    conversation._id === conversationId
+      ? { ...conversation, lastMessage: message.text, updatedAt: message.createdAt }
+      : conversation
+  ));
+};
+
+const mergeConversation = (conversations: any[], conversation: any) => {
+  const exists = conversations.some((item) => item._id === conversation._id);
+  return exists
+    ? conversations.map((item) => item._id === conversation._id ? conversation : item)
+    : [conversation, ...conversations];
+};

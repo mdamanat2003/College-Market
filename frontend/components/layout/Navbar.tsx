@@ -11,21 +11,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
+import { useChatStore } from '../../store/chatStore';
 
 export const Navbar = () => {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const unreadNotifications = useChatStore((state) => state.unreadNotifications);
   const router = useRouter();
 
   return (
     <View style={styles.header}>
-      
-      {/* Brand Logo */}
       <View style={styles.brandContainer}>
         <Ionicons name="cart" size={28} color={COLORS.primary} />
         <Text style={styles.brandText}>CampusCart</Text>
       </View>
 
-      {/* Search Bar */}
       {Platform.OS === 'web' && (
         <View style={styles.searchContainer}>
           <Ionicons
@@ -43,20 +42,16 @@ export const Navbar = () => {
         </View>
       )}
 
-      {/* Right Side Icons */}
       <View style={styles.rightIcons}>
-
-        {/* Sell Button */}
-        <TouchableOpacity 
-          style={styles.sellBtn} 
+        <TouchableOpacity
+          style={styles.sellBtn}
           onPress={() => router.push('/add-product')}
         >
           <Ionicons name="add" size={18} color="#fff" style={styles.sellIcon} />
           <Text style={styles.sellBtnText}>Sell</Text>
         </TouchableOpacity>
 
-        {/* Messages / Inbox Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.iconButton}
           onPress={() => router.push('/messages')}
         >
@@ -67,29 +62,29 @@ export const Navbar = () => {
           />
         </TouchableOpacity>
 
-        {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => router.push('/notifications')}
+        >
           <Ionicons
             name="notifications-outline"
             size={24}
             color={COLORS.text}
           />
-
-          {/* Notification Badge */}
-          <View style={styles.badge} />
+          {unreadNotifications > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {unreadNotifications > 9 ? '9+' : unreadNotifications}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
 
-        {/* Profile Button */}
-        {/* Profile Button (Ab logout ki jagah profile page par le jayega) */}
-        <TouchableOpacity 
-          style={styles.profileBtn} 
-          onPress={() => router.push('/profile')} // <-- UPDATED
-        >
+        <TouchableOpacity style={styles.profileBtn} onPress={() => router.push('/profile')}>
           <Text style={styles.profileInitial}>
             {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
           </Text>
         </TouchableOpacity>
-
       </View>
     </View>
   );
@@ -138,14 +133,15 @@ const styles = StyleSheet.create({
   },
 
   searchInput: {
-    flex: 1,
-    height: '100%',
-    fontSize: 15,
+    flex: 1, // Available space lene ke liye
+    height: 40,
+    backgroundColor: COLORS.surface, // Ya koi light gray code jaise '#F1F5F9'
+    borderRadius: RADIUS.md, // Ya manually 8 de sakte hain
+    paddingHorizontal: SPACING.md, // Text aur border ke beech ki space
+    fontSize: 14,
     color: COLORS.text,
-
-    ...(Platform.OS === 'web'
-      ? { outlineStyle: 'none' }
-      : {}),
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
 
   rightIcons: {
@@ -183,12 +179,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 6,
-    width: 10,
-    height: 10,
+    minWidth: 18,
+    height: 18,
     backgroundColor: COLORS.danger,
     borderRadius: 999,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: COLORS.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
 
   profileBtn: {

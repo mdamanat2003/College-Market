@@ -5,29 +5,46 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
-import { COLORS, SPACING, RADIUS } from '../../theme/colors';
+import { COLORS, SPACING } from '../../theme/colors';
 
 export default function ChatRoomScreen() {
   const { id } = useLocalSearchParams(); // conversationId
   const router = useRouter();
   const { user } = useAuthStore();
-  const { fetchMessages, currentMessages, sendMessage } = useChatStore();
+  const { fetchMessages, currentMessages, sendMessage, clearMessages, conversations } = useChatStore();
   
   const [text, setText] = useState('');
   const flatListRef = useRef<FlatList>(null);
+
+  // ✅ Automatically find the receiver's ID from the conversations list
+  const currentConversation = conversations.find(c => c._id === id);
+  const receiver = currentConversation?.participants?.find((p: any) => 
+    (typeof p === 'object' ? p._id : p) !== user?._id
+  );
+  const receiverId = typeof receiver === 'object' ? receiver._id : (receiver || '');
 
   useEffect(() => {
     if (id) {
       fetchMessages(id as string);
     }
-  }, [id]);
+    
+    // ✅ FIX: Cleanup function. Jab chat screen close ho toh messages clear kar do
+    return () => {
+      clearMessages();
+    };
+  }, [id, fetchMessages, clearMessages]);
 
   const handleSend = () => {
     if (!text.trim()) return;
 
-    // Temporary logic: Hamein receiverId chahiye hoga, jo ideally backend se aana chahiye
-    // Abhi ke liye hum send message trigger kar rahe hain
-    sendMessage(id as string, 'RECEIVER_ID_HERE', user?._id as string, text);
+    // ✅ FIX: Actual receiverId pass ho raha hai
+    sendMessage(
+      id as string, 
+      receiverId as string, 
+      user?._id as string, 
+      text.trim()
+    );
+    
     setText('');
     
     // Auto scroll to bottom
@@ -37,7 +54,9 @@ export default function ChatRoomScreen() {
   };
 
   const renderMessage = ({ item }: { item: any }) => {
-    const isOwn = item.sender === user?._id;
+    // Check if the sender is an object (populated) or just a string ID
+    const senderId = typeof item.sender === 'object' ? item.sender._id : item.sender;
+    const isOwn = senderId === user?._id;
 
     return (
       <View style={[styles.messageWrapper, isOwn ? styles.messageOwn : styles.messageOther]}>
@@ -46,7 +65,7 @@ export default function ChatRoomScreen() {
             {item.text}
           </Text>
           <Text style={[styles.timeText, isOwn ? styles.timeOwn : styles.timeOther]}>
-            {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'}
           </Text>
         </View>
       </View>
@@ -57,13 +76,19 @@ export default function ChatRoomScreen() {
     <KeyboardAvoidingView 
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // Keyboard ke upar input box rakhne ke liye
     >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Live Chat</Text>
+        
+        {/* Doosre bande ka naam agar available ho */}
+        <Text style={styles.headerTitle}>
+          {typeof receiver === 'object' && receiver?.name ? receiver.name : 'Live Chat'}
+        </Text>
+        
         <TouchableOpacity style={styles.backBtn}>
           <Ionicons name="ellipsis-vertical" size={20} color={COLORS.text} />
         </TouchableOpacity>

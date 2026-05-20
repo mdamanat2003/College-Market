@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, usePathname, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
@@ -22,6 +22,7 @@ export default function RootLayout() {
   const { connectSocket, disconnectSocket } = useChatStore(); 
   
   const segments = useSegments();
+  const pathname = usePathname();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
@@ -38,19 +39,34 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isReady) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    const currentSegment = segments[0];
+    const inAuthGroup = currentSegment === '(auth)';
+    const inAdminRoute = currentSegment === 'admin';
+    const inTabsGroup = currentSegment === '(tabs)';
+    const isPublicLanding = pathname === '/' && !inTabsGroup;
+
+    if (inAdminRoute && (!user || user.role !== 'admin')) {
+      router.replace('/(auth)/login');
+      return;
+    }
 
     if (!user && !inAuthGroup) {
+      if (isPublicLanding) {
+        return;
+      }
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
-      router.replace('/');
+      router.replace('/(tabs)');
+    } else if (user && isPublicLanding) {
+      router.replace('/(tabs)');
     }
-  }, [user, segments, isReady, router]);
+  }, [user, segments, pathname, isReady, router]);
 
   // 3. Socket Connection Logic (Real-time Live Engine)
   useEffect(() => {
     if (user && user._id) {
       connectSocket(user._id); // User login hote hi online mark ho jayega
+      useChatStore.getState().fetchUnreadNotificationsCount();
     } else {
       disconnectSocket(); // Logout par connection cut
     }
@@ -66,13 +82,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        {/* Make sure your main files like index.tsx or product/[id].tsx are caught by Expo Router naturally */}
-        <Stack.Screen name="index" options={{ headerShown: false }} /> 
-        <Stack.Screen name="add-product" options={{ headerShown: false }} />
-        <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
-      </Stack>
+      <Stack screenOptions={{ headerShown: false }} />
       <StatusBar style="auto" />
     </ThemeProvider>
   );

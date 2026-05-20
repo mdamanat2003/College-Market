@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useRouter } from 'expo-router';
+import { PlaceholderImage } from '../ui/PlaceholderImage';
 
 interface ProductCardProps {
   product: any;
@@ -17,14 +18,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     router.push(`/product/${product._id}`);
   };
 
-  // Use a placeholder if no image exists
-  const imageUrl = product.images?.length > 0 
-    ? product.images[0] 
-    : 'https://via.placeholder.com/300x300.png?text=No+Image';
+  const imageUrl = product.images?.[0];
 
   return (
     <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.9}>
-      <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+      ) : (
+        <PlaceholderImage style={styles.image} />
+      )}
       
       <View style={styles.content}>
         <View style={styles.titleRow}>

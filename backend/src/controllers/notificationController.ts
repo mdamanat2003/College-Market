@@ -7,16 +7,28 @@ interface AuthRequest extends Request { user?: any; }
 // @desc    Get all notifications for logged in user
 // @route   GET /api/notifications
 export const getNotifications = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const notifications = await Notification.find({ recipient: req.user._id })
-    .sort({ createdAt: -1 }) // Latest sabse upar
-    .limit(50); // Ek baar me max 50 notifications fetch karein
+  if (!req.user || !req.user._id) {
+    res.status(401);
+    throw new Error('Not authorized');
+  }
 
-  const unreadCount = await Notification.countDocuments({ 
-    recipient: req.user._id, 
-    isRead: false 
-  });
+  try {
+    const notifications = await Notification.find({ recipient: req.user._id })
+      .populate('sender', 'name avatar')
+      .sort({ createdAt: -1 }) // Latest sabse upar
+      .limit(50); // Ek baar me max 50 notifications fetch karein
 
-  res.json({ success: true, unreadCount, notifications });
+    const unreadCount = await Notification.countDocuments({ 
+      recipient: req.user._id, 
+      isRead: false 
+    });
+
+    res.json({ success: true, unreadCount, notifications });
+  } catch (err) {
+    console.error('Failed to fetch notifications:', err);
+    res.status(500);
+    throw err;
+  }
 });
 
 // @desc    Mark a notification as read

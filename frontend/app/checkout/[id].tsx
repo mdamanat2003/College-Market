@@ -7,6 +7,7 @@ import { useProductStore } from '../../store/productStore';
 import { useAuthStore } from '../../store/authStore';
 import { useOrderStore } from '../../store/orderStore';
 import { Button } from '../../components/ui/Button';
+import { PlaceholderImage } from '../../components/ui/PlaceholderImage';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 // Razorpay Script Loader (For Web)
@@ -72,20 +73,27 @@ export default function CheckoutScreen() {
         color: COLORS.primary
       },
       handler: async function (response: any) {
-        // 4. Verify Payment on Backend
-        const success = await verifyPayment({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-          db_order_id: order.orderId
-        });
+        try {
+          // 4. Verify Payment on Backend (fire-and-forget so UI can navigate instantly)
+          verifyPayment({
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+            orderId: order.orderId
+          }).then((success) => {
+            if (!success) console.error('Payment verification failed in background');
+          }).catch((err) => console.error('VerifyPayment error', err));
 
-        if (success) {
-          alert('Payment Successful! Amount is secure in Escrow.');
-          router.replace('/'); // Ya fir Order Success page par bhejein
+          // Immediate navigation to Home (no blocking alerts)
+          router.replace('/(tabs)');
+          
+        } catch (error) {
+          console.error(error);
+          alert('Something went wrong during verification.');
+          window.location.reload();
         }
       }
-    };
+    }; // <--- YE BRACKET MISSING THA!
 
     // 5. Open Razorpay Modal
     if (Platform.OS === 'web') {
@@ -117,7 +125,11 @@ export default function CheckoutScreen() {
         </View>
 
         <View style={styles.productInfo}>
-          <Image source={{ uri: product.images?.[0] || 'https://via.placeholder.com/100' }} style={styles.image} />
+          {product.images?.[0] ? (
+            <Image source={{ uri: product.images[0] }} style={styles.image} />
+          ) : (
+            <PlaceholderImage style={styles.image} label="" size={20} />
+          )}
           <View style={styles.details}>
             <Text style={styles.title}>{product.title}</Text>
             <Text style={styles.seller}>Seller: {product.seller?.name}</Text>

@@ -7,7 +7,8 @@ interface ProductState {
   error: string | null;
   fetchProducts: (category?: string, search?: string) => Promise<void>;
   fetchProductById: (productId: string) => Promise<any | null>;
-  addProduct: (productData: any) => Promise<boolean>; // <-- Naya function
+  addProduct: (productData: any) => Promise<boolean>;
+  toggleWishlist: (productId: string) => Promise<boolean | null>;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
@@ -56,5 +57,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ error: error.response?.data?.message || 'Failed to add product', isLoading: false });
       return false;
     }
-  }
+  },
+
+  toggleWishlist: async (productId) => {
+    try {
+      const response = await api.post(`/products/${productId}/wishlist`);
+      return response.data.isWishlisted;
+    } catch (error: any) {
+      set({ error: error.response?.data?.message || 'Failed to update wishlist', isLoading: false });
+      return null;
+    }
+  },
 }));

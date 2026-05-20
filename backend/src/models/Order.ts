@@ -6,10 +6,18 @@ export interface IOrder extends Document {
   product: mongoose.Types.ObjectId;
   amount: number;
   paymentMode: 'Direct' | 'Escrow';
-  paymentStatus: 'Pending' | 'Held' | 'Released' | 'Refunded'; // Escrow states
-  deliveryStatus: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
+  paymentStatus: 'Pending' | 'Paid' | 'Held' | 'Released' | 'Refunded'; // Escrow states
+  deliveryStatus: 'Pending' | 'Shipped' | 'Delivered' | 'Received' | 'Cancelled';
+  
+  // ✅ FIX: status ko interface me add kar diya
+  status: 'Pending' | 'Paid' | 'EscrowLocked' | 'Completed' | 'Cancelled'; 
+  
   razorpayOrderId: string; // RZP order ID
   razorpayPaymentId?: string; // RZP payment ID (after success)
+  razorpaySignature?: string;
+  isDisputed?: boolean;
+  disputeReason?: string;
+  disputeDescription?: string;
 }
 
 const orderSchema: Schema = new Schema(
@@ -23,19 +31,37 @@ const orderSchema: Schema = new Schema(
     // Escrow lifecycle
     paymentStatus: { 
       type: String, 
-      enum: ['Pending', 'Held', 'Released', 'Refunded'], 
+      enum: ['Pending', 'Paid', 'Held', 'Released', 'Refunded'], 
       default: 'Pending' 
     },
     
-    // Delivery lifecycle
+    // ✅ FIX: deliveryStatus ko schema me add kiya taaki interface se match kare
     deliveryStatus: { 
       type: String, 
-      enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled'], 
+      enum: ['Pending', 'Shipped', 'Delivered', 'Received', 'Cancelled'], 
+      default: 'Pending' 
+    },
+    isDisputed: { 
+    type: Boolean, 
+    default: false 
+    },
+    disputeReason: { 
+      type: String // (e.g., 'Product received different')
+    },
+    disputeDescription: { 
+      type: String // (Custom text if 'Other' is selected)
+    },   
+    
+    // Overall order status
+    status: { 
+      type: String, 
+      enum: ['Pending', 'Paid', 'EscrowLocked', 'Completed', 'Cancelled'], 
       default: 'Pending' 
     },
 
     razorpayOrderId: { type: String, required: true },
     razorpayPaymentId: { type: String },
+    razorpaySignature: { type: String },
   },
   { timestamps: true }
 );

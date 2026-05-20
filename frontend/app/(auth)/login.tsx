@@ -1,144 +1,191 @@
-import React from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter, Link } from 'expo-router';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  Alert,
+} from "react-native";
+import { Link, useRouter } from "expo-router";
 import { useAuthStore } from '../../store/authStore';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { COLORS, SPACING } from '../../theme/colors';
 
-// 1. Zod Schema for strict validation
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
-
-export default function LoginScreen() {
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const router = useRouter();
-  const { login, isLoading, error } = useAuthStore();
+  const login = useAuthStore((s) => s.login);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-  });
+  const handleLogin = async () => {
+    setErrorMessage("");
 
-  const onSubmit = async (data: LoginForm) => {
-    const success = await login(data);
-    if (success) {
-      router.replace('/'); // Redirect to Home after login
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      setErrorMessage("Please enter email and password.");
+      return;
+    }
+
+    try {
+      const ok = await login({ email: normalizedEmail, password });
+      if (ok) {
+        Alert.alert('Welcome back!', `Hi ${normalizedEmail}`);
+        const currentUser = useAuthStore.getState().user;
+        // If user selected admin login but authenticated user is not admin, show error
+        if (isAdminLogin && currentUser?.role !== 'admin') {
+          setErrorMessage('This account is not an admin. Please login with an admin account.');
+          return;
+        }
+
+        if (currentUser?.role === 'admin') {
+          router.replace('/admin/dashboard');
+        } else {
+          router.replace('/(tabs)');
+        }
+      } else {
+        setErrorMessage(useAuthStore.getState().error || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setErrorMessage('Server error. Is the backend running?');
     }
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.card}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to your student account</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Welcome back</Text>
+          <Text style={styles.subtitle}>Sign in to continue to CampusCart</Text>
+        </View>
 
-        {error && <Text style={styles.globalError}>{error}</Text>}
+        {errorMessage ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+          </View>
+        ) : null}
 
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label="Email"
-              placeholder="Enter your college email"
-              autoCapitalize="none"
+        <View style={styles.form}>
+          <View style={styles.adminToggleRow}>
+            <TouchableOpacity onPress={() => setIsAdminLogin(!isAdminLogin)} style={[styles.adminToggle, isAdminLogin && styles.adminToggleActive]}>
+              <Text style={[styles.adminToggleText, isAdminLogin && styles.adminToggleTextActive]}>{isAdminLogin ? 'Admin login' : 'User login'}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={isAdminLogin ? 'admin@campus.edu' : 'you@college.edu or any email'}
+              placeholderTextColor="#9ca3af"
               keyboardType="email-address"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              error={errors.email?.message}
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
-          )}
-        />
+          </View>
 
-        <Controller
-          control={control}
-          name="password"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label="Password"
-              placeholder="Enter your password"
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="••••••••"
+              placeholderTextColor="#9ca3af"
               secureTextEntry
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              error={errors.password?.message}
+              value={password}
+              onChangeText={setPassword}
             />
-          )}
-        />
+          </View>
 
-        <Button 
-          title="Sign In" 
-          onPress={handleSubmit(onSubmit)} 
-          loading={isLoading} 
-        />
+          <TouchableOpacity
+            style={styles.forgotPassword}
+            onPress={() => router.push("/forgot-password")}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.footer}>
-          <Text style={{ color: COLORS.textMuted }}>Don&apos;t have an account? </Text>
-          <Link href="/(auth)/register" style={styles.link}>Sign Up</Link>
+          <Text style={styles.footerText}>Do not have an account? </Text>
+          <Link href="/register" asChild>
+            <TouchableOpacity>
+              <Text style={styles.footerLink}>Sign Up</Text>
+            </TouchableOpacity>
+          </Link>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
+  safeArea: { flex: 1, backgroundColor: "#ffffff" },
+  container: { 
+    flex: 1, 
+    padding: 24, 
     justifyContent: 'center',
-    padding: SPACING.lg,
-  },
-  card: {
-    backgroundColor: COLORS.card,
-    padding: SPACING.xl,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
-    maxWidth: 400,
     width: '100%',
-    alignSelf: 'center',
+    maxWidth: 450, // Screen chahe kitni badi ho, ye 450px se bada nahi hoga
+    alignSelf: 'center', // Box ko screen ke ekdum beech me laayega
   },
+  header: { marginBottom: 32 },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 8,
   },
-  subtitle: {
+  subtitle: { fontSize: 16, color: "#6b7280" },
+  form: { gap: 20 },
+  inputGroup: { gap: 8 },
+  label: { fontSize: 14, fontWeight: "600", color: "#374151" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    backgroundColor: "#f9fafb",
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    color: COLORS.textMuted,
-    marginBottom: SPACING.xl,
+    color: "#111827",
   },
-  globalError: {
-    color: COLORS.danger,
-    backgroundColor: '#FEE2E2',
-    padding: SPACING.sm,
+  forgotPassword: { alignSelf: "flex-end" },
+  forgotPasswordText: { color: "#2563eb", fontWeight: "500", fontSize: 14 },
+  button: {
+    backgroundColor: "#2563eb",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 8,
+    boxShadow: "0 4px 8px rgba(37, 99, 235, 0.2)",
+    elevation: 4,
+  },
+  buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "bold" },
+  footer: { flexDirection: "row", justifyContent: "center", marginTop: 32 },
+  footerText: { color: "#6b7280", fontSize: 15 },
+  footerLink: { color: "#2563eb", fontSize: 15, fontWeight: "bold" },
+  errorBox: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#f87171',
     borderRadius: 8,
-    marginBottom: SPACING.md,
-    textAlign: 'center',
-    overflow: 'hidden',
+    padding: 12,
+    marginBottom: 12,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: SPACING.lg,
-  },
-  link: {
-    color: COLORS.accent,
-    fontWeight: '600',
-  }
+  errorText: { color: '#b91c1c', fontSize: 14, fontWeight: '500' },
+  adminToggleRow: { alignItems: 'center', marginBottom: 8 },
+  adminToggle: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb' },
+  adminToggleActive: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
+  adminToggleText: { color: '#374151', fontWeight: '600' },
+  adminToggleTextActive: { color: '#fff' },
 });

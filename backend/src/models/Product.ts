@@ -10,6 +10,7 @@ export interface IProduct extends Document {
   condition: 'New' | 'Like New' | 'Good' | 'Fair';
   status: 'Available' | 'Sold' | 'Reserved';
   college: string; // Seller ka college, taaki local filtering ho sake
+  wishlistedBy: mongoose.Types.ObjectId[];
 }
 
 const productSchema: Schema = new Schema(
@@ -31,6 +32,7 @@ const productSchema: Schema = new Schema(
       default: 'Available' 
     },
     college: { type: String, required: true },
+    wishlistedBy: [{ type: Schema.Types.ObjectId, ref: 'User', default: [] }],
   },
   { timestamps: true }
 );

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useAuthStore } from '../store/authStore';
 import { useOrderStore } from '../store/orderStore';
+import OrderCard from '../components/OrderCard';
 import { Button } from '../components/ui/Button';
+import { PlaceholderImage } from '../components/ui/PlaceholderImage';
 import { COLORS, SPACING, RADIUS } from '../theme/colors';
 
 export default function ProfileScreen() {
@@ -17,7 +19,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     fetchMyOrders();
-  }, []);
+  }, [fetchMyOrders]);
 
   const handleLogout = () => {
     logout();
@@ -25,16 +27,45 @@ export default function ProfileScreen() {
   };
 
   const handleReleaseEscrow = async (orderId: string) => {
-    if(window.confirm("Are you sure you have received the item in good condition? This action cannot be undone.")) {
-      const success = await releaseEscrow(orderId);
-      if (success) alert("Funds released to the seller successfully!");
-    }
+    Alert.alert(
+      'Confirm receipt',
+      'Are you sure you have received the item in good condition? Admin will review and release payment to the seller.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            const success = await releaseEscrow(orderId);
+            if (success) Alert.alert('Success', 'Marked as received. Admin will release the seller payment.');
+          }
+        }
+      ]
+    );
   };
 
-  // Filter orders based on tabs
-  const displayedOrders = orders.filter(order => 
-    activeTab === 'Purchases' ? order.buyer._id === user?._id : order.seller._id === user?._id
-  );
+  // ✅ FIX: Bulletproof ID matching logic for filtering orders
+  const displayedOrders = orders.filter(order => {
+    const buyerId = typeof order.buyer === 'object' ? order.buyer?._id : order.buyer;
+    const sellerId = typeof order.seller === 'object' ? order.seller?._id : order.seller;
+    
+    const currentUserId = String(user?._id);
+
+    if (activeTab === 'Purchases') {
+      return String(buyerId) === currentUserId;
+    } else {
+      return String(sellerId) === currentUserId;
+    }
+  });
+
+  const purchaseOrders = displayedOrders.filter(order => {
+    const buyerId = typeof order.buyer === 'object' ? order.buyer?._id : order.buyer;
+    return String(buyerId) === String(user?._id);
+  });
+
+  const salesOrders = displayedOrders.filter(order => {
+    const sellerId = typeof order.seller === 'object' ? order.seller?._id : order.seller;
+    return String(sellerId) === String(user?._id);
+  });
 
   return (
     <View style={styles.container}>
@@ -79,14 +110,29 @@ export default function ProfileScreen() {
         {/* Orders List */}
         {isLoading ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
-        ) : displayedOrders.length === 0 ? (
+        ) : activeTab === 'Purchases' && purchaseOrders.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="receipt-outline" size={48} color={COLORS.border} />
             <Text style={styles.emptyText}>No {activeTab.toLowerCase()} yet.</Text>
           </View>
+        ) : activeTab === 'Sales' && salesOrders.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="receipt-outline" size={48} color={COLORS.border} />
+            <Text style={styles.emptyText}>No {activeTab.toLowerCase()} yet.</Text>
+          </View>
+        ) : activeTab === 'Purchases' ? (
+          <FlatList
+            data={purchaseOrders}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => <OrderCard item={item} refreshOrders={fetchMyOrders} />}
+            scrollEnabled={false}
+          />
         ) : (
-          displayedOrders.map((order) => {
-            const isBuyer = user?._id === order.buyer._id;
+          salesOrders.map((order) => {
+            // ✅ FIX: Safe ID check here as well
+            const buyerIdForCheck = typeof order.buyer === 'object' ? order.buyer?._id : order.buyer;
+            const isBuyer = String(user?._id) === String(buyerIdForCheck);
+            
             const product = order.product;
             const isEscrowLocked = order.status === 'Paid' || order.status === 'EscrowLocked';
 
@@ -102,12 +148,16 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.productRow}>
-                  <Image source={{ uri: product?.images?.[0] || 'https://via.placeholder.com/100' }} style={styles.productImg} />
+                  {product?.images?.[0] ? (
+                    <Image source={{ uri: product.images[0] }} style={styles.productImg} />
+                  ) : (
+                    <PlaceholderImage style={styles.productImg} label="" size={20} />
+                  )}
                   <View style={styles.productDetails}>
                     <Text style={styles.productTitle}>{product?.title}</Text>
                     <Text style={styles.productPrice}>₹{order.amount}</Text>
                     <Text style={styles.partnerText}>
-                      {isBuyer ? `Seller: ${order.seller.name}` : `Buyer: ${order.buyer.name}`}
+                      {isBuyer ? `Seller: ${order.seller?.name || 'User'}` : `Buyer: ${order.buyer?.name || 'User'}`}
                     </Text>
                   </View>
                 </View>
@@ -117,7 +167,7 @@ export default function ProfileScreen() {
                   <View style={styles.actionBox}>
                     <Text style={styles.actionHint}>Have you received the item from the seller?</Text>
                     <Button 
-                      title="Item Received - Release Funds" 
+                      title="Item Received" 
                       onPress={() => handleReleaseEscrow(order._id)} 
                     />
                   </View>

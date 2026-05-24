@@ -20,7 +20,7 @@ const productSchema: Schema = new Schema(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     category: { type: String, required: true },
-    images: { type: [String], default: [] },
+    images: { type: [String], required: true },
     condition: { 
       type: String, 
       enum: ['New', 'Like New', 'Good', 'Used', 'Fair', 'Poor'], 

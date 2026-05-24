@@ -17,7 +17,6 @@ import reviewRoutes from "./routes/reviewRoutes";
 import { seedAdmin } from "./utils/seedAdmin"; // ✅ Imported properly
 import { seedTransactions } from "./utils/seedTransactions";
 import adminRoutes from "./routes/adminRoutes";
-import debugRoutes from "./routes/debugRoutes";
 
 dotenv.config();
 
@@ -55,7 +54,6 @@ const startServer = async () => {
     app.use("/api/orders", orderRoutes);
     app.use("/api/reviews", reviewRoutes);
     app.use("/api/notifications", notificationRoutes);
-    app.use("/api/debug", debugRoutes); // Temporary debug routes
     app.use("/api/admin", adminRoutes);
     
     app.use(errorHandler);

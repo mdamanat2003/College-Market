@@ -8,29 +8,7 @@ export const seedTransactions = async () => {
   try {
     const existing = await Order.countDocuments({ status: { $in: ['Completed', 'Cancelled'] } });
     if (existing > 0) {
-      console.log('⟳ Past transactions already exist, skipping order seed.');
-
-      // But ensure admin has notifications for past orders — if none, create them from existing orders
-      const admin = await User.findOne({ email: 'admin@campuscart.com' });
-      if (admin) {
-        const adminNotifs = await Notification.countDocuments({ recipient: admin._id });
-        if (adminNotifs === 0) {
-          console.log('ℹ️ Creating notifications for existing past transactions');
-          const orders = await Order.find({ status: { $in: ['Completed', 'Cancelled'] } }).limit(200).sort({ updatedAt: -1 });
-          const notifBatch: any[] = [];
-          for (const ord of orders) {
-            notifBatch.push({
-              recipient: admin._id,
-              type: 'Order',
-              title: ord.status === 'Completed' ? 'Order completed' : 'Order cancelled',
-              message: `Order #${String(ord._id).slice(-6).toUpperCase()} is ${ord.status}.`,
-              relatedId: ord._id,
-            });
-          }
-          if (notifBatch.length) await Notification.insertMany(notifBatch);
-        }
-      }
-
+      console.log('⟳ Past transactions already exist, skipping seed.');
       return;
     }
 

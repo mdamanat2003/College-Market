@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform } from 'react-native';
+import { 
+  View, Text, StyleSheet, Image, ScrollView, 
+  TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform 
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -22,6 +25,9 @@ export default function ProductDetailsScreen() {
   const [isChatStarting, setIsChatStarting] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  
+  // Carousel ki width dynamically set karne ke liye (Web aur Mobile dono par perfect chalega)
+  const [carouselWidth, setCarouselWidth] = useState(width);
 
   const isWebLarge = Platform.OS === 'web' && width > 768;
 
@@ -53,7 +59,9 @@ export default function ProductDetailsScreen() {
   const sellerId = typeof product.seller === 'object' ? product.seller?._id : product.seller;
   const isOwner = user?._id === sellerId;
   const canChat = Boolean(sellerId) && !isOwner;
-  const mainImage = product.images?.[0];
+  
+  // Ab humein array of images chahiye
+  const images = product.images || [];
 
   const handleWishlist = async () => {
     if (!user) {
@@ -82,10 +90,7 @@ export default function ProductDetailsScreen() {
       router.push('/(auth)/login');
       return;
     }
-
-    if (!sellerId) {
-      return;
-    }
+    if (!sellerId) return;
 
     setIsChatStarting(true);
     try {
@@ -103,7 +108,6 @@ export default function ProductDetailsScreen() {
       router.push('/(auth)/login');
       return;
     }
-
     router.push(`/checkout/${product._id}`);
   };
 
@@ -125,13 +129,42 @@ export default function ProductDetailsScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.mainLayout, isWebLarge && styles.mainLayoutWeb]}>
-          <View style={[styles.imageSection, isWebLarge && { flex: 1 }]}>
-            {mainImage ? (
-              <Image source={{ uri: mainImage }} style={styles.mainImage} resizeMode="cover" />
-            ) : (
-              <PlaceholderImage style={styles.mainImage} size={42} />
+          
+          {/* 👇 SWIPEABLE IMAGE CAROUSEL SECTION 👇 */}
+          <View 
+            style={[styles.imageSection, isWebLarge && { flex: 1 }]}
+            onLayout={(e) => setCarouselWidth(e.nativeEvent.layout.width)}
+          >
+            <ScrollView 
+              horizontal 
+              pagingEnabled 
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={carouselWidth}
+              decelerationRate="fast"
+            >
+              {images.length > 0 ? (
+                images.map((img: string, index: number) => (
+                  <View key={index} style={{ width: carouselWidth, height: 400 }}>
+                    <Image source={{ uri: img }} style={styles.mainImage} resizeMode="cover" />
+                  </View>
+                ))
+              ) : (
+                <View style={{ width: carouselWidth, height: 400 }}>
+                  <PlaceholderImage style={styles.mainImage} size={42} />
+                </View>
+              )}
+            </ScrollView>
+
+            {/* Pagination Dots (Agar 1 se zyada images hain) */}
+            {images.length > 1 && (
+              <View style={styles.paginationContainer}>
+                {images.map((_: any, index: number) => (
+                  <View key={index} style={styles.dot} />
+                ))}
+              </View>
             )}
           </View>
+          {/* 👆 CAROUSEL END 👆 */}
 
           <View style={[styles.detailsSection, isWebLarge && { flex: 1, paddingLeft: SPACING.xl }]}>
             <Text style={styles.title}>{product.title}</Text>
@@ -196,8 +229,14 @@ const styles = StyleSheet.create({
   scrollContent: { padding: SPACING.lg, alignItems: 'center' },
   mainLayout: { width: '100%', maxWidth: 1200, flexDirection: 'column' },
   mainLayoutWeb: { flexDirection: 'row', alignItems: 'flex-start' },
-  imageSection: { width: '100%', backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, overflow: 'hidden' },
-  mainImage: { width: '100%', height: 400 },
+  
+  /* Naya Image Section Design */
+  imageSection: { width: '100%', backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, overflow: 'hidden', position: 'relative' },
+  mainImage: { width: '100%', height: '100%' },
+  paginationContainer: { position: 'absolute', bottom: 15, width: '100%', flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255, 255, 255, 0.9)', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 2, elevation: 3 },
+  /* ---------------------- */
+
   detailsSection: { width: '100%', marginTop: SPACING.lg },
   title: { fontSize: 24, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.xs },
   price: { fontSize: 32, fontWeight: '800', color: COLORS.primary, marginBottom: SPACING.md },

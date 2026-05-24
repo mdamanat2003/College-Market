@@ -8,7 +8,7 @@ export default function Footer() {
         <p>CampusCart 2026. All rights reserved.</p>
         <div className="flex items-center justify-center gap-6">
           <Link to="/about" className="transition hover:text-white">About</Link>
-          <Link to="/" className="transition hover:text-white">Features</Link>
+          <Link to="/home#features" className="transition hover:text-white">Features</Link>
           <button onClick={() => window.scrollTo(0, 0)} className="transition hover:text-white">Back to top</button>
         </div>
       </div>

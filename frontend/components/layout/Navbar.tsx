@@ -44,6 +44,14 @@ export const Navbar = () => {
 
       <View style={styles.rightIcons}>
         <TouchableOpacity
+          style={styles.homeBtn}
+          onPress={() => router.push('/home')}
+        >
+          <Ionicons name="home-outline" size={18} color={COLORS.text} />
+          <Text style={styles.homeBtnText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.sellBtn}
           onPress={() => router.push('/add-product')}
         >
@@ -147,6 +155,25 @@ const styles = StyleSheet.create({
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+
+  homeBtn: {
+    backgroundColor: COLORS.surface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 8,
+    borderRadius: RADIUS.round,
+    marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+
+  homeBtnText: {
+    color: COLORS.text,
+    fontWeight: '600',
+    fontSize: 14,
+    marginLeft: 6,
   },
 
   sellBtn: {

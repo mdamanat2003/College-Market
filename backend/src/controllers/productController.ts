@@ -3,9 +3,10 @@ import Product from '../models/Product';
 import Notification from '../models/Notification'; // Naya Notification model
 import { asyncHandler } from '../utils/asyncHandler';
 
-// Auth Request type jisme user object hoga
+// Auth Request type jisme user object aur multer files ho sakein
 interface AuthRequest extends Request {
   user?: any;
+  files?: any; // Multer multiple files ke liye
 }
 
 // @desc    Toggle Wishlist (Add/Remove) & Send Notification
@@ -20,7 +21,6 @@ export const toggleWishlist = asyncHandler(async (req: AuthRequest, res: Respons
     throw new Error("Product not found");
   }
 
-  // Agar purane products me wishlistedBy array nahi hai, toh empty array bana do
   if (!product.wishlistedBy) {
     product.wishlistedBy = [];
   }
@@ -28,7 +28,6 @@ export const toggleWishlist = asyncHandler(async (req: AuthRequest, res: Respons
   const isWishlisted = product.wishlistedBy.some((id: any) => id.toString() === buyerId.toString());
 
   if (isWishlisted) {
-    // 1. Agar pehle se hai, toh remove kar do (Unlike)
     product.wishlistedBy = product.wishlistedBy.filter(
       (id: any) => id.toString() !== buyerId.toString()
     );
@@ -36,11 +35,9 @@ export const toggleWishlist = asyncHandler(async (req: AuthRequest, res: Respons
     
     res.status(200).json({ success: true, message: "Removed from wishlist", isWishlisted: false });
   } else {
-    // 2. Agar nahi hai, toh add kar do (Like)
     product.wishlistedBy.push(buyerId);
     await product.save();
 
-    // 3. Seller ko Notification bhejo (Agar seller khud apna product like na kar raha ho)
     if (product.seller.toString() !== buyerId.toString()) {
       try {
         const notification = await Notification.create({
@@ -68,19 +65,17 @@ export const toggleWishlist = asyncHandler(async (req: AuthRequest, res: Respons
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const { category, search } = req.query;
   
-  // Base query: Sirf available products dikhao
   let query: any = { status: 'Available' };
 
   if (category) query.category = category;
   
-  // Basic search filter (Title me keyword search karega)
   if (search) {
     query.title = { $regex: search, $options: 'i' };
   }
 
   const products = await Product.find(query)
-    .populate('seller', 'name avatar college') // Seller ki sirf ye 3 details laani hai
-    .sort({ createdAt: -1 }); // Latest sabse upar
+    .populate('seller', 'name avatar college') 
+    .sort({ createdAt: -1 }); 
 
   res.json({ success: true, count: products.length, products });
 });
@@ -89,7 +84,7 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 // @route   GET /api/products/:id
 export const getProductById = asyncHandler(async (req: Request, res: Response) => {
   const product = await Product.findById(req.params.id)
-    .populate('seller', 'name avatar college phone'); // Yahan phone number bhi denge contact ke liye
+    .populate('seller', 'name avatar college phone'); 
 
   if (!product) {
     res.status(404);
@@ -99,21 +94,63 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
   res.json({ success: true, product });
 });
 
-// @desc    Create a new product listing (Protected)
+// @desc    Create a new product listing (Protected - Supports Multi-Image & Links)
 // @route   POST /api/products
 export const createProduct = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { title, description, price, category, condition, images, college } = req.body;
+  try {
+    console.log("📥 FRONTEND SE DATA AAYA:");
+    console.log("Body Data:", req.body);
+    console.log("Files Data:", req.files);
 
-  const product = await Product.create({
-    seller: req.user._id,
-    title,
-    description,
-    price,
-    category,
-    condition,
-    images,
-    college: college || req.user.college, // Agar form me nahi diya, toh user profile ka le lenge
-  });
+    const { title, description, price, category, condition, college, imageLinks } = req.body;
 
-  res.status(201).json({ success: true, product });
+    let finalImagesArray: string[] = [];
+
+    // 1. Links check
+    if (imageLinks) {
+      if (Array.isArray(imageLinks)) {
+        finalImagesArray = [...imageLinks];
+      } else {
+        finalImagesArray.push(imageLinks);
+      }
+    }
+
+    // 2. Local Files check
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      req.files.forEach((file: any) => {
+        const base64Image = file.buffer.toString('base64');
+        const dataUri = `data:${file.mimetype};base64,${base64Image}`;
+        finalImagesArray.push(dataUri);
+      });
+    }
+
+    if (finalImagesArray.length === 0) {
+      console.log("❌ ERROR: Koi photo nahi mili!");
+      res.status(400);
+      throw new Error('Bhai, kam se kam ek product image ya link dena zaroori hai.');
+    }
+
+    console.log("✅ Final Images Array Taiyar:", finalImagesArray.length, "images");
+
+    // 3. Database Save
+    const product = await Product.create({
+      seller: req.user._id,
+      title,
+      description,
+      price: Number(price),
+      category,
+      condition,
+      images: finalImagesArray,
+      college: college || req.user.college || 'N/A', // 👈 'N/A' add kiya taaki empty na jaye
+    });
+
+    console.log("🎉 SUCCESS: Product Save Ho Gaya!");
+    res.status(201).json({ success: true, product });
+
+  } catch (error) {
+    // 👇 YEH LINE HUME ASLI GUNEHGAAR BATAYEGI 👇
+    console.error("🔥🔥🔥 BACKEND CRASH DETAILS 🔥🔥🔥");
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server crash details printed in backend terminal", error });
+  }
 });

@@ -43,7 +43,7 @@ export default function RootLayout() {
     const inAuthGroup = currentSegment === '(auth)';
     const inAdminRoute = currentSegment === 'admin';
     const inTabsGroup = currentSegment === '(tabs)';
-    const isPublicLanding = pathname === '/' && !inTabsGroup;
+    const isPublicRoute = (pathname === '/home' || pathname === '/about' || pathname === '/contact') && !inTabsGroup;
 
     if (inAdminRoute && (!user || user.role !== 'admin')) {
       router.replace('/(auth)/login');
@@ -51,13 +51,13 @@ export default function RootLayout() {
     }
 
     if (!user && !inAuthGroup) {
-      if (isPublicLanding) {
+      if (isPublicRoute) {
         return;
       }
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
       router.replace('/(tabs)');
-    } else if (user && isPublicLanding) {
+    } else if (user && pathname === '/home' && !inTabsGroup) {
       router.replace('/(tabs)');
     }
   }, [user, segments, pathname, isReady, router]);

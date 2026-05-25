@@ -11,11 +11,13 @@ import {
   Alert,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isAdminLogin, setIsAdminLogin] = useState(false);
   const router = useRouter();
@@ -94,14 +96,28 @@ export default function Login() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor="#9ca3af"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.passwordInputWrap}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="••••••••"
+                placeholderTextColor="#9ca3af"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword((current) => !current)}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              >
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color="#6b7280"
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <TouchableOpacity
@@ -158,6 +174,21 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: "#111827",
+  },
+  passwordInputWrap: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  passwordInput: {
+    paddingRight: 52,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 14,
+    height: 44,
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   forgotPassword: { alignSelf: "flex-end" },
   forgotPasswordText: { color: "#2563eb", fontWeight: "500", fontSize: 14 },

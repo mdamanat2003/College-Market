@@ -247,6 +247,17 @@ export default function AdminDashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/requests' as any)}>
+          <View style={[styles.iconBox, { backgroundColor: '#FCE7F6' }]}>
+            <Ionicons name="mail-outline" size={24} color="#BE185D" />
+          </View>
+          <View style={styles.moduleInfo}>
+            <Text style={styles.moduleTitle}>Manage Requests</Text>
+            <Text style={styles.moduleDesc}>View contact form submissions from users</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+        </TouchableOpacity>
+
       </ScrollView>
     </View>
   );

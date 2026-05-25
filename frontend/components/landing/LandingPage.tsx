@@ -2,10 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { io, Socket } from 'socket.io-client';
 
 import Footer from '../layout/Footer';
 import { PublicNavbar } from '../layout/PublicNavbar';
+import { useChatStore } from '../../store/chatStore';
 import { SPACING } from '../../theme/colors';
+
+const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL
+  || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '')
+  || 'http://localhost:3001';
 
 const featureCards = [
   { title: 'Secure Escrow Payments', description: 'Funds stay protected until the deal is completed.', icon: 'shield-checkmark-outline' as const },
@@ -62,6 +68,7 @@ export default function LandingPage() {
   const scrollRef = useRef<ScrollView>(null);
   const reviewsScrollRef = useRef<ScrollView>(null); 
   const scrollOffset = useRef(0); 
+  const reviewSocketRef = useRef<Socket | null>(null);
   
   // Nayi States Form ke liye
   const [reviewsList, setReviewsList] = useState(initialReviews);
@@ -81,6 +88,41 @@ export default function LandingPage() {
   const isMobile = width < 520;
   const isMockupCompact = width < 1120;
   const isCompact = width < 380;
+
+  // Socket from global chat store — used to receive live review events
+  const socket = useChatStore((s) => s.socket);
+
+  useEffect(() => {
+    const activeSocket = socket || reviewSocketRef.current || io(SOCKET_URL);
+
+    if (!socket && !reviewSocketRef.current) {
+      reviewSocketRef.current = activeSocket;
+    }
+
+    const handleNewReview = (review: any) => {
+      console.log('[LandingPage] newReview received', review);
+      const name = review.reviewerName || (review.reviewer && review.reviewer.name) || 'Someone';
+      const newEntry = {
+        id: review._id || Date.now(),
+        name,
+        time: 'JUST NOW',
+        text: `"${review.comment || review.text || ''}"`,
+        initial: name.charAt(0).toUpperCase(),
+      };
+
+      setReviewsList((prev) => [newEntry, ...prev]);
+    };
+
+    activeSocket.on('newReview', handleNewReview);
+    return () => {
+      activeSocket.off('newReview', handleNewReview);
+
+      if (!socket && reviewSocketRef.current === activeSocket) {
+        activeSocket.disconnect();
+        reviewSocketRef.current = null;
+      }
+    };
+  }, [socket]);
 
   useEffect(() => {
     const gradientAnimation = Animated.loop(Animated.timing(welcomeGradient, { toValue: 1, duration: 9000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }));
@@ -266,7 +308,7 @@ export default function LandingPage() {
             ))}
           </View>
 
-          {/* Live Rating & Testimonial Section */}
+          {/* Live Review & Rating Section */}
           <View style={styles.ratingSection}>
             <View style={styles.ratingHeader}>
               <View style={styles.ratingStarsRow}>
@@ -274,13 +316,13 @@ export default function LandingPage() {
                   <Ionicons key={i} name="star" size={24} color="#fbbf24" />
                 ))}
               </View>
-              <Text style={styles.ratingNumber}>4.9 RATING</Text>
-              <Text style={styles.ratingSubtitle}>BASED ON {reviewsList.length} CAMPUS REVIEWS</Text>
+              <Text style={styles.ratingNumber}>4.9 REVIEW SCORE</Text>
+              <Text style={styles.ratingSubtitle}>BASED ON {reviewsList.length} CAMPUS REVIEWS & RATINGS</Text>
               
-              {/* 👇 Naya "Write a Review" Button 👇 */}
+              {/* 👇 Naya "Write a Review & Rating" Button 👇 */}
               <TouchableOpacity style={styles.writeReviewButton} onPress={() => setReviewModalVisible(true)}>
                 <Ionicons name="pencil" size={14} color="#000" />
-                <Text style={styles.writeReviewText}>Write a Review</Text>
+                <Text style={styles.writeReviewText}>Write a Review & Rating</Text>
               </TouchableOpacity>
               
               <View style={styles.ratingDivider} />
@@ -339,7 +381,7 @@ export default function LandingPage() {
       >
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Rate Your Experience</Text>
+            <Text style={styles.modalTitle}>Write a Review & Rating</Text>
             
             {/* Interactive Stars */}
             <View style={styles.modalStarsContainer}>
@@ -373,7 +415,7 @@ export default function LandingPage() {
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalSubmitBtn} onPress={handleSubmitReview}>
-                <Text style={styles.modalSubmitText}>Submit Review</Text>
+                <Text style={styles.modalSubmitText}>Submit Review & Rating</Text>
               </TouchableOpacity>
             </View>
           </View>

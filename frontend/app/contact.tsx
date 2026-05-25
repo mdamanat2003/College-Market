@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
@@ -8,6 +8,9 @@ import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
 export default function Contact() {
   const scrollRef = useRef<ScrollView>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
   const { width } = useWindowDimensions();
   const isCompact = width < 640;
   const isTiny = width < 390;
@@ -33,7 +36,7 @@ export default function Contact() {
         <View style={[styles.formCard, isTiny && styles.formCardTiny]}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Name</Text>
-            <TextInput style={styles.input} placeholder="Your name" placeholderTextColor={COLORS.textMuted} />
+            <TextInput style={styles.input} placeholder="Your name" placeholderTextColor={COLORS.textMuted} value={name} onChangeText={setName} />
           </View>
 
           <View style={styles.inputGroup}>
@@ -43,6 +46,8 @@ export default function Contact() {
               placeholder="you@college.edu"
               placeholderTextColor={COLORS.textMuted}
               keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -55,10 +60,22 @@ export default function Contact() {
               multiline
               numberOfLines={5}
               textAlignVertical="top"
+              value={message}
+              onChangeText={setMessage}
             />
           </View>
 
-          <TouchableOpacity style={styles.primaryButton}>
+          <TouchableOpacity style={styles.primaryButton} onPress={async () => {
+            try {
+              const { api } = await import('../services/api');
+              await api.post('/requests', { name, email, message });
+              setName(''); setEmail(''); setMessage('');
+              alert('Message sent — admin will review it soon.');
+            } catch (err) {
+              console.error('Send message failed', err);
+              alert('Failed to send message');
+            }
+          }}>
             <Text style={styles.primaryButtonText}>Send Message</Text>
             <Ionicons name="send-outline" size={16} color="#fff" />
           </TouchableOpacity>

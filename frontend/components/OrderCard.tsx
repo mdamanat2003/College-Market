@@ -102,7 +102,7 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
         </View>
       )}
 
-      {/* RATING BUTTON: Sirf tab dikhega jab order complete ho */}
+      {/* REVIEW BUTTON: Sirf tab dikhega jab order complete ho */}
       {item.status === 'Completed' && !item.hasReviewed && (
         <View style={styles.actionsRow}>
            <TouchableOpacity
@@ -113,7 +113,7 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
                setRatingModalVisible(true);
              }}
            >
-             <Text style={styles.rateBtnText}>⭐ Rate Seller</Text>
+             <Text style={styles.rateBtnText}>⭐ Review Seller</Text>
            </TouchableOpacity>
         </View>
       )}
@@ -145,8 +145,8 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
       <Modal visible={ratingModalVisible} transparent={true} animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Rate {item.seller?.name || 'Seller'}</Text>
-            <Text style={{color: '#666', marginBottom: 15, textAlign: 'center'}}>How was your experience buying this item?</Text>
+            <Text style={styles.modalTitle}>Review & Rate {item.seller?.name || 'Seller'}</Text>
+            <Text style={{color: '#666', marginBottom: 15, textAlign: 'center'}}>One review includes both your star rating and feedback.</Text>
             
             {/* 5-Star Interactive UI */}
             <View style={styles.starsContainer}>

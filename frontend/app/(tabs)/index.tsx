@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
+import Footer from '../../components/layout/Footer';
 import { Navbar } from '../../components/layout/Navbar';
 import { ProductCard } from '../../components/cards/ProductCard';
 import { useProductStore } from '../../store/productStore';
@@ -11,8 +12,13 @@ export default function MarketplaceHome() {
   const { products, fetchProducts, isLoading } = useProductStore();
   const [activeCategory, setActiveCategory] = useState('All');
   const { width } = useWindowDimensions();
+  const listRef = useRef<FlatList<any>>(null);
 
   const numColumns = width > 1200 ? 4 : width > 768 ? 3 : width > 480 ? 2 : 1;
+
+  const handleBackToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   useEffect(() => {
     fetchProducts(activeCategory);
@@ -41,18 +47,25 @@ export default function MarketplaceHome() {
           <View style={styles.loader}>
             <ActivityIndicator size="large" color={COLORS.primary} />
           </View>
-        ) : products.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No products found in this category.</Text>
-          </View>
         ) : (
           <FlatList
+            ref={listRef}
             key={numColumns}
             data={products}
             keyExtractor={(item) => item._id}
             numColumns={numColumns}
             contentContainerStyle={styles.gridList}
             columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>No products found in this category.</Text>
+              </View>
+            }
+            ListFooterComponent={
+              <View style={styles.footerWrapper}>
+                <Footer onBackToTop={handleBackToTop} />
+              </View>
+            }
             renderItem={({ item }) => (
               <View style={[styles.cardWrapper, { width: `${100 / numColumns}%` }]}>
                 <ProductCard product={item} />
@@ -72,9 +85,8 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    maxWidth: 1400,
     width: '100%',
-    alignSelf: 'center',
+    alignSelf: 'stretch',
   },
   categoryContainer: {
     paddingVertical: SPACING.md,
@@ -106,7 +118,9 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   gridList: {
-    padding: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: 0,
   },
   row: {
     justifyContent: 'flex-start',
@@ -128,5 +142,8 @@ const styles = StyleSheet.create({
   emptyText: {
     color: COLORS.textMuted,
     fontSize: 16,
+  },
+  footerWrapper: {
+    marginHorizontal: -SPACING.md,
   },
 });

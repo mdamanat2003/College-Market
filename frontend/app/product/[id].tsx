@@ -25,6 +25,7 @@ export default function ProductDetailsScreen() {
   const [isChatStarting, setIsChatStarting] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   
   // Carousel ki width dynamically set karne ke liye (Web aur Mobile dono par perfect chalega)
   const [carouselWidth, setCarouselWidth] = useState(width);
@@ -35,7 +36,14 @@ export default function ProductDetailsScreen() {
     const loadProduct = async () => {
       if (!id) return;
 
+      setLoadFailed(false);
       const data = await fetchProductById(id as string);
+      if (!data) {
+        setProduct(null);
+        setLoadFailed(true);
+        return;
+      }
+
       setProduct(data);
 
       if (data && user) {
@@ -48,10 +56,20 @@ export default function ProductDetailsScreen() {
     loadProduct();
   }, [id, fetchProductById, user]);
 
-  if (isLoading || !product) {
+  if (isLoading && !loadFailed) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  if (loadFailed || !product) {
+    return (
+      <View style={styles.loaderContainer}>
+        <Text style={styles.unavailableTitle}>Product unavailable</Text>
+        <Text style={styles.unavailableText}>This listing or its seller account is no longer available.</Text>
+        <Button title="Go back" onPress={() => router.back()} variant="outline" />
       </View>
     );
   }
@@ -223,6 +241,8 @@ export default function ProductDetailsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  unavailableTitle: { fontSize: 20, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.sm },
+  unavailableText: { fontSize: 14, color: COLORS.textMuted, marginBottom: SPACING.lg, textAlign: 'center' },
   header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, borderBottomWidth: 1, borderBottomColor: COLORS.border, zIndex: 10 },
   backBtn: { padding: SPACING.xs },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: '600', color: COLORS.text, textAlign: 'center', marginHorizontal: SPACING.md },

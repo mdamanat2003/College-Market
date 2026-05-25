@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
+import { useAuthStore } from '../../store/authStore';
 
 type ActiveRoute = 'home' | 'about' | 'contact';
 
@@ -13,6 +14,7 @@ type PublicNavbarProps = {
 
 export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { width } = useWindowDimensions();
   const isCompact = width < 720;
@@ -28,6 +30,37 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
     setIsMenuOpen(false);
     router.push(href as never);
   };
+
+  const profileInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
+  const authAction = user ? (
+    <TouchableOpacity
+      style={styles.profileButton}
+      onPress={() => navigateTo('/profile')}
+      accessibilityRole="button"
+      accessibilityLabel="Open profile"
+    >
+      <Text style={styles.profileInitial}>{profileInitial}</Text>
+    </TouchableOpacity>
+  ) : (
+    <TouchableOpacity style={styles.loginButton} onPress={() => navigateTo('/(auth)/login')}>
+      <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
+      <Text style={styles.loginButtonText}>Login</Text>
+    </TouchableOpacity>
+  );
+
+  const mobileAuthAction = user ? (
+    <TouchableOpacity style={styles.mobileProfileButton} onPress={() => navigateTo('/profile')}>
+      <View style={styles.mobileProfileIcon}>
+        <Text style={styles.profileInitial}>{profileInitial}</Text>
+      </View>
+      <Text style={styles.loginButtonText}>Profile</Text>
+    </TouchableOpacity>
+  ) : (
+    <TouchableOpacity style={styles.mobileLoginButton} onPress={() => navigateTo('/(auth)/login')}>
+      <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
+      <Text style={styles.loginButtonText}>Login</Text>
+    </TouchableOpacity>
+  );
 
   if (isCompact) {
     return (
@@ -75,10 +108,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
               );
             })}
 
-            <TouchableOpacity style={styles.mobileLoginButton} onPress={() => navigateTo('/(auth)/login')}>
-              <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
-              <Text style={styles.loginButtonText}>Login</Text>
-            </TouchableOpacity>
+            {mobileAuthAction}
           </View>
         )}
       </View>
@@ -112,13 +142,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
           );
         })}
 
-        <TouchableOpacity
-          style={[styles.loginButton, isCompact && styles.navItemCompact]}
-          onPress={() => navigateTo('/(auth)/login')}
-        >
-          <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
-          <Text style={styles.loginButtonText}>Login</Text>
-        </TouchableOpacity>
+        {authAction}
       </View>
     </View>
   );
@@ -242,6 +266,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  profileButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInitial: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
+  },
   loginButtonText: {
     color: COLORS.primary,
     fontSize: 14,
@@ -288,5 +325,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  mobileProfileButton: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  mobileProfileIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -8,11 +8,26 @@ interface AuthRequest extends Request { user?: any; }
 
 // 1. Submit a Review
 export const createReview = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { orderId, rating, comment } = req.body;
+  const { orderId, rating: rawRating, comment } = req.body;
 
-  if (!rating || rating < 1 || rating > 5) {
+  // Debug logs to diagnose saving issues
+  console.log('[createReview] incoming body:', { orderId, rating: rawRating, comment });
+  console.log('[createReview] auth user:', req.user ? { id: req.user._id, name: req.user.name } : null);
+
+  if (!req.user || !req.user._id) {
+    res.status(401);
+    throw new Error('Not authenticated');
+  }
+
+  if (!orderId) {
     res.status(400);
-    throw new Error("Rating must be between 1 and 5 stars");
+    throw new Error('orderId is required');
+  }
+
+  const rating = Number(rawRating);
+  if (Number.isNaN(rating) || rating < 1 || rating > 5) {
+    res.status(400);
+    throw new Error('Rating must be a number between 1 and 5');
   }
 
   const order = await Order.findById(orderId);
@@ -21,13 +36,11 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
     throw new Error("Order not found");
   }
 
-  // Check karo ki order complete ho chuka hai ya nahi
   if (order.status !== 'Completed') {
     res.status(400);
     throw new Error("You can only review after the order is completed");
   }
 
-  // Check karo ki kya is order ka review pehle hi toh nahi de diya
   const alreadyReviewed = await Review.findOne({ order: orderId, reviewer: req.user._id });
   if (alreadyReviewed) {
     res.status(400);
@@ -43,7 +56,7 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
     comment
   });
 
-  // Optional: Seller ki profile par average rating calculation recalculate karna
+  // Recalculate Average Rating
   const sellerReviews = await Review.find({ reviewee: order.seller });
   const totalRating = sellerReviews.reduce((acc, item) => item.rating + acc, 0);
   const avgRating = sellerReviews.length > 0 ? totalRating / sellerReviews.length : 0;
@@ -52,6 +65,17 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
     rating: avgRating,
     ratingCount: sellerReviews.length
   });
+
+  // ⚡ REAL-TIME MAGIC: Frontend ko live update bhejein
+  const io = req.app.get('io');
+  if (io) {
+    // Ham "newReview" event emit kar rahe hain
+    // Saath me reviewer ka naam bhi bhej rahe hain taaki UI update ho sake
+    io.emit('newReview', {
+      ...review.toObject(),
+      reviewerName: req.user.name // Agar aapke User model me 'name' field hai
+    });
+  }
 
   res.status(201).json({ success: true, message: "Review submitted successfully!", review });
 });

@@ -51,11 +51,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (userData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post('/auth/register', userData);
-      const { token, ...newUserData } = response.data;
-      
-      await AsyncStorage.setItem('userToken', token);
-      set({ user: newUserData, token, isLoading: false });
+      await api.post('/auth/register', userData);
+      await AsyncStorage.removeItem('userToken');
+      set({ user: null, token: null, isLoading: false });
       return true;
     } catch (error: any) {
       set({ 

@@ -4,6 +4,7 @@ import {
   StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Alert 
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
 
 export default function Register() {
@@ -11,6 +12,8 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
   const registerStore = useAuthStore((s) => s.register);
@@ -53,7 +56,7 @@ export default function Register() {
       const ok = await registerStore({ name, email, password, phone: '0000000000' });
       if (ok) {
         Alert.alert('Success! 🎉', 'Your account has been created.');
-        router.push('/login');
+        router.replace('/(auth)/login');
       } else {
         setErrorMessage(authError || 'Registration failed.');
       }
@@ -111,26 +114,54 @@ export default function Register() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Create Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. Campus@123"
-                placeholderTextColor="#9ca3af"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
+              <View style={styles.passwordInputWrap}>
+                <TextInput
+                  style={[styles.input, styles.passwordInput]}
+                  placeholder="e.g. Campus@123"
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword((current) => !current)}
+                  accessibilityRole="button"
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={22}
+                    color="#6b7280"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Retype your password"
-                placeholderTextColor="#9ca3af"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
+              <View style={styles.passwordInputWrap}>
+                <TextInput
+                  style={[styles.input, styles.passwordInput]}
+                  placeholder="Retype your password"
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowConfirmPassword((current) => !current)}
+                  accessibilityRole="button"
+                  accessibilityLabel={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={22}
+                    color="#6b7280"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -180,6 +211,21 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1, borderColor: '#e5e7eb', backgroundColor: '#f9fafb',
     borderRadius: 12, padding: 16, fontSize: 16, color: '#111827',
+  },
+  passwordInputWrap: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  passwordInput: {
+    paddingRight: 52,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 14,
+    height: 44,
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hintText: { fontSize: 12, color: '#059669', fontWeight: '500', marginTop: 2 },
   button: {

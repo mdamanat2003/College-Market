@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -25,6 +25,33 @@ export default function RootLayout() {
   const pathname = usePathname();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') {
+      return;
+    }
+
+    const styleId = 'campuscart-web-reset';
+    if (document.getElementById(styleId)) {
+      return;
+    }
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      html, body, #root {
+        margin: 0;
+        min-height: 100%;
+        width: 100%;
+      }
+
+      body {
+        overflow-x: hidden;
+        background: ${COLORS.background};
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   // 1. Initial Auth Check
   useEffect(() => {
@@ -56,8 +83,6 @@ export default function RootLayout() {
       }
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
-      router.replace('/(tabs)');
-    } else if (user && pathname === '/home' && !inTabsGroup) {
       router.replace('/(tabs)');
     }
   }, [user, segments, pathname, isReady, router]);

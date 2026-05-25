@@ -74,21 +74,28 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const products = await Product.find(query)
-    .populate('seller', 'name avatar college') 
+    .populate('seller', 'name avatar college rating ratingCount') 
     .sort({ createdAt: -1 }); 
 
-  res.json({ success: true, count: products.length, products });
+  const productsWithSeller = products.filter((product: any) => product.seller);
+
+  res.json({ success: true, count: productsWithSeller.length, products: productsWithSeller });
 });
 
 // @desc    Get single product details
 // @route   GET /api/products/:id
 export const getProductById = asyncHandler(async (req: Request, res: Response) => {
   const product = await Product.findById(req.params.id)
-    .populate('seller', 'name avatar college phone'); 
+    .populate('seller', 'name avatar college phone rating ratingCount'); 
 
   if (!product) {
     res.status(404);
     throw new Error('Product not found');
+  }
+
+  if (!product.seller) {
+    res.status(404);
+    throw new Error('Seller account for this product is no longer available');
   }
 
   res.json({ success: true, product });

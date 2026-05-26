@@ -1,17 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { io, Socket } from 'socket.io-client';
+import axios from 'axios';
 
 import Footer from '../layout/Footer';
 import { PublicNavbar } from '../layout/PublicNavbar';
 import { useChatStore } from '../../store/chatStore';
+import { api, SOCKET_URL } from '../../services/api';
 import { SPACING } from '../../theme/colors';
-
-const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL
-  || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '')
-  || 'http://localhost:3001';
 
 const featureCards = [
   { title: 'Secure Escrow Payments', description: 'Funds stay protected until the deal is completed.', icon: 'shield-checkmark-outline' as const },
@@ -68,16 +66,18 @@ export default function LandingPage() {
   const scrollRef = useRef<ScrollView>(null);
   const reviewsScrollRef = useRef<ScrollView>(null); 
   const scrollOffset = useRef(0); 
+  const reviewsLoopWidth = useRef(0);
   const reviewSocketRef = useRef<Socket | null>(null);
   
   // Nayi States Form ke liye
   const [reviewsList, setReviewsList] = useState(initialReviews);
-  const extendedReviews = [...reviewsList, ...reviewsList, ...reviewsList, ...reviewsList]; // Loop ke liye duplicate
+  const extendedReviews = [...reviewsList, ...reviewsList];
   
   const [isReviewModalVisible, setReviewModalVisible] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newName, setNewName] = useState('');
   const [newReviewText, setNewReviewText] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const welcomeGradient = useRef(new Animated.Value(0)).current;
   const textColorAnim = useRef(new Animated.Value(0)).current; 
@@ -91,6 +91,32 @@ export default function LandingPage() {
 
   // Socket from global chat store — used to receive live review events
   const socket = useChatStore((s) => s.socket);
+
+  // Load persisted public reviews from backend on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const res = await api.get('/reviews/public?limit=40');
+        const fetched: any[] = res.data?.reviews || [];
+        if (!mounted) return;
+        if (fetched.length > 0) {
+          const mapped = fetched.map((r) => ({
+            id: r._id,
+            name: r.reviewerName || 'Someone',
+            time: r.createdAt ? new Date(r.createdAt).toLocaleString() : 'JUST NOW',
+            text: `"${r.comment || ''}"`,
+            initial: (r.reviewerName || 'S').charAt(0).toUpperCase(),
+          }));
+          setReviewsList(mapped);
+        }
+      } catch (err) {
+        console.warn('[LandingPage] failed to load public reviews', err);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     const activeSocket = socket || reviewSocketRef.current || io(SOCKET_URL);
@@ -110,7 +136,12 @@ export default function LandingPage() {
         initial: name.charAt(0).toUpperCase(),
       };
 
-      setReviewsList((prev) => [newEntry, ...prev]);
+      setReviewsList((prev) => {
+        if (prev.some((item) => String(item.id) === String(newEntry.id))) {
+          return prev;
+        }
+        return [newEntry, ...prev];
+      });
     };
 
     activeSocket.on('newReview', handleNewReview);
@@ -135,7 +166,10 @@ export default function LandingPage() {
       if (reviewsScrollRef.current && !isReviewModalVisible) { // Modal open hone par scroll rok do
         scrollOffset.current += scrollSpeed;
         reviewsScrollRef.current.scrollTo({ x: scrollOffset.current, animated: false });
-        if (scrollOffset.current > 4000) scrollOffset.current = 0;
+        if (reviewsLoopWidth.current > 0 && scrollOffset.current >= reviewsLoopWidth.current / 2) {
+          scrollOffset.current = 0;
+          reviewsScrollRef.current.scrollTo({ x: 0, animated: false });
+        }
       }
     }, 20); 
 
@@ -146,23 +180,59 @@ export default function LandingPage() {
     };
   }, [welcomeGradient, textColorAnim, isReviewModalVisible]);
 
-  const handleSubmitReview = () => {
-    if (!newName.trim() || !newReviewText.trim()) return;
+  const handleSubmitReview = async () => {
+    const trimmedName = newName.trim();
+    const trimmedReview = newReviewText.trim();
 
-    const newEntry = {
-      id: Date.now(),
-      name: newName,
-      time: 'JUST NOW',
-      text: `"${newReviewText}"`,
-      initial: newName.charAt(0).toUpperCase()
-    };
+    if (!trimmedName || !trimmedReview) {
+      Alert.alert('Missing Info', 'Please enter your name and review before submitting.');
+      return;
+    }
 
-    // Naya review list me sabse aage add kar diya
-    setReviewsList([newEntry, ...reviewsList]);
-    setReviewModalVisible(false);
-    setNewName('');
-    setNewReviewText('');
-    setNewRating(5);
+    try {
+      setIsSubmittingReview(true);
+
+      const { data } = await api.post('/reviews/public', {
+        reviewerName: trimmedName,
+        rating: newRating,
+        comment: trimmedReview,
+      });
+
+      const savedReview = data?.review;
+      if (savedReview) {
+        const newEntry = {
+          id: savedReview._id || Date.now(),
+          name: savedReview.reviewerName || trimmedName,
+          time: 'JUST NOW',
+          text: `"${savedReview.comment || trimmedReview}"`,
+          initial: (savedReview.reviewerName || trimmedName).charAt(0).toUpperCase(),
+        };
+
+        setReviewsList((prev) => [newEntry, ...prev]);
+      }
+
+      setReviewModalVisible(false);
+      setNewName('');
+      setNewReviewText('');
+      setNewRating(5);
+      Alert.alert('Thank You', 'Your review has been submitted successfully.');
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        console.error('[LandingPage] submit review failed', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          baseURL: error.config?.baseURL,
+          url: error.config?.url,
+        });
+      } else {
+        console.error('[LandingPage] submit review failed (non-axios)', error);
+      }
+
+      Alert.alert('Submit Failed', error?.response?.data?.message || 'Could not submit review. Please try again.');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const gradientLayerTwoOpacity = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1, 0] });
@@ -335,6 +405,9 @@ export default function LandingPage() {
               scrollEventThrottle={16}
               scrollEnabled={Platform.OS !== 'web'} 
               contentContainerStyle={styles.reviewsScrollContent}
+              onContentSizeChange={(width) => {
+                reviewsLoopWidth.current = width;
+              }}
             >
               {extendedReviews.map((review, index) => (
                 <View key={`${review.id}-${index}`} style={styles.reviewCard}>
@@ -414,8 +487,8 @@ export default function LandingPage() {
               <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setReviewModalVisible(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalSubmitBtn} onPress={handleSubmitReview}>
-                <Text style={styles.modalSubmitText}>Submit Review & Rating</Text>
+              <TouchableOpacity style={[styles.modalSubmitBtn, isSubmittingReview && styles.modalSubmitBtnDisabled]} onPress={handleSubmitReview} disabled={isSubmittingReview}>
+                <Text style={styles.modalSubmitText}>{isSubmittingReview ? 'Submitting...' : 'Submit Review & Rating'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -568,5 +641,6 @@ const styles = StyleSheet.create({
   modalCancelBtn: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', paddingVertical: 14, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   modalCancelText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   modalSubmitBtn: { flex: 1, backgroundColor: '#fbbf24', paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
+  modalSubmitBtnDisabled: { opacity: 0.6 },
   modalSubmitText: { color: '#000', fontWeight: '800', fontSize: 15 },
 });

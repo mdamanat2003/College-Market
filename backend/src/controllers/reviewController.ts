@@ -52,6 +52,7 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
     order: orderId,
     reviewer: req.user._id,
     reviewee: order.seller,
+    source: 'order',
     rating,
     comment
   });
@@ -78,4 +79,61 @@ export const createReview = asyncHandler(async (req: AuthRequest, res: Response)
   }
 
   res.status(201).json({ success: true, message: "Review submitted successfully!", review });
+});
+
+// 2. Submit a Public/Landing Review (no auth, no order)
+export const createPublicReview = asyncHandler(async (req: Request, res: Response) => {
+  const { reviewerName: rawReviewerName, rating: rawRating, comment: rawComment } = req.body;
+
+  console.log('[createPublicReview] incoming body:', req.body);
+
+  const reviewerName = (rawReviewerName || '').trim();
+  const comment = (rawComment || '').trim();
+  const rating = Number(rawRating);
+
+  console.log('[createPublicReview] parsed:', { reviewerName, comment, rating });
+
+  if (!reviewerName) {
+    res.status(400);
+    throw new Error('reviewerName is required');
+  }
+
+  if (!comment) {
+    res.status(400);
+    throw new Error('comment is required');
+  }
+
+  if (Number.isNaN(rating) || rating < 1 || rating > 5) {
+    res.status(400);
+    throw new Error('Rating must be a number between 1 and 5');
+  }
+
+  const review = await Review.create({
+    reviewerName,
+    source: 'public',
+    rating,
+    comment,
+  });
+
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('newReview', {
+      ...review.toObject(),
+      reviewerName,
+    });
+  }
+
+  res.status(201).json({
+    success: true,
+    message: 'Public review submitted successfully!',
+    review,
+  });
+});
+
+// Get public reviews (for landing page)
+export const getPublicReviews = asyncHandler(async (req: Request, res: Response) => {
+  // Return recent public reviews sorted by newest first, limit optional via query
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const reviews = await Review.find({ source: 'public' }).sort({ createdAt: -1 }).limit(limit).lean();
+  res.status(200).json({ success: true, reviews });
 });

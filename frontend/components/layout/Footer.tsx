@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
+import axios from 'axios';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { COLORS, SPACING } from '../../theme/colors';
+import { api } from '../../services/api';
 
 type FooterProps = {
   onBackToTop?: () => void;
@@ -25,6 +27,7 @@ export default function Footer({ onBackToTop }: FooterProps) {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewName, setReviewName] = useState('');
   const [reviewText, setReviewText] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const scrollToTop = () => {
     if (onBackToTop) {
@@ -39,12 +42,46 @@ export default function Footer({ onBackToTop }: FooterProps) {
     }
   };
 
-  const submitReview = () => {
-    setIsReviewVisible(false);
-    setReviewRating(5);
-    setReviewName('');
-    setReviewText('');
-    Alert.alert('Thank you!', 'Your review and rating have been submitted.');
+  const submitReview = async () => {
+    const trimmedName = reviewName.trim();
+    const trimmedReview = reviewText.trim();
+
+    if (!trimmedName || !trimmedReview) {
+      Alert.alert('Missing Info', 'Please enter your name and review before submitting.');
+      return;
+    }
+
+    try {
+      setIsSubmittingReview(true);
+
+      await api.post('/reviews/public', {
+        reviewerName: trimmedName,
+        rating: reviewRating,
+        comment: trimmedReview,
+      });
+
+      setIsReviewVisible(false);
+      setReviewRating(5);
+      setReviewName('');
+      setReviewText('');
+      Alert.alert('Thank you!', 'Your review and rating have been submitted.');
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        console.error('[Footer] submit review failed', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          baseURL: error.config?.baseURL,
+          url: error.config?.url,
+        });
+      } else {
+        console.error('[Footer] submit review failed (non-axios)', error);
+      }
+
+      Alert.alert('Submit Failed', error?.response?.data?.message || 'Could not submit review. Please try again.');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   return (
@@ -115,8 +152,8 @@ export default function Footer({ onBackToTop }: FooterProps) {
               <TouchableOpacity style={styles.cancelButton} onPress={() => setIsReviewVisible(false)}>
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.submitButton} onPress={submitReview}>
-                <Text style={styles.submitButtonText}>Submit Review</Text>
+              <TouchableOpacity style={[styles.submitButton, isSubmittingReview && styles.submitButtonDisabled]} onPress={submitReview} disabled={isSubmittingReview}>
+                <Text style={styles.submitButtonText}>{isSubmittingReview ? 'Submitting...' : 'Submit Review'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -226,6 +263,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
     backgroundColor: COLORS.primary,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
   },
   submitButtonText: {
     color: '#fff',

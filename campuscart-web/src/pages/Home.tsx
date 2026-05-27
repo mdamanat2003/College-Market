@@ -1,4 +1,3 @@
-import React from "react";
 import {
   ArrowRight, ShieldCheck, MessageCircle, Search, BadgeCheck,
   Sparkles, Users, Star, CreditCard, GraduationCap, CircleDollarSign,

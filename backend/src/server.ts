@@ -64,7 +64,7 @@ const startServer = async () => {
     // Serve frontend static files in production
     const frontendDist = path.join(__dirname, "../../campuscart-web/dist");
     app.use(express.static(frontendDist));
-    app.get("*", (_, res) => {
+    app.get("/{*path}", (_, res) => {
       res.sendFile(path.join(frontendDist, "index.html"));
     });
     

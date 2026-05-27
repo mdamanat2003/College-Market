@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import http from "http"; 
+import path from "path";
 import { Server } from "socket.io"; 
 
 import offerRoutes from "./routes/offerRoutes";
@@ -49,18 +50,23 @@ const startServer = async () => {
       console.log('🔌 Socket connected:', socket.id);
     });
 
-    app.get("/", (_, res) => res.send("Marketplace API is Running"));
-
     // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/products", productRoutes);
     app.use("/api/chat", chatRoutes);
     app.use("/api/offers", offerRoutes); 
     app.use("/api/orders", orderRoutes);
-    app.use("/api/reviews", reviewRoutes); // ✅ Review routes
-    app.use("/api/requests", requestRoutes); // Contact request routes
+    app.use("/api/reviews", reviewRoutes);
+    app.use("/api/requests", requestRoutes);
     app.use("/api/notifications", notificationRoutes);
     app.use("/api/admin", adminRoutes);
+
+    // Serve frontend static files in production
+    const frontendDist = path.join(__dirname, "../../campuscart-web/dist");
+    app.use(express.static(frontendDist));
+    app.get("*", (_, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
     
     app.use(errorHandler);
 

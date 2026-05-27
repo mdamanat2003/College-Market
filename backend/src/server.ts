@@ -62,7 +62,7 @@ const startServer = async () => {
     app.use("/api/admin", adminRoutes);
 
     // Serve frontend static files in production
-    const frontendDist = path.join(__dirname, "../../campuscart-web/dist");
+    const frontendDist = path.join(__dirname, "../../frontend/dist");
     app.use(express.static(frontendDist));
     app.get("/{*path}", (_, res) => {
       res.sendFile(path.join(frontendDist, "index.html"));

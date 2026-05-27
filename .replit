@@ -1,0 +1,4 @@
+run = "cd backend && npm start"
+
+[nix]
+channel = "stable-24_05"

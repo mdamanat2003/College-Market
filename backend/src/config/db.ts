@@ -32,14 +32,16 @@ const connectDB = async () => {
     console.error(error);
 
     const uri = process.env.MONGODB_URI ?? process.env.MONGO_URI ?? "";
-    const isAtlasAuthError =
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as { code?: number }).code === 8000;
 
-    if (isAtlasAuthError && uri.includes("mongodb+srv://")) {
-      console.warn("Atlas authentication failed (code 8000). Falling back to local MongoDB.");
+    const errAny: any = error;
+    const isAuthError = Boolean(
+      errAny?.code === 8000 ||
+      (errAny?.errorResponse?.errmsg && /auth|authentication failed|bad auth/i.test(String(errAny.errorResponse.errmsg))) ||
+      /authentication failed|bad auth/i.test(String(errAny?.message || errAny))
+    );
+
+    if (isAuthError && !uri.includes('127.0.0.1') && !uri.includes('localhost')) {
+      console.warn('Authentication to configured MongoDB failed. Falling back to local MongoDB.');
       try {
         const localConn = await mongoose.connect(localUri, {
           serverSelectionTimeoutMS: 5000,

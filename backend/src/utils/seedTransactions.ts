@@ -114,8 +114,9 @@ export const seedTransactions = async () => {
     try {
       const admin = await User.findOne({ email: 'admin@campuscart.com' });
       if (admin) {
+        const createdOrders = Array.isArray(created) ? created : [created];
         const notifBatch: any[] = [];
-        for (const ord of created) {
+        for (const ord of createdOrders) {
           // Admin notification about order status
           notifBatch.push({
             recipient: admin._id,

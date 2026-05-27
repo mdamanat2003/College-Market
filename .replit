@@ -55,3 +55,8 @@ waitForPort = 3001
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd backend && npm start & cd ../campuscart-web && npm run preview -- --port 5000 --host 0.0.0.0"]
+build = ["bash", "-c", "cd campuscart-web && npm install && npm run build && cd ../backend && npm install && npm run build"]

@@ -6,6 +6,8 @@ import { Platform } from 'react-native';
 const DEFAULT_API_URL = 'http://localhost:3001/api';
 const WEB_RELATIVE_API_URL = '/api';
 
+const isLocalhostUrl = (url: string) => /localhost|127\.0\.0\.1/.test(url);
+
 const resolveApiUrl = (): string => {
   const envApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
   const hostUri =
@@ -14,11 +16,15 @@ const resolveApiUrl = (): string => {
     (Constants as any)?.manifest?.debuggerHost;
   const lanHost = hostUri?.split(':')[0];
 
-  if (envApiUrl && Platform.OS === 'web') {
-    return envApiUrl;
+  // On web: always use relative URL unless env points to a real non-localhost host
+  if (Platform.OS === 'web') {
+    if (envApiUrl && !isLocalhostUrl(envApiUrl)) {
+      return envApiUrl;
+    }
+    return WEB_RELATIVE_API_URL;
   }
 
-  if (envApiUrl && /localhost|127\.0\.0\.1/.test(envApiUrl) && lanHost) {
+  if (envApiUrl && isLocalhostUrl(envApiUrl) && lanHost) {
     return envApiUrl.replace(/localhost|127\.0\.0\.1/g, lanHost);
   }
 
@@ -26,21 +32,26 @@ const resolveApiUrl = (): string => {
     return envApiUrl;
   }
 
-  if (Platform.OS !== 'web' && lanHost) {
+  if (lanHost) {
     return `http://${lanHost}:3001/api`;
-  }
-
-  // On web in production, use relative URL so it works on any host
-  if (Platform.OS === 'web') {
-    return WEB_RELATIVE_API_URL;
   }
 
   return DEFAULT_API_URL;
 };
 
 export const API_URL = resolveApiUrl();
-export const SOCKET_URL =
-  process.env.EXPO_PUBLIC_SOCKET_URL?.trim() || API_URL.replace(/\/api$/, '');
+
+const resolveSocketUrl = (): string => {
+  const envSocketUrl = process.env.EXPO_PUBLIC_SOCKET_URL?.trim();
+  if (Platform.OS === 'web') {
+    if (envSocketUrl && !isLocalhostUrl(envSocketUrl)) return envSocketUrl;
+    // On web, use current origin so socket connects back to the same server
+    return typeof window !== 'undefined' ? window.location.origin : '';
+  }
+  return envSocketUrl || API_URL.replace(/\/api$/, '');
+};
+
+export const SOCKET_URL = resolveSocketUrl();
 
 if (Platform.OS !== 'web' && /localhost|127\.0\.0\.1/.test(API_URL)) {
   console.warn(

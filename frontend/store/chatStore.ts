@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
-import { api } from '../services/api';
-
-// Ensure the socket points to the base server, not the /api route.
-const isWeb = typeof window !== 'undefined';
-const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL
-  || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '')
-  || (isWeb ? window.location.origin : 'http://localhost:3001');
+import { api, SOCKET_URL } from '../services/api';
 
 interface Message {
   _id: string;

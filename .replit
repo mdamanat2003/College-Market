@@ -62,3 +62,8 @@ build = ["npm", "run", "build"]
 
 [nix]
 packages = ["nano"]
+
+[userenv]
+
+[userenv.shared]
+JWT_SECRET = "a5fbe1f642ecb0aff9fb46d5e01eff4c709da81de4afa558a6e8869c52a074aea1cbaee789cd20c4143170e5a712e5229a3a08159fac71c7315d35a4c9f5f301"

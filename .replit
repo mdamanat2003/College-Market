@@ -1,4 +1,4 @@
-run = "cd backend && npm start"
+run = "cd backend && npm start & cd ../frontend && npm run web"
 
 [nix]
 channel = "stable-24_05"

@@ -4,6 +4,15 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const DEFAULT_API_URL = 'http://localhost:3001/api';
+const LOCALHOST_PATTERN = /localhost|127\.0\.0\.1/i;
+
+const getWebOrigin = () => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return window.location.origin;
+};
 
 const resolveApiUrl = (): string => {
   const envApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
@@ -12,6 +21,11 @@ const resolveApiUrl = (): string => {
     (Constants as any)?.manifest2?.extra?.expoGo?.debuggerHost ||
     (Constants as any)?.manifest?.debuggerHost;
   const lanHost = hostUri?.split(':')[0];
+
+  if (envApiUrl && Platform.OS === 'web' && LOCALHOST_PATTERN.test(envApiUrl)) {
+    const webOrigin = getWebOrigin();
+    return webOrigin ? `${webOrigin}/api` : DEFAULT_API_URL;
+  }
 
   if (envApiUrl && Platform.OS === 'web') {
     return envApiUrl;
@@ -29,12 +43,32 @@ const resolveApiUrl = (): string => {
     return `http://${lanHost}:3001/api`;
   }
 
+  if (Platform.OS === 'web') {
+    const webOrigin = getWebOrigin();
+    return webOrigin ? `${webOrigin}/api` : DEFAULT_API_URL;
+  }
+
   return DEFAULT_API_URL;
 };
 
 export const API_URL = resolveApiUrl();
-export const SOCKET_URL =
-  process.env.EXPO_PUBLIC_SOCKET_URL?.trim() || API_URL.replace(/\/api$/, '');
+export const SOCKET_URL = (() => {
+  const envSocketUrl = process.env.EXPO_PUBLIC_SOCKET_URL?.trim();
+
+  if (envSocketUrl && Platform.OS === 'web' && LOCALHOST_PATTERN.test(envSocketUrl)) {
+    return getWebOrigin();
+  }
+
+  if (envSocketUrl) {
+    return envSocketUrl;
+  }
+
+  if (Platform.OS === 'web') {
+    return getWebOrigin();
+  }
+
+  return API_URL.replace(/\/api$/, '');
+})();
 
 if (Platform.OS !== 'web' && /localhost|127\.0\.0\.1/.test(API_URL)) {
   console.warn(

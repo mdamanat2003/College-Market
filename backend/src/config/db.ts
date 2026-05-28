@@ -7,18 +7,27 @@ dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
 
+const isLocalMongoUri = (value: string) => /localhost|127\.0\.0\.1/i.test(value);
+
 const connectDB = async () => {
   const localUri = "mongodb://127.0.0.1:27017/campuscart";
+  const configuredUris = [process.env.MONGO_URI, process.env.MONGODB_URI].filter(
+    (value): value is string => Boolean(value && value.trim())
+  );
 
   try {
     const uri =
-      process.env.MONGODB_URI ||
-      process.env.MONGO_URI ||
+      configuredUris.find((value) => !isLocalMongoUri(value)) ||
+      configuredUris[0] ||
       localUri;
 
-    if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
+    if (!configuredUris.length) {
       console.warn(
         "MONGODB_URI/MONGO_URI not found. Falling back to local MongoDB: mongodb://127.0.0.1:27017/campuscart"
+      );
+    } else if (isLocalMongoUri(uri)) {
+      console.warn(
+        "Using local MongoDB URI from environment. If login fails on a deployed app, set MONGO_URI to your live Atlas connection string."
       );
     }
 
@@ -31,7 +40,10 @@ const connectDB = async () => {
     console.error('MongoDB Connection Error:');
     console.error(error);
 
-    const uri = process.env.MONGODB_URI ?? process.env.MONGO_URI ?? "";
+    const uri =
+      configuredUris.find((value) => !isLocalMongoUri(value)) ||
+      configuredUris[0] ||
+      "";
 
     const errAny: any = error;
     const isAuthError = Boolean(
@@ -40,7 +52,7 @@ const connectDB = async () => {
       /authentication failed|bad auth/i.test(String(errAny?.message || errAny))
     );
 
-    if (isAuthError && !uri.includes('127.0.0.1') && !uri.includes('localhost')) {
+    if (isAuthError && uri && !isLocalMongoUri(uri)) {
       console.warn('Authentication to configured MongoDB failed. Falling back to local MongoDB.');
       try {
         const localConn = await mongoose.connect(localUri, {
@@ -54,7 +66,7 @@ const connectDB = async () => {
       }
     }
 
-    if (uri.includes('localhost') || uri.includes('127.0.0.1')) {
+    if (isLocalMongoUri(uri)) {
       console.error('Local MongoDB is not reachable. Start the MongoDB service or update MONGODB_URI to a live database URL.');
       console.error('Windows hint: open PowerShell as Administrator and run: Start-Service MongoDB');
     }

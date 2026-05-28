@@ -4,6 +4,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const DEFAULT_API_URL = 'http://localhost:3001/api';
+const WEB_RELATIVE_API_URL = '/api';
 
 const resolveApiUrl = (): string => {
   const envApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
@@ -27,6 +28,11 @@ const resolveApiUrl = (): string => {
 
   if (Platform.OS !== 'web' && lanHost) {
     return `http://${lanHost}:3001/api`;
+  }
+
+  // On web in production, use relative URL so it works on any host
+  if (Platform.OS === 'web') {
+    return WEB_RELATIVE_API_URL;
   }
 
   return DEFAULT_API_URL;

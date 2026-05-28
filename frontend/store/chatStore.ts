@@ -3,9 +3,10 @@ import { io, Socket } from 'socket.io-client';
 import { api } from '../services/api';
 
 // Ensure the socket points to the base server, not the /api route.
+const isWeb = typeof window !== 'undefined';
 const SOCKET_URL = process.env.EXPO_PUBLIC_SOCKET_URL
   || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '')
-  || 'http://localhost:3001';
+  || (isWeb ? window.location.origin : 'http://localhost:3001');
 
 interface Message {
   _id: string;

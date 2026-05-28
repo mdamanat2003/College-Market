@@ -36,13 +36,12 @@ args = "Backend API"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd campuscart-web && npm run dev"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npx expo start --web --port 5000"
 
 [[workflows.workflow]]
 name = "Backend API"
@@ -60,3 +59,6 @@ outputType = "console"
 deploymentTarget = "autoscale"
 run = ["npm", "run", "start"]
 build = ["npm", "run", "build"]
+
+[nix]
+packages = ["nano"]

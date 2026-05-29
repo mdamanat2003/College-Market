@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -17,23 +17,19 @@ export const Navbar = () => {
   const { user } = useAuthStore();
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 600;
 
   return (
     <View style={styles.header}>
       <View style={styles.brandContainer}>
-        <Ionicons name="cart" size={28} color={COLORS.primary} />
-        <Text style={styles.brandText}>CampusCart</Text>
+        <Ionicons name="cart" size={24} color={COLORS.primary} />
+        {!isMobile && <Text style={styles.brandText}>CampusCart</Text>}
       </View>
 
-      {Platform.OS === 'web' && (
+      {!isMobile && (
         <View style={styles.searchContainer}>
-          <Ionicons
-            name="search"
-            size={20}
-            color={COLORS.textMuted}
-            style={styles.searchIcon}
-          />
-
+          <Ionicons name="search" size={18} color={COLORS.textMuted} style={styles.searchIcon} />
           <TextInput
             placeholder="Search for books, electronics, cycles..."
             placeholderTextColor={COLORS.textMuted}
@@ -43,42 +39,27 @@ export const Navbar = () => {
       )}
 
       <View style={styles.rightIcons}>
-        <TouchableOpacity
-          style={styles.homeBtn}
-          onPress={() => router.push('/home')}
-        >
-          <Ionicons name="home-outline" size={18} color={COLORS.text} />
-          <Text style={styles.homeBtnText}>Home</Text>
-        </TouchableOpacity>
+        {!isMobile && (
+          <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/home')}>
+            <Ionicons name="home-outline" size={18} color={COLORS.text} />
+            <Text style={styles.homeBtnText}>Home</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
-          style={styles.sellBtn}
+          style={[styles.sellBtn, isMobile && styles.sellBtnMobile]}
           onPress={() => router.push('/add-product')}
         >
-          <Ionicons name="add" size={18} color="#fff" style={styles.sellIcon} />
-          <Text style={styles.sellBtnText}>Sell</Text>
+          <Ionicons name="add" size={18} color="#fff" />
+          {!isMobile && <Text style={styles.sellBtnText}>Sell</Text>}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => router.push('/messages')}
-        >
-          <Ionicons
-            name="chatbubble-ellipses-outline"
-            size={24}
-            color={COLORS.text}
-          />
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/messages')}>
+          <Ionicons name="chatbubble-ellipses-outline" size={22} color={COLORS.text} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => router.push('/notifications')}
-        >
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color={COLORS.text}
-          />
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/notifications')}>
+          <Ionicons name="notifications-outline" size={22} color={COLORS.text} />
           {unreadNotifications > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
@@ -183,11 +164,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: 8,
     borderRadius: RADIUS.round,
-    marginRight: SPACING.md,
+    marginRight: SPACING.sm,
+    gap: 2,
   },
 
-  sellIcon: {
-    marginRight: 2,
+  sellBtnMobile: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 999,
   },
 
   sellBtnText: {

@@ -14,7 +14,10 @@ export default function MarketplaceHome() {
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<any>>(null);
 
-  const numColumns = width > 1200 ? 4 : width > 768 ? 3 : width > 480 ? 2 : 1;
+  const numColumns = width >= 1100 ? 4 : width >= 768 ? 3 : width >= 540 ? 2 : 1;
+  const H_PADDING = SPACING.md * 2;
+  const CARD_GAP = SPACING.sm * 2;
+  const cardWidth = Math.floor((width - H_PADDING - CARD_GAP * numColumns) / numColumns);
 
   const handleBackToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -67,7 +70,7 @@ export default function MarketplaceHome() {
               </View>
             }
             renderItem={({ item }) => (
-              <View style={[styles.cardWrapper, { width: `${100 / numColumns}%` }]}>
+              <View style={[styles.cardWrapper, { width: cardWidth }]}>
                 <ProductCard product={item} />
               </View>
             )}

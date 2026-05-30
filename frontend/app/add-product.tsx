@@ -139,7 +139,8 @@ export default function AddItemScreen() {
         }
       }
 
-      const response = await fetch('http://localhost:3001/api/products', { // Agar phone par test karein toh yahan apna IP address dalein
+      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3001';
+      const response = await fetch(`${baseUrl}/api/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

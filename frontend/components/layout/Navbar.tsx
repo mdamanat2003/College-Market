@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Platform,
   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,24 +18,20 @@ export const Navbar = () => {
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
   const router = useRouter();
   const { width } = useWindowDimensions();
+
   const isPhone = width <= 480;
+  const isMobile = width < 600;
 
   return (
     <View style={[styles.header, isPhone && styles.phoneHeader]}>
       <TouchableOpacity style={styles.brandContainer} onPress={() => router.push('/home')}>
-        <Ionicons name="cart" size={28} color={COLORS.primary} />
-        {!isPhone && <Text style={styles.brandText}>CampusCart</Text>}
+        <Ionicons name="cart" size={24} color={COLORS.primary} />
+        {!isMobile && <Text style={styles.brandText}>CampusCart</Text>}
       </TouchableOpacity>
 
-      {Platform.OS === 'web' && !isPhone && (
+      {!isMobile && (
         <View style={styles.searchContainer}>
-          <Ionicons
-            name="search"
-            size={20}
-            color={COLORS.textMuted}
-            style={styles.searchIcon}
-          />
-
+          <Ionicons name="search" size={18} color={COLORS.textMuted} style={styles.searchIcon} />
           <TextInput
             placeholder="Search for books, electronics, cycles..."
             placeholderTextColor={COLORS.textMuted}
@@ -47,10 +42,7 @@ export const Navbar = () => {
 
       <View style={[styles.rightIcons, isPhone && styles.phoneRightIcons]}>
         {!isPhone && (
-          <TouchableOpacity
-            style={styles.homeBtn}
-            onPress={() => router.push('/home')}
-          >
+          <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/home')}>
             <Ionicons name="home-outline" size={18} color={COLORS.text} />
             <Text style={styles.homeBtnText}>Home</Text>
           </TouchableOpacity>
@@ -60,43 +52,25 @@ export const Navbar = () => {
           style={[styles.sellBtn, isPhone && styles.phoneSellBtn]}
           onPress={() => router.push('/add-product')}
         >
-          <Ionicons name="add" size={isPhone ? 24 : 18} color="#fff" style={!isPhone && styles.sellIcon} />
+          <Ionicons name="add" size={isPhone ? 24 : 18} color="#fff" />
           {!isPhone && <Text style={styles.sellBtnText}>Sell</Text>}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.iconButton, isPhone && styles.phoneIconButton]}
-          onPress={() => router.push('/messages')}
-        >
-          <Ionicons
-            name="chatbubble-ellipses-outline"
-            size={24}
-            color={COLORS.text}
-          />
+        <TouchableOpacity style={[styles.iconButton, isPhone && styles.phoneIconButton]} onPress={() => router.push('/messages')}>
+          <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.text} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.iconButton, isPhone && styles.phoneIconButton]}
-          onPress={() => router.push('/notifications')}
-        >
-          <Ionicons
-            name="notifications-outline"
-            size={24}
-            color={COLORS.text}
-          />
+        <TouchableOpacity style={[styles.iconButton, isPhone && styles.phoneIconButton]} onPress={() => router.push('/notifications')}>
+          <Ionicons name="notifications-outline" size={24} color={COLORS.text} />
           {unreadNotifications > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {unreadNotifications > 9 ? '9+' : unreadNotifications}
-              </Text>
+              <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
             </View>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.profileBtn, isPhone && styles.phoneProfileBtn]} onPress={() => router.push('/profile')}>
-          <Text style={styles.profileInitial}>
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-          </Text>
+          <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -151,11 +125,11 @@ const styles = StyleSheet.create({
   },
 
   searchInput: {
-    flex: 1, // Available space lene ke liye
+    flex: 1,
     height: 40,
-    backgroundColor: COLORS.surface, // Ya koi light gray code jaise '#F1F5F9'
-    borderRadius: RADIUS.md, // Ya manually 8 de sakte hain
-    paddingHorizontal: SPACING.md, // Text aur border ke beech ki space
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.md,
     fontSize: 14,
     color: COLORS.text,
     borderWidth: 1,
@@ -196,7 +170,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: 8,
     borderRadius: RADIUS.round,
-    marginRight: SPACING.md,
+    marginRight: SPACING.sm,
+    gap: 2,
   },
   phoneSellBtn: {
     width: 36,
@@ -206,10 +181,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     marginRight: 0,
     justifyContent: 'center',
-  },
-
-  sellIcon: {
-    marginRight: 2,
   },
 
   sellBtnText: {

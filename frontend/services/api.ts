@@ -4,15 +4,10 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const DEFAULT_API_URL = 'http://localhost:3001/api';
-const LOCALHOST_PATTERN = /localhost|127\.0\.0\.1/i;
 
-const getWebOrigin = () => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
+const isLocalhostUrl = (url: string | undefined) => !!url && /localhost|127\.0\.0\.1/i.test(url);
 
-  return window.location.origin;
-};
+const getWebOrigin = () => (typeof window !== 'undefined' ? window.location.origin : '');
 
 const resolveApiUrl = (): string => {
   const envApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
@@ -21,46 +16,40 @@ const resolveApiUrl = (): string => {
     (Constants as any)?.manifest2?.extra?.expoGo?.debuggerHost ||
     (Constants as any)?.manifest?.debuggerHost;
   const lanHost = hostUri?.split(':')[0];
-  // If an explicit API URL is provided, prefer it.
-  // On web we should use the env value as-is (don't rewrite localhost to the dev server origin).
+
+  // If an explicit API URL is provided, prefer it. On web we trust env values as-is.
   if (envApiUrl) {
     if (Platform.OS === 'web') return envApiUrl;
-
     // For native (Expo on device), replace localhost with LAN host if available.
-    if (/localhost|127\.0\.0\.1/.test(envApiUrl) && lanHost) {
+    if (isLocalhostUrl(envApiUrl) && lanHost) {
       return envApiUrl.replace(/localhost|127\.0\.0\.1/g, lanHost);
     }
-
     return envApiUrl;
   }
 
-  if (Platform.OS !== 'web' && lanHost) {
+  // No explicit env value — try LAN host (device) or web origin
+  if (lanHost) {
     return `http://${lanHost}:3001/api`;
   }
 
   if (Platform.OS === 'web') {
-    const webOrigin = getWebOrigin();
-    return webOrigin ? `${webOrigin}/api` : DEFAULT_API_URL;
+    const origin = getWebOrigin();
+    return origin ? `${origin}/api` : DEFAULT_API_URL;
   }
 
   return DEFAULT_API_URL;
 };
 
 export const API_URL = resolveApiUrl();
-export const SOCKET_URL = (() => {
+
+const resolveSocketUrl = (): string => {
   const envSocketUrl = process.env.EXPO_PUBLIC_SOCKET_URL?.trim();
-
-  // If the environment provides a socket URL, trust it exactly (do not rewrite to the web dev server).
-  if (envSocketUrl) {
-    return envSocketUrl;
-  }
-
-  if (Platform.OS === 'web') {
-    return getWebOrigin();
-  }
-
+  if (envSocketUrl) return envSocketUrl;
+  if (Platform.OS === 'web') return getWebOrigin();
   return API_URL.replace(/\/api$/, '');
-})();
+};
+
+export const SOCKET_URL = resolveSocketUrl();
 
 if (Platform.OS !== 'web' && /localhost|127\.0\.0\.1/.test(API_URL)) {
   console.warn(

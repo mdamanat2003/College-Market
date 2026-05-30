@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -17,15 +18,17 @@ export const Navbar = () => {
   const { user } = useAuthStore();
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isPhone = width <= 480;
 
   return (
-    <View style={styles.header}>
-      <View style={styles.brandContainer}>
+    <View style={[styles.header, isPhone && styles.phoneHeader]}>
+      <TouchableOpacity style={styles.brandContainer} onPress={() => router.push('/home')}>
         <Ionicons name="cart" size={28} color={COLORS.primary} />
-        <Text style={styles.brandText}>CampusCart</Text>
-      </View>
+        {!isPhone && <Text style={styles.brandText}>CampusCart</Text>}
+      </TouchableOpacity>
 
-      {Platform.OS === 'web' && (
+      {Platform.OS === 'web' && !isPhone && (
         <View style={styles.searchContainer}>
           <Ionicons
             name="search"
@@ -42,25 +45,27 @@ export const Navbar = () => {
         </View>
       )}
 
-      <View style={styles.rightIcons}>
-        <TouchableOpacity
-          style={styles.homeBtn}
-          onPress={() => router.push('/home')}
-        >
-          <Ionicons name="home-outline" size={18} color={COLORS.text} />
-          <Text style={styles.homeBtnText}>Home</Text>
-        </TouchableOpacity>
+      <View style={[styles.rightIcons, isPhone && styles.phoneRightIcons]}>
+        {!isPhone && (
+          <TouchableOpacity
+            style={styles.homeBtn}
+            onPress={() => router.push('/home')}
+          >
+            <Ionicons name="home-outline" size={18} color={COLORS.text} />
+            <Text style={styles.homeBtnText}>Home</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
-          style={styles.sellBtn}
+          style={[styles.sellBtn, isPhone && styles.phoneSellBtn]}
           onPress={() => router.push('/add-product')}
         >
-          <Ionicons name="add" size={18} color="#fff" style={styles.sellIcon} />
-          <Text style={styles.sellBtnText}>Sell</Text>
+          <Ionicons name="add" size={isPhone ? 24 : 18} color="#fff" style={!isPhone && styles.sellIcon} />
+          {!isPhone && <Text style={styles.sellBtnText}>Sell</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.iconButton}
+          style={[styles.iconButton, isPhone && styles.phoneIconButton]}
           onPress={() => router.push('/messages')}
         >
           <Ionicons
@@ -71,7 +76,7 @@ export const Navbar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.iconButton}
+          style={[styles.iconButton, isPhone && styles.phoneIconButton]}
           onPress={() => router.push('/notifications')}
         >
           <Ionicons
@@ -88,7 +93,7 @@ export const Navbar = () => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.profileBtn} onPress={() => router.push('/profile')}>
+        <TouchableOpacity style={[styles.profileBtn, isPhone && styles.phoneProfileBtn]} onPress={() => router.push('/profile')}>
           <Text style={styles.profileInitial}>
             {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
           </Text>
@@ -109,6 +114,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     zIndex: 10,
+  },
+  phoneHeader: {
+    height: 63,
+    paddingHorizontal: 18,
+    borderBottomWidth: 0,
   },
 
   brandContainer: {
@@ -156,6 +166,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  phoneRightIcons: {
+    gap: 14,
+  },
 
   homeBtn: {
     backgroundColor: COLORS.surface,
@@ -185,6 +198,15 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.round,
     marginRight: SPACING.md,
   },
+  phoneSellBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginRight: 0,
+    justifyContent: 'center',
+  },
 
   sellIcon: {
     marginRight: 2,
@@ -200,6 +222,14 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
     position: 'relative',
     marginRight: SPACING.md,
+  },
+  phoneIconButton: {
+    padding: 0,
+    marginRight: 0,
+    width: 26,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   badge: {
@@ -230,6 +260,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  phoneProfileBtn: {
+    width: 36,
+    height: 36,
+    backgroundColor: COLORS.primaryLight,
   },
 
   profileInitial: {

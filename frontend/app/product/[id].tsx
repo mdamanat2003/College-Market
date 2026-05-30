@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  View, Text, StyleSheet, Image, ScrollView, 
+  View, Text, StyleSheet, ScrollView, 
   TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform 
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -11,6 +11,7 @@ import { useProductStore } from '../../store/productStore';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { PlaceholderImage } from '../../components/ui/PlaceholderImage';
+import { SafeImage } from '../../components/ui/SafeImage';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 export default function ProductDetailsScreen() {
@@ -163,7 +164,7 @@ export default function ProductDetailsScreen() {
               {images.length > 0 ? (
                 images.map((img: string, index: number) => (
                   <View key={index} style={{ width: carouselWidth, height: 400 }}>
-                    <Image source={{ uri: img }} style={styles.mainImage} resizeMode="cover" />
+                    <SafeImage uri={img} style={styles.mainImage} resizeMode="cover" />
                   </View>
                 ))
               ) : (

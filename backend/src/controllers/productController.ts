@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import Product from '../models/Product';
 import Notification from '../models/Notification'; // Naya Notification model
 import { asyncHandler } from '../utils/asyncHandler';
+import path from 'path';
+import fs from 'fs';
 
 // Auth Request type jisme user object aur multer files ho sakein
 interface AuthRequest extends Request {
@@ -122,12 +124,25 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
       }
     }
 
-    // 2. Local Files check
+    // 2. Local Files check - save uploaded files to backend /uploads and return accessible URLs
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-      req.files.forEach((file: any) => {
-        const base64Image = file.buffer.toString('base64');
-        const dataUri = `data:${file.mimetype};base64,${base64Image}`;
-        finalImagesArray.push(dataUri);
+      const uploadsBase = `${req.protocol}://${req.get('host')}/uploads`;
+      const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
+
+      // ensure directory exists
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+      req.files.forEach((file: any, idx: number) => {
+        try {
+          const ext = file.originalname && file.originalname.includes('.') ? '' : `.${file.mimetype.split('/')[1]}`;
+          const safeName = `${Date.now()}_${idx}_${file.originalname || 'upload'}${ext}`.replace(/\s+/g, '_');
+          const outPath = path.join(uploadDir, safeName);
+          fs.writeFileSync(outPath, file.buffer);
+          const publicUrl = `${uploadsBase}/${safeName}`;
+          finalImagesArray.push(publicUrl);
+        } catch (err) {
+          console.error('File write error:', err);
+        }
       });
     }
 

@@ -18,6 +18,8 @@ import requestRoutes from "./routes/requestRoutes";
 import { seedAdmin } from "./utils/seedAdmin"; // ✅ Imported properly
 import { seedTransactions } from "./utils/seedTransactions";
 import adminRoutes from "./routes/adminRoutes";
+import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -40,6 +42,13 @@ const startServer = async () => {
     const io = new Server(httpServer, {
       cors: { origin: "*", methods: ["GET", "POST"] }
     });
+
+    // Ensure uploads directory exists and serve it statically
+    const uploadsDir = path.resolve(__dirname, '..', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    app.use('/uploads', express.static(uploadsDir));
 
     // 2. Socket.io ko globally share karein
     app.set('io', io); 

@@ -240,6 +240,9 @@ export default function LandingPage() {
   const gradientDrift = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [-18, 18, -18] });
   const welcomeTextScale = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.045, 1] });
   const welcomeTextLift = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [3, -3, 3] });
+  const welcomeTitleTransform = isMobile
+    ? [{ translateY: welcomeTextLift }]
+    : [{ translateY: welcomeTextLift }, { scale: welcomeTextScale }];
   const animatedTextColor = textColorAnim.interpolate({
     inputRange: [0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.84, 1],
     outputRange: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3', '#FF0000'],
@@ -254,14 +257,14 @@ export default function LandingPage() {
         <View style={styles.content}>
           <View style={styles.navWrap}><PublicNavbar activeRoute="home" /></View>
 
-          <View style={styles.welcomeBand}>
-            <View style={styles.welcomeCard}>
+          <View style={[styles.welcomeBand, isMobile && styles.welcomeBandMobile]}>
+            <View style={[styles.welcomeCard, isMobile && styles.welcomeCardMobile]}>
               <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientBase, { transform: [{ translateX: gradientDrift }, { scale: 1.05 }] }]} />
               <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerTwo, { opacity: gradientLayerTwoOpacity, transform: [{ translateX: gradientDrift }, { scale: 1.08 }] }]} />
               <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerThree, { opacity: gradientLayerThreeOpacity, transform: [{ translateX: gradientDrift }, { scale: 1.12 }] }]} />
               <View style={styles.welcomeSheen} />
-              <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, { transform: [{ translateY: welcomeTextLift }, { scale: welcomeTextScale }], color: animatedTextColor }]}>
-                WELCOME TO CAMPUSCART
+              <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
+                {isMobile ? <>WELCOME TO{'\n'}CAMPUSCART</> : 'WELCOME TO CAMPUSCART'}
               </Animated.Text>
             </View>
           </View>
@@ -505,14 +508,17 @@ const styles = StyleSheet.create({
   glowPurple: { position: 'absolute', top: 320, left: -120, width: 280, height: 280, borderRadius: 280, backgroundColor: 'rgba(124,58,237,0.14)' },
   navWrap: { paddingHorizontal: SPACING.md, marginBottom: SPACING.lg },
   welcomeBand: { width: '100%', paddingHorizontal: SPACING.md, paddingTop: 6, paddingBottom: 28, backgroundColor: '#F9FAFB' },
+  welcomeBandMobile: { paddingHorizontal: 10, paddingBottom: 22 },
   welcomeCard: { width: '100%', minHeight: 190, borderRadius: 30, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)', shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.16, shadowRadius: 32, elevation: 8 },
+  welcomeCardMobile: { minHeight: 188, paddingHorizontal: 14, borderRadius: 24 },
   welcomeGradientLayer: { position: 'absolute', top: -28, right: -40, bottom: -28, left: -40 },
   welcomeGradientBase: { backgroundColor: '#BFDBFE', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(120deg, #DBEAFE 0%, #CFFAFE 35%, #DCFCE7 68%, #FDE68A 100%)', backgroundSize: '180% 180%' } as any : null) },
   welcomeGradientLayerTwo: { backgroundColor: '#FBCFE8', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #FCE7F3 0%, #E0E7FF 42%, #BAE6FD 72%, #D9F99D 100%)', backgroundSize: '200% 200%' } as any : null) },
   welcomeGradientLayerThree: { backgroundColor: '#DDD6FE', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(145deg, #FDE68A 0%, #A7F3D0 32%, #BFDBFE 66%, #F5D0FE 100%)', backgroundSize: '220% 220%' } as any : null) },
   welcomeSheen: { position: 'absolute', top: 1, right: 1, bottom: 1, left: 1, borderRadius: 29, backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
   welcomeTitle: { fontSize: 82, lineHeight: 88, fontWeight: '900', textAlign: 'center', letterSpacing: -6, textShadowColor: 'rgba(255,255,255,0.55)', textShadowOffset: { width: 0, height: 3 }, textShadowRadius: 16, zIndex: 10 },
-  welcomeTitleMobile: { fontSize: 52, lineHeight: 58, letterSpacing: -3 },
+  welcomeTitleMobile: { width: '100%', fontSize: 42, lineHeight: 48, letterSpacing: 0, paddingHorizontal: 4 },
+  welcomeTitleCompact: { fontSize: 37, lineHeight: 43 },
   hero: { paddingHorizontal: SPACING.md, paddingTop: 28, gap: 24 },
   heroDesktop: { flexDirection: 'row', alignItems: 'center', gap: 28 },
   heroCopy: { flex: 1, minWidth: 0 },

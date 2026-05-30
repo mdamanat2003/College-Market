@@ -10,6 +10,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +24,8 @@ type FooterProps = {
 
 export default function Footer({ onBackToTop }: FooterProps) {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isPhone = width <= 480;
   const [isReviewVisible, setIsReviewVisible] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewName, setReviewName] = useState('');
@@ -86,10 +89,10 @@ export default function Footer({ onBackToTop }: FooterProps) {
 
   return (
     <>
-      <View style={styles.footer}>
+      <View style={[styles.footer, isPhone && styles.phoneFooter]}>
         <Text style={styles.footerText}>CampusCart 2026. All rights reserved.</Text>
 
-        <View style={styles.footerLinks}>
+        <View style={[styles.footerLinks, isPhone && styles.phoneFooterLinks]}>
           <TouchableOpacity style={styles.footerLinkButton} onPress={() => router.push('/about')}>
             <Text style={styles.footerLink}>About</Text>
           </TouchableOpacity>
@@ -175,6 +178,11 @@ const styles = StyleSheet.create({
     marginBottom: 0,   // 👈 Niche ka koi bhi default margin khatam karne ke liye
     backgroundColor: COLORS.primary,
   },
+  phoneFooter: {
+    marginTop: 116,
+    paddingTop: 40,
+    paddingBottom: 39,
+  },
   footerText: {
     color: '#CBD5E1',
     fontSize: 15,
@@ -185,6 +193,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 22,
+    marginTop: 8,
+  },
+  phoneFooterLinks: {
+    columnGap: 20,
+    rowGap: 8,
   },
   footerLinkButton: {
     paddingHorizontal: 4,

@@ -21,21 +21,16 @@ const resolveApiUrl = (): string => {
     (Constants as any)?.manifest2?.extra?.expoGo?.debuggerHost ||
     (Constants as any)?.manifest?.debuggerHost;
   const lanHost = hostUri?.split(':')[0];
-
-  if (envApiUrl && Platform.OS === 'web' && LOCALHOST_PATTERN.test(envApiUrl)) {
-    const webOrigin = getWebOrigin();
-    return webOrigin ? `${webOrigin}/api` : DEFAULT_API_URL;
-  }
-
-  if (envApiUrl && Platform.OS === 'web') {
-    return envApiUrl;
-  }
-
-  if (envApiUrl && /localhost|127\.0\.0\.1/.test(envApiUrl) && lanHost) {
-    return envApiUrl.replace(/localhost|127\.0\.0\.1/g, lanHost);
-  }
-
+  // If an explicit API URL is provided, prefer it.
+  // On web we should use the env value as-is (don't rewrite localhost to the dev server origin).
   if (envApiUrl) {
+    if (Platform.OS === 'web') return envApiUrl;
+
+    // For native (Expo on device), replace localhost with LAN host if available.
+    if (/localhost|127\.0\.0\.1/.test(envApiUrl) && lanHost) {
+      return envApiUrl.replace(/localhost|127\.0\.0\.1/g, lanHost);
+    }
+
     return envApiUrl;
   }
 
@@ -55,10 +50,7 @@ export const API_URL = resolveApiUrl();
 export const SOCKET_URL = (() => {
   const envSocketUrl = process.env.EXPO_PUBLIC_SOCKET_URL?.trim();
 
-  if (envSocketUrl && Platform.OS === 'web' && LOCALHOST_PATTERN.test(envSocketUrl)) {
-    return getWebOrigin();
-  }
-
+  // If the environment provides a socket URL, trust it exactly (do not rewrite to the web dev server).
   if (envSocketUrl) {
     return envSocketUrl;
   }

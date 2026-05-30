@@ -1,45 +1,5 @@
 env: load .env
 env: export EXPO_PUBLIC_API_URL EXPO_PUBLIC_SOCKET_URL EXPO_PUBLIC_RAZORPAY_KEY_ID
 Starting project at D:\MArket\frontend
-React Compiler enabled
-Starting Metro Bundler
-Waiting on http://localhost:8082
-Logs for your project will appear below.
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 59.4% (627/827)
-λ node_modules\expo-router\node\render.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.4% ( 845/1000)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ node_modules\expo-router\node\render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 6002ms node_modules\expo-router\node\render.js (1431 modules)
-λ Bundled 3568ms node_modules\expo-router\node\render.js (1 module)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1326/1326)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 9946ms node_modules\expo-router\entry.js (1326 modules)
-Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1326/1326)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 7497ms node_modules\expo-router\entry.js (1 module)
-Web Bundled 1299ms node_modules\expo-router\entry.js (1274 modules)
- LOG  [web] Logs will appear in the browser console
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 93ms node_modules\expo-router\node\render.js (1 module)
-Web Bundled 739ms node_modules\expo-router\entry.js (1 module)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 106ms node_modules\expo-router\node\render.js (1 module)
-Web Bundled 2065ms node_modules\expo-router\entry.js (1 module)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 863ms node_modules\expo-router\node\render.js (1 module)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web Bundled 5445ms node_modules\expo-router\entry.js (1 module)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 131ms node_modules\expo-router\node\render.js (1 module)
-Web Bundled 2544ms node_modules\expo-router\entry.js (1 module)
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 233ms node_modules\expo-router\node\render.js (1 module)
-Web Bundled 2307ms node_modules\expo-router\entry.js (1 module)
-Web Bundled 248ms node_modules\expo-router\entry.js (1 module)
- LOG  [web] Logs will appear in the browser console
-Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-λ Bundled 78ms node_modules\expo-router\node\render.js (1 module)
-Web Bundled 1435ms node_modules\expo-router\entry.js (1 module)
-Web Bundled 71ms node_modules\expo-router\entry.js (1 module)
- LOG  [web] Logs will appear in the browser console
+› Port 8082 is being used by another process
+› Skipping dev server

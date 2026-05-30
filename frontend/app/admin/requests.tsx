@@ -17,7 +17,7 @@ export default function AdminRequests() {
     try {
       const res = await api.get('/requests');
       setRequests(res.data.requests || []);
-    } catch (err) {
+    } catch (err: any) {
       // Surface useful error info for debugging admin UI
       console.error('Failed to load requests', err);
       const msg = err?.response?.data?.message || err?.message || 'Failed to fetch';
@@ -37,7 +37,7 @@ export default function AdminRequests() {
     try {
       await api.put(`/requests/${id}/status`, { status });
       setRequests((cur) => cur.map(r => r._id === id ? { ...r, status } : r));
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update request', err);
     }
   };

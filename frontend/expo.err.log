@@ -1,11 +1,3 @@
-"shadow*" style props are deprecated. Use "boxShadow".
-"shadow*" style props are deprecated. Use "boxShadow".
-Error: Premature close
-    at onclose (node:internal/streams/end-of-stream:158:30)
-    at processTicksAndRejections (node:internal/process/task_queues:85:11)
-"shadow*" style props are deprecated. Use "boxShadow".
-"shadow*" style props are deprecated. Use "boxShadow".
-"shadow*" style props are deprecated. Use "boxShadow".
-"shadow*" style props are deprecated. Use "boxShadow".
-"shadow*" style props are deprecated. Use "boxShadow".
-"shadow*" style props are deprecated. Use "boxShadow".
+Input is required, but 'npx expo' is in non-interactive mode.
+Required input:
+> Use port 8083 instead?

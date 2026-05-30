@@ -14,6 +14,7 @@ export default function MarketplaceHome() {
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<any>>(null);
 
+  const isPhone = width <= 480;
   const numColumns = width > 1200 ? 4 : width > 768 ? 3 : width > 480 ? 2 : 1;
 
   const handleBackToTop = () => {
@@ -29,12 +30,12 @@ export default function MarketplaceHome() {
       <Navbar />
 
       <View style={styles.mainContent}>
-        <View style={styles.categoryContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+        <View style={[styles.categoryContainer, isPhone && styles.phoneCategoryContainer]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.categoryScroll, isPhone && styles.phoneCategoryScroll]}>
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
                 key={cat}
-                style={[styles.categoryPill, activeCategory === cat && styles.activePill]}
+                style={[styles.categoryPill, isPhone && styles.phoneCategoryPill, activeCategory === cat && styles.activePill]}
                 onPress={() => setActiveCategory(cat)}
               >
                 <Text style={[styles.categoryText, activeCategory === cat && styles.activeText]}>{cat}</Text>
@@ -54,7 +55,7 @@ export default function MarketplaceHome() {
             data={products}
             keyExtractor={(item) => item._id}
             numColumns={numColumns}
-            contentContainerStyle={styles.gridList}
+            contentContainerStyle={[styles.gridList, isPhone && styles.phoneGridList]}
             columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
             ListEmptyComponent={
               <View style={styles.emptyState}>
@@ -67,7 +68,7 @@ export default function MarketplaceHome() {
               </View>
             }
             renderItem={({ item }) => (
-              <View style={[styles.cardWrapper, { width: `${100 / numColumns}%` }]}>
+              <View style={[styles.cardWrapper, isPhone && styles.phoneCardWrapper, { width: `${100 / numColumns}%` }]}>
                 <ProductCard product={item} />
               </View>
             )}
@@ -94,9 +95,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  phoneCategoryContainer: {
+    paddingTop: 16,
+    paddingBottom: 13,
+  },
   categoryScroll: {
     paddingHorizontal: SPACING.lg,
     gap: SPACING.sm,
+  },
+  phoneCategoryScroll: {
+    paddingHorizontal: 17,
+    gap: 8,
   },
   categoryPill: {
     paddingHorizontal: SPACING.lg,
@@ -105,6 +114,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: 'transparent',
+  },
+  phoneCategoryPill: {
+    minWidth: 62,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 9,
   },
   activePill: {
     backgroundColor: COLORS.primary,
@@ -122,11 +137,18 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.md,
     paddingBottom: 0,
   },
+  phoneGridList: {
+    paddingHorizontal: 18,
+    paddingTop: 30,
+  },
   row: {
     justifyContent: 'flex-start',
   },
   cardWrapper: {
     padding: SPACING.sm,
+  },
+  phoneCardWrapper: {
+    padding: 0,
   },
   loader: {
     flex: 1,

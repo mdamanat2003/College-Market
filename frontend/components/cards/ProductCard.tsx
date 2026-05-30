@@ -1,44 +1,40 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useRouter } from 'expo-router';
-import { PlaceholderImage } from '../ui/PlaceholderImage';
+import { SafeImage } from '../ui/SafeImage';
 
 interface ProductCardProps {
   product: any;
-  // onPress hata diya gaya hai kyunki routing ab yahi handle hogi
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isPhone = width <= 480;
 
   const handlePress = () => {
-    // Dynamic URL par navigate karna
     router.push(`/product/${product._id}`);
   };
 
   const imageUrl = product.images?.[0];
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.9}>
-      {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
-      ) : (
-        <PlaceholderImage style={styles.image} />
-      )}
-      
-      <View style={styles.content}>
+    <TouchableOpacity style={[styles.card, isPhone && styles.phoneCard]} onPress={handlePress} activeOpacity={0.9}>
+      <SafeImage uri={imageUrl} style={[styles.image, isPhone && styles.phoneImage]} resizeMode="cover" />
+
+      <View style={[styles.content, isPhone && styles.phoneContent]}>
         <View style={styles.titleRow}>
           <Text style={styles.title} numberOfLines={1}>{product.title}</Text>
           <Text style={styles.price}>₹{product.price}</Text>
         </View>
-        
+
         <Text style={styles.category}>{product.category} • {product.condition}</Text>
-        
+
         <View style={styles.footer}>
           <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
-          <Text style={styles.college} numberOfLines={1}>{product.college}</Text>
+          <Text style={styles.college} numberOfLines={1}>{product.college || 'N/A'}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -55,13 +51,25 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: SPACING.md,
   },
+  phoneCard: {
+    borderRadius: 14,
+    marginBottom: 0,
+  },
   image: {
     width: '100%',
     height: 200,
     backgroundColor: COLORS.surface,
   },
+  phoneImage: {
+    height: 188,
+  },
   content: {
     padding: SPACING.md,
+  },
+  phoneContent: {
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 15,
   },
   titleRow: {
     flexDirection: 'row',
@@ -77,7 +85,7 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   price: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: COLORS.primary,
   },
@@ -96,5 +104,5 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginLeft: 4,
     flex: 1,
-  }
+  },
 });

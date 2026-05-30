@@ -35,15 +35,16 @@ const team: TeamMember[] = [
     initials: 'MA',
     accent: '#EFF6FF', // Softer pastel blue
     text: '#2563EB',
+    photo: require('../assets/images/team/amanat.png'),
   },
-  {
-    name: 'Md Adnan Karim',
-    role: 'Co-Founder & Lead UI/UX Designer',
-    desc: 'Crafting the premium, intuitive experience across the product.',
-    initials: 'AK',
-    accent: '#F5F3FF',
-    text: '#7C3AED',
-  },
+  // {
+  //   name: 'Md Adnan Karim',
+  //   role: 'Co-Founder & Lead UI/UX Designer',
+  //   desc: 'Crafting the premium, intuitive experience across the product.',
+  //   initials: 'AK',
+  //   accent: '#F5F3FF',
+  //   text: '#7C3AED',
+  // },
   {
     name: 'Aftab Mansoori',
     role: 'Co-Founder & Software Engineer',
@@ -51,15 +52,16 @@ const team: TeamMember[] = [
     initials: 'AM',
     accent: '#ECFDF5',
     text: '#059669',
+    // photo: require('../assets/images/team/aftab.jpg'),
   },
-  {
-    name: 'Masab Mallick',
-    role: 'Co-Founder & Software Engineer',
-    desc: 'Focusing on robust structures and complex campus-level features.',
-    initials: 'MM',
-    accent: '#FFFBEB',
-    text: '#D97706',
-  },
+  // {
+  //   name: 'Masab Mallick',
+  //   role: 'Co-Founder & Software Engineer',
+  //   desc: 'Focusing on robust structures and complex campus-level features.',
+  //   initials: 'MM',
+  //   accent: '#FFFBEB',
+  //   text: '#D97706',
+  // },
   {
     name: 'Yasir Jamal Noori',
     role: 'Co-Founder & QA Engineer',
@@ -67,6 +69,7 @@ const team: TeamMember[] = [
     initials: 'YN',
     accent: '#FFF1F2',
     text: '#E11D48',
+    // photo: require('../assets/images/team/yasir.jpg'),
   },
 ];
 
@@ -216,7 +219,11 @@ export default function About() {
             ]}
           >
             <View style={[styles.avatar, { backgroundColor: team[0].accent }]}>
-              <Text style={[styles.avatarText, { color: team[0].text }]}>{team[0].initials}</Text>
+              {team[0].photo ? (
+                <Image source={team[0].photo} style={styles.memberPhoto} resizeMode="cover" />
+              ) : (
+                <Text style={[styles.avatarText, { color: team[0].text }]}>{team[0].initials}</Text>
+              )}
             </View>
             <Text style={styles.memberName}>{team[0].name}</Text>
             <Text style={styles.memberRole}>{team[0].role}</Text>
@@ -591,6 +598,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
   },
   avatarText: {
     fontSize: 32,

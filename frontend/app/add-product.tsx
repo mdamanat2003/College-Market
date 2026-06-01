@@ -6,6 +6,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../store/authStore'; 
+import { API_URL } from '../services/api';
 
 export default function AddItemScreen() {
   const router = useRouter();
@@ -139,8 +140,7 @@ export default function AddItemScreen() {
         }
       }
 
-      const baseUrl = typeof window !== 'undefined' ? '' : 'https://college-market-ahrs.onrender.com';
-      const response = await fetch(`${baseUrl}/api/products`, {
+      const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -148,7 +148,16 @@ export default function AddItemScreen() {
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = null;
+
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = { message: responseText };
+        }
+      }
 
       if (response.ok) {
         Alert.alert('Success! 🎉', 'Product listed on marketplace.');

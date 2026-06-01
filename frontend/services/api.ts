@@ -6,8 +6,24 @@ import { Platform } from 'react-native';
 const DEFAULT_API_URL = 'https://college-market-ahrs.onrender.com/api';
 
 const isLocalhostUrl = (url: string | undefined) => !!url && /localhost|127\.0\.0\.1/i.test(url);
+const isLocalWebHost = () => {
+  if (typeof window === 'undefined') return false;
+  return /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+};
 
 const getWebOrigin = () => (typeof window !== 'undefined' ? window.location.origin : '');
+
+const getLocalDevApiUrl = (lanHost?: string) => {
+  if (Platform.OS === 'web' && isLocalWebHost()) {
+    return 'http://127.0.0.1:3001/api';
+  }
+
+  if (lanHost) {
+    return `http://${lanHost}:3001/api`;
+  }
+
+  return null;
+};
 
 const resolveApiUrl = (): string => {
   const envApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
@@ -16,6 +32,11 @@ const resolveApiUrl = (): string => {
     (Constants as any)?.manifest2?.extra?.expoGo?.debuggerHost ||
     (Constants as any)?.manifest?.debuggerHost;
   const lanHost = hostUri?.split(':')[0];
+
+  if (__DEV__) {
+    const localDevApiUrl = getLocalDevApiUrl(lanHost);
+    if (localDevApiUrl) return localDevApiUrl;
+  }
 
   // If an explicit API URL is provided, prefer it. On web we trust env values as-is.
   if (envApiUrl) {
@@ -44,6 +65,21 @@ export const API_URL = resolveApiUrl();
 
 const resolveSocketUrl = (): string => {
   const envSocketUrl = process.env.EXPO_PUBLIC_SOCKET_URL?.trim();
+  if (__DEV__) {
+    if (Platform.OS === 'web' && isLocalWebHost()) {
+      return 'http://127.0.0.1:3001';
+    }
+
+    const hostUri =
+      (Constants.expoConfig as any)?.hostUri ||
+      (Constants as any)?.manifest2?.extra?.expoGo?.debuggerHost ||
+      (Constants as any)?.manifest?.debuggerHost;
+    const lanHost = hostUri?.split(':')[0];
+    if (lanHost) {
+      return `http://${lanHost}:3001`;
+    }
+  }
+
   if (envSocketUrl) return envSocketUrl;
   if (Platform.OS === 'web') return getWebOrigin();
   return API_URL.replace(/\/api$/, '');

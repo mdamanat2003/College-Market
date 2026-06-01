@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Conversation from '../models/Conversation';
+import Product from '../models/Product';
 import Message from '../models/Message';
 import { asyncHandler } from '../utils/asyncHandler';
 
@@ -11,16 +12,46 @@ export const startConversation = asyncHandler(async (req: AuthRequest, res: Resp
   const { productId, otherUserId } = req.body;
   const currentUserId = req.user._id;
 
+  if (!productId || !otherUserId) {
+    res.status(400);
+    throw new Error('productId and otherUserId are required');
+  }
+
+  const product = await Product.findById(productId).select('seller');
+  if (!product) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+
+  const sellerId = product.seller?.toString();
+  const requestedOtherUserId = otherUserId.toString();
+  const requesterId = currentUserId.toString();
+
+  if (!sellerId) {
+    res.status(404);
+    throw new Error('Seller account not found');
+  }
+
+  if (requestedOtherUserId !== sellerId) {
+    res.status(403);
+    throw new Error('Unauthorized user for this product conversation');
+  }
+
+  if (requesterId === requestedOtherUserId) {
+    res.status(400);
+    throw new Error('You cannot start a conversation with yourself');
+  }
+
   // Check if conversation already exists
   let conversation = await Conversation.findOne({
-    participants: { $all: [currentUserId, otherUserId] },
+    participants: { $all: [currentUserId, product.seller] },
     product: productId
   }).populate('participants', 'name avatar');
 
   // Agar nahi hai toh naya create karo
   if (!conversation) {
     conversation = await Conversation.create({
-      participants: [currentUserId, otherUserId],
+      participants: [currentUserId, product.seller],
       product: productId
     });
     await conversation.populate('participants', 'name avatar');

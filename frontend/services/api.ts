@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-const DEFAULT_API_URL = 'http://localhost:3001/api';
+const DEFAULT_API_URL = 'https://college-market-ahrs.onrender.com/api';
 
 const isLocalhostUrl = (url: string | undefined) => !!url && /localhost|127\.0\.0\.1/i.test(url);
 

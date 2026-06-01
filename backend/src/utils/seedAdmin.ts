@@ -16,6 +16,7 @@ export const seedAdmin = async () => {
       {
         $set: {
           name: 'Super Admin',
+          username: 'super_admin',
           password: hashedPassword,
           role: 'admin',
           college: 'Admin HQ',

@@ -191,6 +191,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={[styles.inputField, errors.title ? styles.inputFieldError : null]} 
               placeholder="e.g., Engineering Mathematics Book" 
+              placeholderTextColor="#cbd5e1"
               value={title} 
               onChangeText={(text) => {
                 setTitle(text);
@@ -206,6 +207,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={[styles.inputField, errors.price ? styles.inputFieldError : null]} 
               placeholder="e.g., 450" 
+              placeholderTextColor="#cbd5e1"
               keyboardType="numeric" 
               value={price} 
               onChangeText={(text) => {
@@ -254,6 +256,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={[styles.inputField, styles.textArea, errors.description ? styles.inputFieldError : null]} 
               placeholder="Describe your product condition, usage period, etc." 
+              placeholderTextColor="#cbd5e1"
               multiline 
               numberOfLines={4} 
               value={description} 
@@ -301,6 +304,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={styles.input} 
               placeholder="Paste Cloudinary/Image URL here" 
+              placeholderTextColor="#cbd5e1"
               value={linkInput}
               onChangeText={setLinkInput}
             />

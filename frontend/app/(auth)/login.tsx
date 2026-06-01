@@ -18,18 +18,36 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [isAdminLogin, setIsAdminLogin] = useState(false);
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
 
+  const setFieldError = (field: 'email' | 'password', message: string) => {
+    setFieldErrors((current) => ({ ...current, [field]: message }));
+  };
+
+  const mapLoginError = (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage.includes('email')) return { email: message };
+    if (lowerMessage.includes('password')) return { password: message };
+    return { password: message };
+  };
+
   const handleLogin = async () => {
-    setErrorMessage("");
+    setFieldErrors({});
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    if (!normalizedEmail) {
+      setFieldError('email', 'Email is required.');
+    }
+
+    if (!password) {
+      setFieldError('password', 'Password is required.');
+    }
+
     if (!normalizedEmail || !password) {
-      setErrorMessage("Please enter email and password.");
       return;
     }
 
@@ -40,7 +58,7 @@ export default function Login() {
         const currentUser = useAuthStore.getState().user;
         // If user selected admin login but authenticated user is not admin, show error
         if (isAdminLogin && currentUser?.role !== 'admin') {
-          setErrorMessage('This account is not an admin. Please login with an admin account.');
+          setFieldError('password', 'This account is not an admin. Please login with an admin account.');
           return;
         }
 
@@ -50,11 +68,11 @@ export default function Login() {
           router.replace('/(tabs)');
         }
       } else {
-        setErrorMessage(useAuthStore.getState().error || 'Login failed');
+        setFieldErrors(mapLoginError(useAuthStore.getState().error || 'Login failed'));
       }
     } catch (err) {
       console.error('Login error:', err);
-      setErrorMessage('Server error. Is the backend running?');
+      setFieldError('password', 'Server error. Is the backend running?');
     }
   };
 
@@ -69,12 +87,6 @@ export default function Login() {
           <Text style={styles.subtitle}>Sign in to continue to CampusCart</Text>
         </View>
 
-        {errorMessage ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
-          </View>
-        ) : null}
-
         <View style={styles.form}>
           <View style={styles.adminToggleRow}>
             <TouchableOpacity onPress={() => setIsAdminLogin(!isAdminLogin)} style={[styles.adminToggle, isAdminLogin && styles.adminToggleActive]}>
@@ -84,26 +96,33 @@ export default function Login() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, fieldErrors.email && styles.inputError]}
               placeholder={isAdminLogin ? 'admin@campus.edu' : 'you@college.edu or any email'}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#cbd5e1"
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (fieldErrors.email) setFieldErrors((current) => ({ ...current, email: undefined }));
+              }}
             />
+            {fieldErrors.email ? <Text style={styles.fieldErrorText}>⚠️ {fieldErrors.email}</Text> : null}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
             <View style={styles.passwordInputWrap}>
               <TextInput
-                style={[styles.input, styles.passwordInput]}
+                style={[styles.input, styles.passwordInput, fieldErrors.password && styles.inputError]}
                 placeholder="••••••••"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#cbd5e1"
                 secureTextEntry={!showPassword}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (fieldErrors.password) setFieldErrors((current) => ({ ...current, password: undefined }));
+                }}
               />
               <TouchableOpacity
                 style={styles.eyeButton}
@@ -118,6 +137,7 @@ export default function Login() {
                 />
               </TouchableOpacity>
             </View>
+            {fieldErrors.password ? <Text style={styles.fieldErrorText}>⚠️ {fieldErrors.password}</Text> : null}
           </View>
 
           <TouchableOpacity
@@ -189,6 +209,8 @@ const styles = StyleSheet.create({
     width: 36,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
+    elevation: 10,
   },
   forgotPassword: { alignSelf: "flex-end" },
   forgotPasswordText: { color: "#2563eb", fontWeight: "500", fontSize: 14 },
@@ -214,9 +236,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   errorText: { color: '#b91c1c', fontSize: 14, fontWeight: '500' },
+  fieldErrorText: { color: '#b91c1c', fontSize: 13, fontWeight: '500' },
   adminToggleRow: { alignItems: 'center', marginBottom: 8 },
   adminToggle: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: '#e5e7eb' },
   adminToggleActive: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
   adminToggleText: { color: '#374151', fontWeight: '600' },
   adminToggleTextActive: { color: '#fff' },
+  inputError: {
+    borderColor: '#f87171',
+    backgroundColor: '#fff5f5',
+  },
 });

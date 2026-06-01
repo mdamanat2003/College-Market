@@ -25,33 +25,75 @@ const transporter = nodemailer.createTransport({
 // @desc    Register a new user
 // @route   POST /api/auth/register
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password, phone } = req.body;
+  const { name, username, email, password, phone } = req.body;
+  const trimmedName = typeof name === 'string' ? name.trim() : '';
+  const trimmedUsername = typeof username === 'string' ? username.trim() : '';
+  const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const trimmedPhone = typeof phone === 'string' ? phone.trim() : '';
+  const trimmedPassword = typeof password === 'string' ? password.trim() : '';
 
   // Basic Validation
-  if (!name || !email || !password || !phone) {
+  if (!trimmedName || !trimmedUsername || !trimmedEmail || !trimmedPassword || !trimmedPhone) {
     res.status(400);
     throw new Error('Please add all fields');
   }
 
-  // Strong Password Regex (Min 6 chars)
-  if (password.length < 6) {
+  if (!/^[A-Za-z0-9_]+$/.test(trimmedUsername)) {
     res.status(400);
-    throw new Error('Password must be at least 6 characters');
+    throw new Error('Username can only contain letters, numbers, and underscores');
   }
 
-  const userExists = await User.findOne({ email });
+  if (trimmedUsername.length < 4 || trimmedUsername.length > 20) {
+    res.status(400);
+    throw new Error('Username must be between 4 and 20 characters');
+  }
+
+  if (trimmedName.length < 3 || trimmedName.length > 50) {
+    res.status(400);
+    throw new Error('Full name must be between 3 and 50 characters');
+  }
+
+  if (!/^\d{10}$/.test(trimmedPhone)) {
+    res.status(400);
+    throw new Error('Phone number must be exactly 10 digits');
+  }
+
+  if (trimmedPassword.length < 8 || trimmedPassword.length > 12) {
+    res.status(400);
+    throw new Error('Password must be between 8 and 12 characters');
+  }
+
+  if (!/[A-Z]/.test(trimmedPassword) || !/[a-z]/.test(trimmedPassword) || !/[0-9]/.test(trimmedPassword) || !/[!@#$%^&*(),.?":{}|<>]/.test(trimmedPassword)) {
+    res.status(400);
+    throw new Error('Password must include uppercase, lowercase, number, and special character');
+  }
+
+  const userExists = await User.findOne({ email: trimmedEmail });
   if (userExists) {
     res.status(400);
-    throw new Error('User already exists');
+    throw new Error('Email already exists');
   }
 
-  const user = await User.create({ name, email, password, phone });
+  const usernameExists = await User.findOne({ username: trimmedUsername });
+  if (usernameExists) {
+    res.status(400);
+    throw new Error('Username already exists');
+  }
+
+  const user = await User.create({
+    name: trimmedName,
+    username: trimmedUsername,
+    email: trimmedEmail,
+    password: trimmedPassword,
+    phone: trimmedPhone,
+  });
 
   if (user) {
     res.status(201).json({
       success: true,
       _id: user.id,
       name: user.name,
+      username: user.username,
       email: user.email,
       role: user.role,
       phone: user.phone,
@@ -79,6 +121,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
       success: true,
       _id: user.id,
       name: user.name,
+      username: user.username,
       email: user.email,
       role: user.role,
       phone: user.phone,

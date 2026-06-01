@@ -11,8 +11,6 @@ const isLocalWebHost = () => {
   return /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
 };
 
-const getWebOrigin = () => (typeof window !== 'undefined' ? window.location.origin : '');
-
 const getLocalDevApiUrl = (lanHost?: string) => {
   if (Platform.OS === 'web' && isLocalWebHost()) {
     return 'http://127.0.0.1:3001/api';
@@ -40,7 +38,6 @@ const resolveApiUrl = (): string => {
 
   // If an explicit API URL is provided, prefer it. On web we trust env values as-is.
   if (envApiUrl) {
-    if (Platform.OS === 'web') return envApiUrl;
     // For native (Expo on device), replace localhost with LAN host if available.
     if (isLocalhostUrl(envApiUrl) && lanHost) {
       return envApiUrl.replace(/localhost|127\.0\.0\.1/g, lanHost);
@@ -48,14 +45,9 @@ const resolveApiUrl = (): string => {
     return envApiUrl;
   }
 
-  // No explicit env value — try LAN host (device) or web origin
+  // No explicit env value — try LAN host (device) or default backend
   if (lanHost) {
     return `https://${lanHost}:3001/api`;
-  }
-
-  if (Platform.OS === 'web') {
-    const origin = getWebOrigin();
-    return origin ? `${origin}/api` : DEFAULT_API_URL;
   }
 
   return DEFAULT_API_URL;
@@ -81,7 +73,6 @@ const resolveSocketUrl = (): string => {
   }
 
   if (envSocketUrl) return envSocketUrl;
-  if (Platform.OS === 'web') return getWebOrigin();
   return API_URL.replace(/\/api$/, '');
 };
 

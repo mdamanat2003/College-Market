@@ -14,18 +14,20 @@ const connectDB = async () => {
   const configuredUris = [process.env.MONGO_URI, process.env.MONGODB_URI].filter(
     (value): value is string => Boolean(value && value.trim())
   );
+  const isProduction = process.env.NODE_ENV === 'production';
 
   try {
     const uri =
-      configuredUris.find((value) => !isLocalMongoUri(value)) ||
-      configuredUris[0] ||
+      (isProduction
+        ? configuredUris.find((value) => !isLocalMongoUri(value)) || configuredUris[0]
+        : configuredUris.find((value) => isLocalMongoUri(value)) || configuredUris[0]) ||
       localUri;
 
     if (!configuredUris.length) {
       console.warn(
         "MONGODB_URI/MONGO_URI not found. Falling back to local MongoDB: mongodb://127.0.0.1:27017/campuscart"
       );
-    } else if (isLocalMongoUri(uri)) {
+    } else if (!isProduction && isLocalMongoUri(uri)) {
       console.warn(
         "Using local MongoDB URI from environment. If login fails on a deployed app, set MONGO_URI to your live Atlas connection string."
       );
@@ -41,8 +43,9 @@ const connectDB = async () => {
     console.error(error);
 
     const uri =
-      configuredUris.find((value) => !isLocalMongoUri(value)) ||
-      configuredUris[0] ||
+      (isProduction
+        ? configuredUris.find((value) => !isLocalMongoUri(value)) || configuredUris[0]
+        : configuredUris.find((value) => isLocalMongoUri(value)) || configuredUris[0]) ||
       "";
 
     const errAny: any = error;
@@ -52,7 +55,7 @@ const connectDB = async () => {
       /authentication failed|bad auth/i.test(String(errAny?.message || errAny))
     );
 
-    if (isAuthError && uri && !isLocalMongoUri(uri)) {
+    if (!isProduction && isAuthError && uri && !isLocalMongoUri(uri)) {
       console.warn('Authentication to configured MongoDB failed. Falling back to local MongoDB.');
       try {
         const localConn = await mongoose.connect(localUri, {
@@ -66,7 +69,7 @@ const connectDB = async () => {
       }
     }
 
-    if (isLocalMongoUri(uri)) {
+    if (!isProduction && isLocalMongoUri(uri)) {
       console.error('Local MongoDB is not reachable. Start the MongoDB service or update MONGODB_URI to a live database URL.');
       console.error('Windows hint: open PowerShell as Administrator and run: Start-Service MongoDB');
     }

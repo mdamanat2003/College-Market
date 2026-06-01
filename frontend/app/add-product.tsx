@@ -139,7 +139,7 @@ export default function AddItemScreen() {
         }
       }
 
-      const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3001';
+      const baseUrl = typeof window !== 'undefined' ? '' : 'https://college-market-ahrs.onrender.com';
       const response = await fetch(`${baseUrl}/api/products`, {
         method: 'POST',
         headers: {

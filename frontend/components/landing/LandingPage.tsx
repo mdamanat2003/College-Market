@@ -156,8 +156,9 @@ export default function LandingPage() {
   }, [socket]);
 
   useEffect(() => {
-    const gradientAnimation = Animated.loop(Animated.timing(welcomeGradient, { toValue: 1, duration: 9000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }));
-    const colorAnimation = Animated.loop(Animated.timing(textColorAnim, { toValue: 1, duration: 7000, easing: Easing.linear, useNativeDriver: false }));
+    // Faster, livelier welcome animations
+    const gradientAnimation = Animated.loop(Animated.timing(welcomeGradient, { toValue: 1, duration: 5000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }));
+    const colorAnimation = Animated.loop(Animated.timing(textColorAnim, { toValue: 1, duration: 3500, easing: Easing.linear, useNativeDriver: false }));
     gradientAnimation.start();
     colorAnimation.start();
 
@@ -237,12 +238,13 @@ export default function LandingPage() {
 
   const gradientLayerTwoOpacity = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1, 0] });
   const gradientLayerThreeOpacity = welcomeGradient.interpolate({ inputRange: [0, 0.35, 0.75, 1], outputRange: [0.65, 0, 1, 0.65] });
-  const gradientDrift = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [-18, 18, -18] });
-  const welcomeTextScale = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.045, 1] });
-  const welcomeTextLift = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [3, -3, 3] });
+  const gradientDriftLarge = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [-28, 28, -28] });
+  const welcomeTextScale = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.09, 1] });
+  const welcomeTextLift = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [6, -6, 6] });
+  const welcomeTextRotate = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['-2deg', '2deg', '-2deg'] });
   const welcomeTitleTransform = isMobile
-    ? [{ translateY: welcomeTextLift }]
-    : [{ translateY: welcomeTextLift }, { scale: welcomeTextScale }];
+    ? [{ translateY: welcomeTextLift }, { rotate: welcomeTextRotate }]
+    : [{ translateY: welcomeTextLift }, { scale: welcomeTextScale }, { rotate: welcomeTextRotate }];
   const animatedTextColor = textColorAnim.interpolate({
     inputRange: [0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.84, 1],
     outputRange: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3', '#FF0000'],
@@ -259,9 +261,9 @@ export default function LandingPage() {
 
           <View style={[styles.welcomeBand, isMobile && styles.welcomeBandMobile]}>
             <View style={[styles.welcomeCard, isMobile && styles.welcomeCardMobile]}>
-              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientBase, { transform: [{ translateX: gradientDrift }, { scale: 1.05 }] }]} />
-              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerTwo, { opacity: gradientLayerTwoOpacity, transform: [{ translateX: gradientDrift }, { scale: 1.08 }] }]} />
-              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerThree, { opacity: gradientLayerThreeOpacity, transform: [{ translateX: gradientDrift }, { scale: 1.12 }] }]} />
+              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientBase, { transform: [{ translateX: gradientDriftLarge }, { scale: 1.05 }] }]} />
+              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerTwo, { opacity: gradientLayerTwoOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.08 }] }]} />
+              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerThree, { opacity: gradientLayerThreeOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.12 }] }]} />
               <View style={styles.welcomeSheen} />
               <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
                 {isMobile ? <>WELCOME TO{'\n'}CAMPUSCART</> : 'WELCOME TO CAMPUSCART'}

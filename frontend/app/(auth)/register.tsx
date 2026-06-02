@@ -10,14 +10,40 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
-import { Link, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore } from "../../store/authStore";
+import { Link, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { COLLEGES } from '../../constants/colleges';
+import { useAuthStore } from '../../store/authStore';
+
+const COLORS = {
+  background: '#F5F7FB',
+  card: '#FFFFFF',
+  primary: '#316BEF',
+  primaryHover: '#2563EB',
+  heading: '#1E293B',
+  label: '#374151',
+  placeholder: '#94A3B8',
+  border: '#DCE3EE',
+  link: '#2563EB',
+  success: '#16A34A',
+  error: '#EF4444',
+  helper: '#64748B',
+};
+
+type RegisterFieldName =
+  | 'name'
+  | 'email'
+  | 'phone'
+  | 'college'
+  | 'confirmEmail'
+  | 'otherCollege'
+  | 'password'
+  | 'confirmPassword';
 
 const registerSchema = z
   .object({
@@ -26,14 +52,11 @@ const registerSchema = z
       .trim()
       .min(3, 'Full name must be at least 3 characters.')
       .max(50, 'Full name must be at most 50 characters.'),
-    username: z
-      .string()
-      .trim()
-      .min(4, 'Username must be at least 4 characters.')
-      .max(20, 'Username must be at most 20 characters.')
-      .regex(/^[A-Za-z0-9_]+$/, 'Username can only use letters, numbers, and underscores.'),
     email: z.string().trim().email('Enter a valid email address.').transform((value) => value.toLowerCase()),
     phone: z.string().trim().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits.'),
+    college: z.string().optional(),
+    confirmEmail: z.string().trim().min(1, 'Confirm your email or enter an alternate contact.'),
+    otherCollege: z.string().optional(),
     password: z
       .string()
       .trim()
@@ -44,46 +67,81 @@ const registerSchema = z
       .regex(/[0-9]/, 'Password must include at least one number.')
       .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must include at least one special character.'),
     confirmPassword: z.string().trim().min(1, 'Please confirm your password.'),
-    college: z.string().optional(),
-    otherCollege: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match.',
     path: ['confirmPassword'],
+  })
+  .refine((data) => data.confirmEmail.toLowerCase() === data.email || /^\d{10}$/.test(data.confirmEmail), {
+    message: 'Enter matching email or a 10 digit alternate contact.',
+    path: ['confirmEmail'],
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+const getPasswordStrength = (password: string) => {
+  const checks = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[a-z]/.test(password),
+    /[0-9]/.test(password),
+    /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  ];
+  const score = checks.filter(Boolean).length;
+
+  if (!password) return { label: 'Enter a password', color: COLORS.helper, width: '0%' };
+  if (score <= 2) return { label: 'Weak password', color: COLORS.error, width: '34%' };
+  if (score <= 4) return { label: 'Good password', color: '#F59E0B', width: '68%' };
+  return { label: 'Strong password', color: COLORS.success, width: '100%' };
+};
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCollegeList, setShowCollegeList] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [focusedField, setFocusedField] = useState<RegisterFieldName | null>(null);
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && width >= 900;
   const router = useRouter();
   const registerStore = useAuthStore((s) => s.register);
   const authError = useAuthStore((s) => s.error);
 
-  const { control, handleSubmit, watch, formState: { errors, isValid, isSubmitting }, setError, } = useForm<RegisterFormValues>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, isSubmitting },
+    setError,
+  } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
     defaultValues: {
       name: '',
-      username: '',
       email: '',
       phone: '',
+      college: '',
+      confirmEmail: '',
+      otherCollege: '',
       password: '',
       confirmPassword: '',
-      college: '',
-      otherCollege: '',
     },
   });
 
   const watchedCollege = watch('college');
+  const watchedPassword = watch('password') || '';
+  const passwordStrength = getPasswordStrength(watchedPassword);
+
+  const inputStyle = (field: RegisterFieldName, hasError: boolean) => [
+    styles.input,
+    focusedField === field && styles.inputFocused,
+    hasError && styles.inputError,
+  ];
 
   const mapServerErrorToField = (message: string): keyof RegisterFormValues | null => {
     const lowerMessage = message.toLowerCase();
-    if (lowerMessage.includes('username')) return 'username';
+    if (lowerMessage.includes('username')) return 'email';
     if (lowerMessage.includes('email')) return 'email';
     if (lowerMessage.includes('phone')) return 'phone';
     if (lowerMessage.includes('name')) return 'name';
@@ -103,10 +161,12 @@ export default function Register() {
       }
 
       const selectedCollege = values.college === 'Other' ? (values.otherCollege || '').trim() : (values.college || '').trim();
+      const emailLocalPart = values.email.split('@')[0].replace(/[^A-Za-z0-9_]/g, '_').slice(0, 15) || 'campus_user';
+      const generatedUsername = `${emailLocalPart}_${values.phone.slice(-4)}`;
 
       const ok = await registerStore({
         name: values.name.trim(),
-        username: values.username.trim(),
+        username: generatedUsername,
         email: values.email.trim().toLowerCase(),
         phone: values.phone.trim(),
         password: values.password.trim(),
@@ -114,7 +174,7 @@ export default function Register() {
       });
 
       if (ok) {
-        Alert.alert('Success! 🎉', 'Your account has been created.');
+        Alert.alert('Success!', 'Your account has been created.');
         router.replace('/(auth)/login');
       } else {
         const message = authError || 'Registration failed.';
@@ -128,294 +188,325 @@ export default function Register() {
       }
     } catch (error) {
       console.error('Register request failed:', error);
-      setServerError('Server error! Backend chalu hai kya?');
+      setServerError('Server error. Please check that the backend is running.');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>Join CampusCart</Text>
-            <Text style={styles.subtitle}>Create an account to start trading</Text>
-          </View>
-
-          {serverError ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>⚠️ {serverError}</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
+        <ScrollView contentContainerStyle={[styles.container, isDesktop && styles.containerDesktop]} showsVerticalScrollIndicator={false}>
+          <View style={styles.pageShell}>
+            <View style={styles.hero}>
+              <Text style={styles.heroTitle}>Create Your Account</Text>
+              <Text style={styles.heroSubtitle}>Join CampusCart and start trading with your campus community.</Text>
             </View>
-          ) : null}
 
-          <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Full Name</Text>
-              <Controller
-                control={control}
-                name="name"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={[styles.input, errors.name && styles.inputError]}
-                    placeholder="John Doe (3-50 characters)"
-                    placeholderTextColor="#cbd5e1"
-                    autoCapitalize="words"
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={(text) => {
-                      onChange(text);
-                      if (serverError) setServerError('');
-                    }}
-                    maxLength={50}
+            {serverError ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{serverError}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.card}>
+              <View style={styles.form}>
+                <View style={styles.inputGroupFull}>
+                  <Text style={styles.label}>Full Name</Text>
+                  <Controller
+                    control={control}
+                    name="name"
+                    render={({ field: { value, onChange, onBlur } }) => (
+                      <TextInput
+                        style={inputStyle('name', Boolean(errors.name))}
+                        placeholder="John Doe"
+                        placeholderTextColor={COLORS.placeholder}
+                        autoCapitalize="words"
+                        value={value}
+                        onFocus={() => setFocusedField('name')}
+                        onBlur={() => {
+                          setFocusedField(null);
+                          onBlur();
+                        }}
+                        onChangeText={(text) => {
+                          onChange(text);
+                          if (serverError) setServerError('');
+                        }}
+                        maxLength={50}
+                      />
+                    )}
                   />
-                )}
-              />
-              {errors.name ? <Text style={styles.fieldErrorText}>⚠️ {errors.name.message}</Text> : null}
-            </View>
+                  {errors.name ? <Text style={styles.fieldErrorText}>{errors.name.message}</Text> : null}
+                </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Username</Text>
-              <Controller
-                control={control}
-                name="username"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={[styles.input, errors.username && styles.inputError]}
-                    placeholder="campus_user_01 (4-20 chars)"
-                    placeholderTextColor="#cbd5e1"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={(text) => {
-                      onChange(text);
-                      if (serverError) setServerError('');
-                    }}
-                    maxLength={20}
-                  />
-                )}
-              />
-              {errors.username ? <Text style={styles.fieldErrorText}>⚠️ {errors.username.message}</Text> : null}
-            </View>
+                <View style={[styles.row, isDesktop && styles.rowDesktop]}>
+                  <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
+                    <Text style={styles.label}>Email Address</Text>
+                    <Controller
+                      control={control}
+                      name="email"
+                      render={({ field: { value, onChange, onBlur } }) => (
+                        <TextInput
+                          style={inputStyle('email', Boolean(errors.email))}
+                          placeholder="you@college.edu"
+                          placeholderTextColor={COLORS.placeholder}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={value}
+                          onFocus={() => setFocusedField('email')}
+                          onBlur={() => {
+                            setFocusedField(null);
+                            onBlur();
+                          }}
+                          onChangeText={(text) => {
+                            onChange(text);
+                            if (serverError) setServerError('');
+                          }}
+                          maxLength={254}
+                        />
+                      )}
+                    />
+                    {errors.email ? <Text style={styles.fieldErrorText}>{errors.email.message}</Text> : null}
+                    <Text style={styles.hintText}>College email preferred for the Verified badge.</Text>
+                  </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email Address</Text>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="you@college.edu or personal"
-                    placeholderTextColor="#cbd5e1"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={(text) => {
-                      onChange(text);
-                      if (serverError) setServerError('');
-                    }}
-                    maxLength={254}
-                  />
-                )}
-              />
-              {errors.email ? <Text style={styles.fieldErrorText}>⚠️ {errors.email.message}</Text> : null}
-              <Text style={styles.hintText}>💡 College email preferred for the Verified badge.</Text>
-            </View>
+                  <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
+                    <Text style={styles.label}>Phone Number</Text>
+                    <Controller
+                      control={control}
+                      name="phone"
+                      render={({ field: { value, onChange, onBlur } }) => (
+                        <TextInput
+                          style={inputStyle('phone', Boolean(errors.phone))}
+                          placeholder="Enter 10 digit phone number"
+                          placeholderTextColor={COLORS.placeholder}
+                          keyboardType="phone-pad"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={value}
+                          onFocus={() => setFocusedField('phone')}
+                          onBlur={() => {
+                            setFocusedField(null);
+                            onBlur();
+                          }}
+                          onChangeText={(text) => {
+                            onChange(text);
+                            if (serverError) setServerError('');
+                          }}
+                          maxLength={10}
+                        />
+                      )}
+                    />
+                    {errors.phone ? <Text style={styles.fieldErrorText}>{errors.phone.message}</Text> : null}
+                  </View>
+                </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Phone Number</Text>
-              <Controller
-                control={control}
-                name="phone"
-                render={({ field: { value, onChange, onBlur } }) => (
-                  <TextInput
-                    style={[styles.input, errors.phone && styles.inputError]}
-                    placeholder="10 digit phone number"
-                    placeholderTextColor="#cbd5e1"
-                    keyboardType="phone-pad"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    value={value}
-                    onBlur={onBlur}
-                    onChangeText={(text) => {
-                      onChange(text);
-                      if (serverError) setServerError('');
-                    }}
-                    maxLength={10}
-                  />
-                )}
-              />
-              {errors.phone ? <Text style={styles.fieldErrorText}>⚠️ {errors.phone.message}</Text> : null}
-            </View>
+                <View style={[styles.row, isDesktop && styles.rowDesktop]}>
+                  <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
+                    <Text style={styles.label}>College</Text>
+                    <Controller
+                      control={control}
+                      name="college"
+                      render={({ field: { value, onChange } }) => (
+                        <View>
+                          <TouchableOpacity
+                            style={[styles.selectInput, focusedField === 'college' && styles.inputFocused, errors.college && styles.inputError]}
+                            onPress={() => {
+                              setFocusedField('college');
+                              setShowCollegeList((current) => !current);
+                            }}
+                            activeOpacity={0.9}
+                          >
+                            <Text style={[styles.selectText, value ? styles.selectTextActive : styles.selectTextPlaceholder]}>
+                              {value || 'Select your college'}
+                            </Text>
+                            <Ionicons name="chevron-down" size={18} color={COLORS.helper} />
+                          </TouchableOpacity>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>College</Text>
-                <Controller
-                  control={control}
-                  name="college"
-                  render={({ field: { value, onChange } }) => (
-                    <View>
-                      <TouchableOpacity
-                        style={[styles.input, errors.college && styles.inputError]}
-                        onPress={() => setShowCollegeList((s) => !s)}
-                        activeOpacity={0.9}
-                      >
-                        <Text style={{ color: value ? '#111827' : '#9CA3AF' }}>{value || 'Select your college'}</Text>
-                      </TouchableOpacity>
-
-                      {showCollegeList && (
-                        <View style={styles.collegeList}>
-                          {COLLEGES.map((c) => (
-                            <TouchableOpacity
-                              key={c}
-                              onPress={() => {
-                                onChange(c);
-                                setShowCollegeList(false);
-                              }}
-                              style={styles.collegeItem}
-                            >
-                              <Text style={{ color: '#111827' }}>{c}</Text>
-                            </TouchableOpacity>
-                          ))}
+                          {showCollegeList ? (
+                            <View style={styles.collegeList}>
+                              {COLLEGES.map((college) => (
+                                <TouchableOpacity
+                                  key={college}
+                                  onPress={() => {
+                                    onChange(college);
+                                    setShowCollegeList(false);
+                                    setFocusedField(null);
+                                  }}
+                                  style={styles.collegeItem}
+                                >
+                                  <Text style={styles.collegeItemText}>{college}</Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          ) : null}
                         </View>
                       )}
-                    </View>
-                  )}
-                />
-                {errors.college ? <Text style={styles.fieldErrorText}>⚠️ {errors.college.message}</Text> : null}
-              </View>
+                    />
+                    {errors.college ? <Text style={styles.fieldErrorText}>{errors.college.message}</Text> : null}
+                  </View>
 
-              <Controller
-                control={control}
-                name="otherCollege"
-                render={({ field: { value, onChange } }) => (
-                  watchedCollege === 'Other' ? (
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.label}>Enter your college name</Text>
-                      <TextInput
-                        style={[styles.input, errors.otherCollege && styles.inputError]}
-                        placeholder="Full college name"
-                        placeholderTextColor="#cbd5e1"
-                        value={value}
-                        onChangeText={(text) => onChange(text)}
-                        maxLength={150}
+                  <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
+                    <Text style={styles.label}>Confirm Email / Alternate Contact</Text>
+                    <Controller
+                      control={control}
+                      name="confirmEmail"
+                      render={({ field: { value, onChange, onBlur } }) => (
+                        <TextInput
+                          style={inputStyle('confirmEmail', Boolean(errors.confirmEmail))}
+                          placeholder="Re-enter email or backup contact"
+                          placeholderTextColor={COLORS.placeholder}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={value}
+                          onFocus={() => setFocusedField('confirmEmail')}
+                          onBlur={() => {
+                            setFocusedField(null);
+                            onBlur();
+                          }}
+                          onChangeText={(text) => {
+                            onChange(text);
+                            if (serverError) setServerError('');
+                          }}
+                          maxLength={254}
+                        />
+                      )}
+                    />
+                    {errors.confirmEmail ? <Text style={styles.fieldErrorText}>{errors.confirmEmail.message}</Text> : null}
+                  </View>
+                </View>
+
+                {watchedCollege === 'Other' ? (
+                  <View style={styles.inputGroupFull}>
+                    <Text style={styles.label}>Enter your college name</Text>
+                    <Controller
+                      control={control}
+                      name="otherCollege"
+                      render={({ field: { value, onChange } }) => (
+                        <TextInput
+                          style={inputStyle('otherCollege', Boolean(errors.otherCollege))}
+                          placeholder="Full college name"
+                          placeholderTextColor={COLORS.placeholder}
+                          value={value}
+                          onFocus={() => setFocusedField('otherCollege')}
+                          onBlur={() => setFocusedField(null)}
+                          onChangeText={(text) => onChange(text)}
+                          maxLength={150}
+                        />
+                      )}
+                    />
+                    {errors.otherCollege ? <Text style={styles.fieldErrorText}>{errors.otherCollege.message}</Text> : null}
+                  </View>
+                ) : null}
+
+                <View style={[styles.row, isDesktop && styles.rowDesktop]}>
+                  <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
+                    <Text style={styles.label}>Create Password</Text>
+                    <View style={styles.passwordInputWrap}>
+                      <Controller
+                        control={control}
+                        name="password"
+                        render={({ field: { value, onChange, onBlur } }) => (
+                          <TextInput
+                            style={[...inputStyle('password', Boolean(errors.password)), styles.passwordInput]}
+                            placeholder="8-12 chars, e.g. Campus@12"
+                            placeholderTextColor={COLORS.placeholder}
+                            secureTextEntry={!showPassword}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            value={value}
+                            onFocus={() => setFocusedField('password')}
+                            onBlur={() => {
+                              setFocusedField(null);
+                              onBlur();
+                            }}
+                            onChangeText={(text) => {
+                              onChange(text);
+                              if (serverError) setServerError('');
+                            }}
+                            maxLength={12}
+                          />
+                        )}
                       />
-                      {errors.otherCollege ? <Text style={styles.fieldErrorText}>⚠️ {errors.otherCollege.message}</Text> : null}
+                      <TouchableOpacity
+                        style={styles.eyeButton}
+                        onPress={() => setShowPassword((current) => !current)}
+                        accessibilityRole="button"
+                        accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={COLORS.helper} />
+                      </TouchableOpacity>
                     </View>
-                  ) : <></>
-                )}
-              />
+                    <View style={styles.strengthTrack}>
+                      <View style={[styles.strengthFill, { width: passwordStrength.width, backgroundColor: passwordStrength.color }]} />
+                    </View>
+                    <Text style={[styles.passwordStrengthText, { color: passwordStrength.color }]}>{passwordStrength.label}</Text>
+                    {errors.password ? <Text style={styles.fieldErrorText}>{errors.password.message}</Text> : null}
+                  </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Create Password</Text>
-              <View style={styles.passwordInputWrap}>
-                <Controller
-                  control={control}
-                  name="password"
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <TextInput
-                      style={[styles.input, styles.passwordInput, errors.password && styles.inputError]}
-                      placeholder="8-12 chars, e.g. Campus@12"
-                      placeholderTextColor="#cbd5e1"
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      value={value}
-                      onBlur={onBlur}
-                      onChangeText={(text) => {
-                        onChange(text);
-                        if (serverError) setServerError('');
-                      }}
-                      maxLength={12}
-                    />
-                  )}
-                />
+                  <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
+                    <Text style={styles.label}>Confirm Password</Text>
+                    <View style={styles.passwordInputWrap}>
+                      <Controller
+                        control={control}
+                        name="confirmPassword"
+                        render={({ field: { value, onChange, onBlur } }) => (
+                          <TextInput
+                            style={[...inputStyle('confirmPassword', Boolean(errors.confirmPassword)), styles.passwordInput]}
+                            placeholder="Retype your password"
+                            placeholderTextColor={COLORS.placeholder}
+                            secureTextEntry={!showConfirmPassword}
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            value={value}
+                            onFocus={() => setFocusedField('confirmPassword')}
+                            onBlur={() => {
+                              setFocusedField(null);
+                              onBlur();
+                            }}
+                            onChangeText={(text) => {
+                              onChange(text);
+                              if (serverError) setServerError('');
+                            }}
+                            maxLength={12}
+                          />
+                        )}
+                      />
+                      <TouchableOpacity
+                        style={styles.eyeButton}
+                        onPress={() => setShowConfirmPassword((current) => !current)}
+                        accessibilityRole="button"
+                        accessibilityLabel={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        <Ionicons name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={COLORS.helper} />
+                      </TouchableOpacity>
+                    </View>
+                    {errors.confirmPassword ? <Text style={styles.fieldErrorText}>{errors.confirmPassword.message}</Text> : null}
+                  </View>
+                </View>
+
                 <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword((current) => !current)}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    showPassword ? "Hide password" : "Show password"
-                  }
+                  style={[styles.button, isButtonHovered && styles.buttonHover, (!isValid || isSubmitting) && styles.buttonDisabled]}
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={!isValid || isSubmitting}
+                  onHoverIn={() => setIsButtonHovered(true)}
+                  onHoverOut={() => setIsButtonHovered(false)}
+                  activeOpacity={0.85}
                 >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={22}
-                    color="#6b7280"
-                  />
+                  <Text style={styles.buttonText}>{isSubmitting ? 'Creating Account...' : 'Create Account'}</Text>
                 </TouchableOpacity>
+
+                <View style={styles.footer}>
+                  <Text style={styles.footerText}>Already have an account? </Text>
+                  <Link href="/login" asChild>
+                    <TouchableOpacity>
+                      <Text style={styles.footerLink}>Sign In</Text>
+                    </TouchableOpacity>
+                  </Link>
+                </View>
               </View>
-              {errors.password ? <Text style={styles.fieldErrorText}>⚠️ {errors.password.message}</Text> : null}
             </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <View style={styles.passwordInputWrap}>
-                <Controller
-                  control={control}
-                  name="confirmPassword"
-                  render={({ field: { value, onChange, onBlur } }) => (
-                    <TextInput
-                      style={[styles.input, styles.passwordInput, errors.confirmPassword && styles.inputError]}
-                      placeholder="Retype your password"
-                      placeholderTextColor="#cbd5e1"
-                      secureTextEntry={!showConfirmPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      value={value}
-                      onBlur={onBlur}
-                      onChangeText={(text) => {
-                        onChange(text);
-                        if (serverError) setServerError('');
-                      }}
-                      maxLength={12}
-                    />
-                  )}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword((current) => !current)}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  <Ionicons
-                    name={
-                      showConfirmPassword ? "eye-off-outline" : "eye-outline"
-                    }
-                    size={22}
-                    color="#6b7280"
-                  />
-                </TouchableOpacity>
-              </View>
-              {errors.confirmPassword ? <Text style={styles.fieldErrorText}>⚠️ {errors.confirmPassword.message}</Text> : null}
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, (!isValid || isSubmitting) && styles.buttonDisabled]}
-              onPress={handleSubmit(onSubmit)}
-              disabled={!isValid || isSubmitting}
-            >
-              <Text style={styles.buttonText}>{isSubmitting ? 'Creating Account...' : 'Create Account'}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <Link href="/login" asChild>
-              <TouchableOpacity>
-                <Text style={styles.footerLink}>Sign In</Text>
-              </TouchableOpacity>
-            </Link>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -424,101 +515,217 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#ffffff" },
+  safeArea: { flex: 1, backgroundColor: COLORS.background },
+  keyboardView: { flex: 1 },
   container: {
     flexGrow: 1,
-    padding: 24,
-    justifyContent: "center",
-    width: "100%",
-    maxWidth: 450,
-    alignSelf: "center",
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 28,
   },
-  header: { marginBottom: 24, marginTop: 20 },
-  title: {
+  containerDesktop: {
+    paddingHorizontal: 32,
+    paddingVertical: 34,
+  },
+  pageShell: {
+    width: '100%',
+    maxWidth: 920,
+  },
+  hero: {
+    alignItems: 'center',
+    marginBottom: 22,
+  },
+  heroTitle: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#111827",
+    lineHeight: 40,
+    fontWeight: '800',
+    color: COLORS.heading,
+    textAlign: 'center',
     marginBottom: 8,
   },
-  subtitle: { fontSize: 16, color: "#6b7280" },
-  errorBox: {
-    backgroundColor: '#fef2f2',
+  heroSubtitle: {
+    color: COLORS.helper,
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: '#f87171',
-    borderRadius: 8,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    padding: 24,
+    boxShadow: '0 14px 35px rgba(30, 41, 59, 0.08)',
+    elevation: 3,
+  },
+  errorBox: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 12,
     padding: 12,
     marginBottom: 16,
   },
-  errorText: { color: '#b91c1c', fontSize: 14, fontWeight: '500' },
-  fieldErrorText: { color: '#b91c1c', fontSize: 13, fontWeight: '500' },
+  errorText: { color: COLORS.error, fontSize: 14, fontWeight: '600' },
   form: { gap: 16 },
-  inputGroup: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#374151" },
+  row: { gap: 16 },
+  rowDesktop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  inputGroup: { gap: 8, flex: 1 },
+  inputGroupFull: { gap: 8, width: '100%' },
+  halfField: { flex: 1 },
+  label: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '700',
+    color: COLORS.label,
+  },
   input: {
+    minHeight: 54,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    padding: 16,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.card,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     fontSize: 16,
-    color: "#111827",
+    color: COLORS.heading,
+    transitionProperty: 'border-color, box-shadow, background-color',
+    transitionDuration: '180ms',
+  },
+  inputFocused: {
+    borderColor: COLORS.primary,
+    boxShadow: '0 0 0 3px rgba(124, 157, 240, 0.14)',
+  },
+  inputError: {
+    borderColor: COLORS.error,
+    backgroundColor: '#FFFBFB',
+  },
+  selectInput: {
+    minHeight: 54,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.card,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectText: {
+    fontSize: 16,
+    flex: 1,
+    marginRight: 12,
+  },
+  selectTextPlaceholder: { color: COLORS.placeholder },
+  selectTextActive: { color: COLORS.heading },
+  collegeList: {
+    maxHeight: 220,
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    marginTop: 8,
+    overflow: 'hidden',
+    zIndex: 20,
+  },
+  collegeItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEF2F7',
+  },
+  collegeItemText: {
+    color: COLORS.heading,
+    fontSize: 15,
+    fontWeight: '500',
   },
   passwordInputWrap: {
-    position: "relative",
-    justifyContent: "center",
+    position: 'relative',
+    justifyContent: 'center',
   },
   passwordInput: {
     paddingRight: 52,
   },
-  collegeList: {
-    maxHeight: 200,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    marginTop: 8,
-    paddingVertical: 6,
-  },
-  collegeItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  inputError: {
-    borderColor: '#f87171',
-    backgroundColor: '#fff5f5',
-  },
   eyeButton: {
-    position: "absolute",
-    right: 14,
+    position: 'absolute',
+    right: 12,
     height: 44,
-    width: 36,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 10,
     elevation: 10,
   },
-  hintText: { fontSize: 12, color: "#059669", fontWeight: "500", marginTop: 2 },
+  strengthTrack: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: '#E8EEF7',
+    overflow: 'hidden',
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 999,
+  },
+  passwordStrengthText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  hintText: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.success,
+    fontWeight: '600',
+    marginTop: -2,
+  },
+  fieldErrorText: {
+    color: COLORS.error,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '600',
+  },
   button: {
-    backgroundColor: "#2563eb",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 12,
-    boxShadow: "0 4px 8px rgba(37, 99, 235, 0.2)",
+    width: '100%',
+    minHeight: 56,
+    backgroundColor: COLORS.primary,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    boxShadow: '0 10px 22px rgba(124, 157, 240, 0.26)',
     elevation: 4,
+    transitionProperty: 'background-color, box-shadow, opacity',
+    transitionDuration: '180ms',
+  },
+  buttonHover: {
+    backgroundColor: COLORS.primaryHover,
   },
   buttonDisabled: {
-    opacity: 0.55,
+    opacity: 0.58,
   },
-  buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "bold" },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 32,
-    marginBottom: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 2,
   },
-  footerText: { color: "#6b7280", fontSize: 15 },
-  footerLink: { color: "#2563eb", fontSize: 15, fontWeight: "bold" },
+  footerText: {
+    color: COLORS.helper,
+    fontSize: 15,
+  },
+  footerLink: {
+    color: COLORS.link,
+    fontSize: 15,
+    fontWeight: '800',
+  },
 });

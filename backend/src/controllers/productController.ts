@@ -115,6 +115,16 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
 
     let finalImagesArray: string[] = [];
 
+    const forwardedProtoHeader = req.headers['x-forwarded-proto'];
+    const forwardedProto = Array.isArray(forwardedProtoHeader)
+      ? forwardedProtoHeader[0]
+      : forwardedProtoHeader;
+    const publicProtocol =
+      process.env.PUBLIC_BASE_URL?.startsWith('https://') || forwardedProto === 'https' || process.env.NODE_ENV === 'production'
+        ? 'https'
+        : req.protocol;
+    const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${publicProtocol}://${req.get('host')}/uploads`;
+
     // 1. Links check
     if (imageLinks) {
       if (Array.isArray(imageLinks)) {
@@ -126,7 +136,6 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
 
     // 2. Local Files check - save uploaded files to backend /uploads and return accessible URLs
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-      const uploadsBase = `${req.protocol}://${req.get('host')}/uploads`;
       const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
 
       // ensure directory exists

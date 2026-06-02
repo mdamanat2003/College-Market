@@ -8,6 +8,7 @@ import { useOrderStore } from '../store/orderStore';
 import OrderCard from '../components/OrderCard';
 import { Button } from '../components/ui/Button';
 import { PlaceholderImage } from '../components/ui/PlaceholderImage';
+import { SafeImage } from '../components/ui/SafeImage';
 import { COLORS, SPACING, RADIUS } from '../theme/colors';
 
 export default function ProfileScreen() {
@@ -149,7 +150,7 @@ export default function ProfileScreen() {
 
                 <View style={styles.productRow}>
                   {product?.images?.[0] ? (
-                    <Image source={{ uri: product.images[0] }} style={styles.productImg} />
+                    <SafeImage uri={product.images[0]} style={styles.productImg} resizeMode="cover" />
                   ) : (
                     <PlaceholderImage style={styles.productImg} label="" size={20} />
                   )}

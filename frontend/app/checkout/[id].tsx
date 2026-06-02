@@ -8,6 +8,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useOrderStore } from '../../store/orderStore';
 import { Button } from '../../components/ui/Button';
 import { PlaceholderImage } from '../../components/ui/PlaceholderImage';
+import { SafeImage } from '../../components/ui/SafeImage';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 // Razorpay Script Loader (For Web)
@@ -126,7 +127,7 @@ export default function CheckoutScreen() {
 
         <View style={styles.productInfo}>
           {product.images?.[0] ? (
-            <Image source={{ uri: product.images[0] }} style={styles.image} />
+            <SafeImage uri={product.images[0]} style={styles.image} resizeMode="cover" />
           ) : (
             <PlaceholderImage style={styles.image} label="" size={20} />
           )}

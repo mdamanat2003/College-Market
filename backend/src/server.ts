@@ -34,6 +34,7 @@ const startServer = async () => {
     const app = express();
     
     // 1. Middleware order sahi rakhein: pehle CORS aur JSON, phir Routes
+    app.set('trust proxy', 1);
     app.use(cors());
     app.use(express.json());
 

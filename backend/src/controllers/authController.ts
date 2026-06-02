@@ -25,12 +25,13 @@ const transporter = nodemailer.createTransport({
 // @desc    Register a new user
 // @route   POST /api/auth/register
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
-  const { name, username, email, password, phone } = req.body;
+  const { name, username, email, password, phone, college } = req.body;
   const trimmedName = typeof name === 'string' ? name.trim() : '';
   const trimmedUsername = typeof username === 'string' ? username.trim() : '';
   const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
   const trimmedPhone = typeof phone === 'string' ? phone.trim() : '';
   const trimmedPassword = typeof password === 'string' ? password.trim() : '';
+  const trimmedCollege = typeof college === 'string' ? college.trim() : '';
 
   // Basic Validation
   if (!trimmedName || !trimmedUsername || !trimmedEmail || !trimmedPassword || !trimmedPhone) {
@@ -86,6 +87,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     email: trimmedEmail,
     password: trimmedPassword,
     phone: trimmedPhone,
+    college: trimmedCollege,
   });
 
   if (user) {

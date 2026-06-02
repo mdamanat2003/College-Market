@@ -17,6 +17,7 @@ import { useAuthStore } from "../../store/authStore";
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { COLLEGES } from '../../constants/colleges';
 
 const registerSchema = z
   .object({
@@ -43,6 +44,8 @@ const registerSchema = z
       .regex(/[0-9]/, 'Password must include at least one number.')
       .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must include at least one special character.'),
     confirmPassword: z.string().trim().min(1, 'Please confirm your password.'),
+    college: z.string().optional(),
+    otherCollege: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match.',
@@ -51,20 +54,17 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCollegeList, setShowCollegeList] = useState(false);
   const [serverError, setServerError] = useState('');
   const router = useRouter();
   const registerStore = useAuthStore((s) => s.register);
   const authError = useAuthStore((s) => s.error);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isValid, isSubmitting },
-    setError,
-  } = useForm<RegisterFormValues>({
+  const { control, handleSubmit, watch, formState: { errors, isValid, isSubmitting }, setError, } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
     defaultValues: {
@@ -74,8 +74,12 @@ export default function Register() {
       phone: '',
       password: '',
       confirmPassword: '',
+      college: '',
+      otherCollege: '',
     },
   });
+
+  const watchedCollege = watch('college');
 
   const mapServerErrorToField = (message: string): keyof RegisterFormValues | null => {
     const lowerMessage = message.toLowerCase();
@@ -91,12 +95,22 @@ export default function Register() {
     setServerError('');
 
     try {
+      if (values.college === 'Other') {
+        if (!values.otherCollege || !values.otherCollege.trim() || values.otherCollege.trim().length < 3) {
+          setError('otherCollege', { type: 'manual', message: 'Please enter your college name (min 3 chars).' });
+          return;
+        }
+      }
+
+      const selectedCollege = values.college === 'Other' ? (values.otherCollege || '').trim() : (values.college || '').trim();
+
       const ok = await registerStore({
         name: values.name.trim(),
         username: values.username.trim(),
         email: values.email.trim().toLowerCase(),
         phone: values.phone.trim(),
         password: values.password.trim(),
+        college: selectedCollege,
       });
 
       if (ok) {
@@ -241,6 +255,64 @@ export default function Register() {
               />
               {errors.phone ? <Text style={styles.fieldErrorText}>⚠️ {errors.phone.message}</Text> : null}
             </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>College</Text>
+                <Controller
+                  control={control}
+                  name="college"
+                  render={({ field: { value, onChange } }) => (
+                    <View>
+                      <TouchableOpacity
+                        style={[styles.input, errors.college && styles.inputError]}
+                        onPress={() => setShowCollegeList((s) => !s)}
+                        activeOpacity={0.9}
+                      >
+                        <Text style={{ color: value ? '#111827' : '#9CA3AF' }}>{value || 'Select your college'}</Text>
+                      </TouchableOpacity>
+
+                      {showCollegeList && (
+                        <View style={styles.collegeList}>
+                          {COLLEGES.map((c) => (
+                            <TouchableOpacity
+                              key={c}
+                              onPress={() => {
+                                onChange(c);
+                                setShowCollegeList(false);
+                              }}
+                              style={styles.collegeItem}
+                            >
+                              <Text style={{ color: '#111827' }}>{c}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  )}
+                />
+                {errors.college ? <Text style={styles.fieldErrorText}>⚠️ {errors.college.message}</Text> : null}
+              </View>
+
+              <Controller
+                control={control}
+                name="otherCollege"
+                render={({ field: { value, onChange } }) => (
+                  watchedCollege === 'Other' ? (
+                    <View style={styles.inputGroup}>
+                      <Text style={styles.label}>Enter your college name</Text>
+                      <TextInput
+                        style={[styles.input, errors.otherCollege && styles.inputError]}
+                        placeholder="Full college name"
+                        placeholderTextColor="#cbd5e1"
+                        value={value}
+                        onChangeText={(text) => onChange(text)}
+                        maxLength={150}
+                      />
+                      {errors.otherCollege ? <Text style={styles.fieldErrorText}>⚠️ {errors.otherCollege.message}</Text> : null}
+                    </View>
+                  ) : <></>
+                )}
+              />
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Create Password</Text>
@@ -397,6 +469,21 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     paddingRight: 52,
+  },
+  collegeList: {
+    maxHeight: 200,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    marginTop: 8,
+    paddingVertical: 6,
+  },
+  collegeItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   inputError: {
     borderColor: '#f87171',

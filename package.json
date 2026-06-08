@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npx expo export --platform web && cd .. && mkdir public && xcopy frontend\\dist\\* public\\ /E /I /Y && cd backend && npm install && npm run build"
-    
+    "build": "cd frontend && npm install && npx expo export --platform web && cd .. && node -e \"const { cpSync, rmSync } = require('fs'); rmSync('public', { recursive: true, force: true }); cpSync('frontend/dist', 'public', { recursive: true });\" && cd backend && npm install && npm run build"
   }
 }

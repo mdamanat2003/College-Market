@@ -14,6 +14,10 @@ export function SafeImage({ uri, style, resizeMode }: SafeImageProps) {
   const [failed, setFailed] = useState(false);
   const resolvedUri = resolveImageUri(uri);
 
+  React.useEffect(() => {
+    setFailed(false);
+  }, [resolvedUri]);
+
   if (!resolvedUri || failed) return <PlaceholderImage style={style} />;
 
   return (

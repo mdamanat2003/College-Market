@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -11,6 +12,7 @@ import {
   ScrollView,
   Alert,
   useWindowDimensions,
+  DimensionValue,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -79,7 +81,7 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-const getPasswordStrength = (password: string) => {
+const getPasswordStrength = (password: string): { label: string, color: string, width: DimensionValue } => {
   const checks = [
     password.length >= 8,
     /[A-Z]/.test(password),
@@ -175,7 +177,7 @@ export default function Register() {
 
       if (ok) {
         Alert.alert('Success!', 'Your account has been created.');
-        router.replace('/(auth)/login');
+        router.replace('/login');
       } else {
         const message = authError || 'Registration failed.';
         const field = mapServerErrorToField(message);
@@ -486,16 +488,15 @@ export default function Register() {
                   </View>
                 </View>
 
-                <TouchableOpacity
+                <Pressable
                   style={[styles.button, isButtonHovered && styles.buttonHover, (!isValid || isSubmitting) && styles.buttonDisabled]}
                   onPress={handleSubmit(onSubmit)}
                   disabled={!isValid || isSubmitting}
                   onHoverIn={() => setIsButtonHovered(true)}
                   onHoverOut={() => setIsButtonHovered(false)}
-                  activeOpacity={0.85}
                 >
                   <Text style={styles.buttonText}>{isSubmitting ? 'Creating Account...' : 'Create Account'}</Text>
-                </TouchableOpacity>
+                </Pressable>
 
                 <View style={styles.footer}>
                   <Text style={styles.footerText}>Already have an account? </Text>
@@ -557,7 +558,10 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: 16,
     padding: 24,
-    boxShadow: '0 14px 35px rgba(30, 41, 59, 0.08)',
+    shadowColor: 'rgba(30, 41, 59, 0.08)',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 1,
+    shadowRadius: 35,
     elevation: 3,
   },
   errorBox: {
@@ -594,12 +598,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: COLORS.heading,
-    transitionProperty: 'border-color, box-shadow, background-color',
-    transitionDuration: '180ms',
   },
   inputFocused: {
     borderColor: COLORS.primary,
-    boxShadow: '0 0 0 3px rgba(124, 157, 240, 0.14)',
   },
   inputError: {
     borderColor: COLORS.error,
@@ -697,10 +698,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
-    boxShadow: '0 10px 22px rgba(124, 157, 240, 0.26)',
+    shadowColor: 'rgba(124, 157, 240, 0.26)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 1,
+    shadowRadius: 22,
     elevation: 4,
-    transitionProperty: 'background-color, box-shadow, opacity',
-    transitionDuration: '180ms',
   },
   buttonHover: {
     backgroundColor: COLORS.primaryHover,

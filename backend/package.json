@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "prestart": "npm run build",
-    "start": "node dist/server.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
-    "seed": "npm run build && node dist/seed.js"
-  },
+  "start": "node dist/server.js",
+  "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+  "build": "tsc",
+  "seed": "npm run build && node dist/seed.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

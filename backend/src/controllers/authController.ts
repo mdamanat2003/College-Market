@@ -115,10 +115,24 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  // Find user and explicitly select password (since we set select: false in schema)
-  const user = await User.findOne({ email }).select('+password');
+  const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const trimmedPassword = typeof password === 'string' ? password.trim() : '';
 
-  if (user && (await (user as any).matchPassword(password))) {
+  if (!trimmedEmail || !trimmedPassword) {
+    res.status(400);
+    throw new Error('Please provide email and password');
+  }
+
+  // Find user and explicitly select password (since we set select: false in schema)
+  const user = await User.findOne({ email: trimmedEmail }).select('+password');
+
+  if (user && (await (user as any).matchPassword(trimmedPassword))) {
+    // Check if user is blocked
+    if ((user as any).isBlocked) {
+      res.status(403);
+      throw new Error('Your account has been blocked. Please contact admin.');
+    }
+
     res.json({
       success: true,
       _id: user.id,

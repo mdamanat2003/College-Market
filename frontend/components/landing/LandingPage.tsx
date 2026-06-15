@@ -288,7 +288,7 @@ export default function LandingPage() {
                   <Text style={styles.primaryButtonText}>Get Started</Text>
                   <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/(tabs)')}>
+                <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/marketplace')}>
                   <Ionicons name="phone-portrait-outline" size={16} color="#e5e7eb" />
                   <Text style={styles.secondaryButtonText}>View Demo</Text>
                 </TouchableOpacity>

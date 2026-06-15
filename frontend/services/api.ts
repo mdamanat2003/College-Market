@@ -86,9 +86,7 @@ if (Platform.OS !== 'web' && /localhost|127\.0\.0\.1/.test(API_URL)) {
 
 export const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Removed default Content-Type to allow axios to handle it automatically
 });
 
 // Request Interceptor: Automatically attach token if exists

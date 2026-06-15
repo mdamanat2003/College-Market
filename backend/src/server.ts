@@ -19,6 +19,9 @@ import requestRoutes from "./routes/requestRoutes";
 import { seedAdmin } from "./utils/seedAdmin"; // ✅ Imported properly
 import { seedTransactions } from "./utils/seedTransactions";
 import adminRoutes from "./routes/adminRoutes";
+import academicRoutes from "./routes/academicRoutes";
+import lostFoundRoutes from "./routes/lostFoundRoutes";
+import eventRoutes from "./routes/eventRoutes";
 import fs from "fs";
 
 dotenv.config();
@@ -35,8 +38,17 @@ const startServer = async () => {
 
     // 1. Middleware order sahi rakhein: pehle CORS aur JSON, phir Routes
     app.set("trust proxy", 1);
-    app.use(cors());
+    
+    // Robust CORS configuration
+    app.use(cors({
+      origin: true, // Reflects the request origin
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+    }));
+
     app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
     const httpServer = http.createServer(app);
 
@@ -46,9 +58,13 @@ const startServer = async () => {
 
     // Ensure uploads directory exists and serve it statically
     const uploadsDir = path.resolve(__dirname, "..", "uploads");
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
+    const academicUploadsDir = path.join(uploadsDir, "academic");
+    const lostFoundUploadsDir = path.join(uploadsDir, "lost-found");
+    
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    if (!fs.existsSync(academicUploadsDir)) fs.mkdirSync(academicUploadsDir, { recursive: true });
+    if (!fs.existsSync(lostFoundUploadsDir)) fs.mkdirSync(lostFoundUploadsDir, { recursive: true });
+    
     app.use("/uploads", express.static(uploadsDir));
 
     // 2. Socket.io ko globally share karein
@@ -69,6 +85,9 @@ const startServer = async () => {
     app.use("/api/requests", requestRoutes);
     app.use("/api/notifications", notificationRoutes);
     app.use("/api/admin", adminRoutes);
+    app.use("/api/academic", academicRoutes);
+    app.use("/api/lost-found", lostFoundRoutes);
+    app.use("/api/events", eventRoutes);
 
     // Serve frontend static files in production
     // const frontendDist = path.join(__dirname, "../../frontend/dist");

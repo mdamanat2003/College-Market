@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../services/api';
+import { useAuthStore } from './authStore';
 
 interface ProductState {
   products: any[];
@@ -60,11 +61,33 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   toggleWishlist: async (productId) => {
+    const user = useAuthStore.getState().user;
+    if (!user) return null;
+
+    const previousProducts = get().products;
+    
+    // Optimistic Update: Update the product in the local state immediately
+    set((state) => ({
+      products: state.products.map((p) => {
+        if (p._id === productId) {
+          const isWishlisted = p.wishlistedBy.includes(user._id);
+          return {
+            ...p,
+            wishlistedBy: isWishlisted 
+              ? p.wishlistedBy.filter((id: string) => id !== user._id)
+              : [...p.wishlistedBy, user._id]
+          };
+        }
+        return p;
+      })
+    }));
+
     try {
       const response = await api.post(`/products/${productId}/wishlist`);
       return response.data.isWishlisted;
     } catch (error: any) {
-      set({ error: error.response?.data?.message || 'Failed to update wishlist', isLoading: false });
+      // Revert if API fails
+      set({ products: previousProducts, error: 'Failed to update wishlist' });
       return null;
     }
   },

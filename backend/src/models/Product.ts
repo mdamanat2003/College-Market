@@ -37,4 +37,10 @@ const productSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+// Indexes for performance optimization
+productSchema.index({ category: 1, status: 1 });
+productSchema.index({ college: 1 });
+productSchema.index({ seller: 1 });
+productSchema.index({ title: 'text', description: 'text' }); // Enable text search
+
 export default mongoose.model<IProduct>('Product', productSchema);

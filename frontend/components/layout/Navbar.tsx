@@ -6,10 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  ScrollView, // 👈 New import
+  ScrollView,
+  Platform, // 👈 Added Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, usePathname } from 'expo-router'; // 👈 Added usePathname
+import { useRouter, usePathname } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // 👈 Added useSafeAreaInsets
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
 import { useChatStore } from '../../store/chatStore';
@@ -27,14 +29,15 @@ export const Navbar = () => {
   const { user } = useAuthStore();
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
   const router = useRouter();
-  const currentPath = usePathname(); // 👈 Active tab pata karne ke liye
+  const currentPath = usePathname();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   const isPhone = width <= 480;
   const isMobile = width < 600;
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { paddingTop: insets.top }]}>
       {/* --- UPPER BAR (Aapka Purana Code) --- */}
       <View style={[styles.header, isPhone && styles.phoneHeader]}>
         <TouchableOpacity style={styles.brandContainer} onPress={() => router.push('/home')}>

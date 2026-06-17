@@ -44,6 +44,7 @@ export default function Login() {
   const [footerHovered, setFooterHovered] = useState(false);
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
+  const loginAsDemo = useAuthStore((s) => s.loginAsDemo);
 
   const inputStyle = (field: LoginFieldName, hasError: boolean) => [
     styles.input,
@@ -102,6 +103,12 @@ export default function Login() {
       console.error('Login error:', err);
       setFieldError('password', 'Server error. Is the backend running?');
     }
+  };
+
+  const handleDemoLogin = () => {
+    loginAsDemo();
+    Alert.alert('Demo Mode', 'You are logged in as a guest. Real actions will require a real login.');
+    router.replace('/(tabs)');
   };
 
   return (
@@ -182,28 +189,43 @@ export default function Login() {
                 </View>
 
                 <TouchableOpacity
-                  style={styles.forgotPassword}
-                  onPress={() => router.push('/forgot-password')}
-                  onHoverIn={() => setForgotHovered(true)}
-                  onHoverOut={() => setForgotHovered(false)}
-                >
+  style={styles.forgotPassword}
+  onPress={() => router.push('/forgot-password')}
+  {...{ 
+    onHoverIn: () => setForgotHovered(true), 
+    onHoverOut: () => setForgotHovered(false) 
+  } as any}
+>
                   <Text style={[styles.forgotPasswordText, forgotHovered && styles.linkHovered]}>Forgot password?</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.button, isButtonHovered && styles.buttonHovered]}
                   onPress={handleLogin}
-                  onHoverIn={() => setIsButtonHovered(true)}
-                  onHoverOut={() => setIsButtonHovered(false)}
+                  {...{ 
+                    onHoverIn: () => setIsButtonHovered(true), 
+                    onHoverOut: () => setIsButtonHovered(false) 
+                  } as any}
                   activeOpacity={0.86}
                 >
                   <Text style={styles.buttonText}>Sign In</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: COLORS.border, marginTop: 8, boxShadow: 'none', elevation: 0 }]}
+                  onPress={handleDemoLogin}
+                  activeOpacity={0.86}
+                >
+                  <Text style={[styles.buttonText, { color: COLORS.label }]}>Explore Demo</Text>
+                </TouchableOpacity>
+
                 <View style={styles.footer}>
                   <Text style={styles.footerText}>Don't have an account? </Text>
                   <Link href="/register" asChild>
-                    <TouchableOpacity onHoverIn={() => setFooterHovered(true)} onHoverOut={() => setFooterHovered(false)}>
+                    <TouchableOpacity {...{ 
+                      onHoverIn: () => setFooterHovered(true), 
+                      onHoverOut: () => setFooterHovered(false) 
+                    } as any  }>
                       <Text style={[styles.footerLink, footerHovered && styles.linkHovered]}>Sign Up</Text>
                     </TouchableOpacity>
                   </Link>

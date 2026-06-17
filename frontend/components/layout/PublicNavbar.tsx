@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
@@ -13,6 +14,7 @@ type PublicNavbarProps = {
 };
 
 export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,7 +66,8 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
 
   if (isCompact) {
     return (
-      <View style={[styles.navbar, styles.navbarMobile]}>
+      <View style={{ paddingTop: insets.top }}>
+        <View style={[styles.navbar, styles.navbarMobile]}>
         <View style={styles.mobileTopRow}>
           <TouchableOpacity style={styles.brandRow} onPress={() => navigateTo('/home')}>
             <View style={[styles.brandMark, styles.brandMarkMobile]}>
@@ -112,11 +115,13 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
           </View>
         )}
       </View>
+      </View>
     );
   }
 
   return (
-    <View style={[styles.navbar, isCompact && styles.navbarCompact]}>
+    <View style={{ paddingTop: insets.top }}>
+      <View style={[styles.navbar, isCompact && styles.navbarCompact]}>
       <TouchableOpacity style={styles.brandRow} onPress={() => navigateTo('/home')}>
         <View style={styles.brandMark}>
           <Ionicons name="cart-outline" size={18} color="#7dd3fc" />
@@ -144,6 +149,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
 
         {authAction}
       </View>
+    </View>
     </View>
   );
 }

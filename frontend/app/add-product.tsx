@@ -6,11 +6,14 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../store/authStore'; 
+import { useDemoRestriction } from '../hooks/use-demo-restriction';
 import { API_URL } from '../services/api';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function AddItemScreen() {
   const router = useRouter();
   const { token } = useAuthStore(); 
+  const { checkRestriction } = useDemoRestriction();
 
   // Form Fields States
   const [title, setTitle] = useState('');
@@ -44,10 +47,13 @@ export default function AddItemScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.9,
+      quality: 1, // Start with high quality, then compress
     });
 
-    if (!result.canceled) addImageToArray(result.assets[0].uri);
+    if (!result.canceled) {
+      const compressedUri = await compressImage(result.assets[0].uri);
+      addImageToArray(compressedUri);
+    }
   };
 
   const takePhoto = async () => {
@@ -57,16 +63,19 @@ export default function AddItemScreen() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.9,
+      quality: 1, // Start with high quality, then compress
     });
 
-    if (!result.canceled) addImageToArray(result.assets[0].uri);
+    if (!result.canceled) {
+      const compressedUri = await compressImage(result.assets[0].uri);
+      addImageToArray(compressedUri);
+    }
   };
 
   const addFromLink = () => {
     if (!linkInput) return;
     if (!linkInput.startsWith('http://') && !linkInput.startsWith('https://')) {
-      Alert.alert('Invalid Link', 'Bhai, sahi URL dalo (http:// ya https:// se shuru hone wala).');
+      Alert.alert('Invalid Link', 'please, enter valid URL (http:// or start with https:// ).');
       return;
     }
     addImageToArray(linkInput);
@@ -80,6 +89,8 @@ export default function AddItemScreen() {
   // 👇 VALIDATION LOGIC INCLUDED 👇
   // 👇 API CALL TO SERVER 👇
   const handleSubmit = async () => {
+    if (!checkRestriction('product add')) return;
+    
     const newErrors: { [key: string]: string } = {};
 
     if (!title.trim()) newErrors.title = 'Product title is required';

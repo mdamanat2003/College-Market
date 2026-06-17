@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useChatStore } from '../../store/chatStore';
 import { useProductStore } from '../../store/productStore';
 import { useAuthStore } from '../../store/authStore';
+import { useDemoRestriction } from '../../hooks/use-demo-restriction';
 import { Button } from '../../components/ui/Button';
 import { PlaceholderImage } from '../../components/ui/PlaceholderImage';
 import { SafeImage } from '../../components/ui/SafeImage';
@@ -19,6 +20,7 @@ export default function ProductDetailsScreen() {
   const router = useRouter();
   const { fetchProductById, isLoading, toggleWishlist } = useProductStore();
   const { user } = useAuthStore();
+  const { checkRestriction } = useDemoRestriction();
   const { width } = useWindowDimensions();
   const { startConversation } = useChatStore();
 
@@ -83,6 +85,7 @@ export default function ProductDetailsScreen() {
   const images = product.images || [];
 
   const handleWishlist = async () => {
+    if (!checkRestriction('wishlist')) return;
     if (!user) {
       router.push('/(auth)/login');
       return;
@@ -105,6 +108,7 @@ export default function ProductDetailsScreen() {
   };
 
   const handleChat = async () => {
+    if (!checkRestriction('chat')) return;
     if (!user) {
       router.push('/(auth)/login');
       return;
@@ -123,6 +127,7 @@ export default function ProductDetailsScreen() {
   };
 
   const handleBuyNow = () => {
+    if (!checkRestriction('buy now')) return;
     if (!user) {
       router.push('/(auth)/login');
       return;

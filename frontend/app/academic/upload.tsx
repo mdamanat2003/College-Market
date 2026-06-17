@@ -16,6 +16,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Platform } from 'react-native';
 import { useAuthStore } from '../../store/authStore';
 import { useAcademicStore } from '../../store/academicStore';
+import { useDemoRestriction } from '../../hooks/use-demo-restriction';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 
 const BRANCHES = ['CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
@@ -25,6 +26,7 @@ export default function UploadAcademic() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { uploadMaterial, isLoading } = useAcademicStore();
+  const { checkRestriction } = useDemoRestriction();
 
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
@@ -48,6 +50,7 @@ export default function UploadAcademic() {
   };
 
   const handleUpload = async () => {
+    if (!checkRestriction('academic upload')) return;
     if (!title || !subject || !branch || !semester || !file) {
       Alert.alert('Incomplete Form', 'Please fill all fields and select a file.');
       return;

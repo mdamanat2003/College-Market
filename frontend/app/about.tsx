@@ -30,7 +30,7 @@ type TeamMember = {
 const team: TeamMember[] = [
   {
     name: 'MD AMANAT ULLAH',
-    role: 'Founder & Lead Developer',
+    role: 'Chief Executive Officer (CEO)',
     desc: 'Leading the technical vision and full-stack architecture for CampusCart.',
     initials: 'MA',
     accent: '#EFF6FF', // Softer pastel blue
@@ -47,12 +47,12 @@ const team: TeamMember[] = [
   // },
   {
     name: 'Aftab Mansoori',
-    role: 'Co-Founder & Software Engineer',
+    role: 'Chief Technology Officer (CTO)',
     desc: 'Building scalable application features and smooth student workflows.',
     initials: 'AM',
     accent: '#ECFDF5',
     text: '#059669',
-    // photo: require('../assets/images/team/aftab.jpg'),
+    photo: require('../assets/images/team/aftab.jpeg'),
   },
   // {
   //   name: 'Masab Mallick',
@@ -64,12 +64,12 @@ const team: TeamMember[] = [
   // },
   {
     name: 'Yasir Jamal Noori',
-    role: 'Co-Founder & QA Engineer',
+    role: 'Chief Operating Officer (COO)',
     desc: 'Testing the marketplace so transactions and chats stay reliable.',
     initials: 'YN',
     accent: '#FFF1F2',
     text: '#E11D48',
-    // photo: require('../assets/images/team/yasir.jpg'),
+    photo: require('../assets/images/team/yasir.jpeg'),
   },
 ];
 
@@ -220,7 +220,7 @@ export default function About() {
           >
             <View style={[styles.avatar, { backgroundColor: team[0].accent }]}>
               {team[0].photo ? (
-                <Image source={team[0].photo} style={styles.memberPhoto} resizeMode="cover" />
+                <Image source={team[0].photo} style={styles.memberPhoto} />
               ) : (
                 <Text style={[styles.avatarText, { color: team[0].text }]}>{team[0].initials}</Text>
               )}
@@ -247,7 +247,7 @@ export default function About() {
             >
               <View style={[styles.avatarSmall, { backgroundColor: member.accent }]}>
                 {member.photo ? (
-                  <Image source={member.photo} style={styles.memberPhoto} resizeMode="cover" />
+                  <Image source={member.photo} style={styles.memberPhoto} />
                 ) : (
                   <Text style={[styles.avatarTextSmall, { color: member.text }]}>{member.initials}</Text>
                 )}
@@ -592,13 +592,15 @@ const styles = StyleSheet.create({
     transitionDuration: '200ms',
   },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 30, // Squircle look
+    width: 140,
+    height: 140,
+    borderRadius: 45, // Premium squircle
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    paddingTop: 15, 
   },
   avatarText: {
     fontSize: 32,
@@ -674,13 +676,15 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   avatarSmall: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
+    width: 120,
+    height: 120,
+    borderRadius: 38,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    paddingTop: 12,
   },
   avatarTextSmall: {
     fontSize: 24,
@@ -688,8 +692,9 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   memberPhoto: {
-    width: '100%',
-    height: '100%',
+    width: '85%',
+    height: '85%',
+    resizeMode: 'contain',
   },
   memberNameSmall: {
     textAlign: 'center',

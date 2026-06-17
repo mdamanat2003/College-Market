@@ -12,6 +12,7 @@ interface User {
   college?: string;
   rating?: number;
   ratingCount?: number;
+  isDemo?: boolean;
 }
 
 interface AuthState {
@@ -23,9 +24,11 @@ interface AuthState {
   register: (data: any) => Promise<boolean>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  loginAsDemo: () => void;
+  ensureRealUser: () => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   isLoading: false,
@@ -47,6 +50,28 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       return false;
     }
+  },
+
+  loginAsDemo: () => {
+    const demoUser: User = {
+      _id: 'demo_user_id',
+      name: 'Demo User',
+      username: 'demouser',
+      email: 'demo@example.com',
+      phone: '0000000000',
+      role: 'student',
+      college: 'Demo College',
+      isDemo: true,
+    };
+    set({ user: demoUser, token: 'demo_token', isLoading: false, error: null });
+  },
+
+  ensureRealUser: () => {
+    const { user } = get();
+    if (user?.isDemo) {
+      return false;
+    }
+    return true;
   },
 
   register: async (userData) => {

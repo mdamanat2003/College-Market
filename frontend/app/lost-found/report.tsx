@@ -5,13 +5,16 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Navbar } from '../../components/layout/Navbar';
 import { useLostFoundStore } from '../../store/lostFoundStore';
+import { useDemoRestriction } from '../../hooks/use-demo-restriction';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
+import { compressImage } from '../../utils/imageCompressor';
 
 const CATEGORIES = ['Electronics', 'Documents', 'Keys', 'Wallets', 'Bags', 'Others'];
 
 export default function ReportLostFound() {
   const router = useRouter();
   const { reportItem, isLoading } = useLostFoundStore();
+  const { checkRestriction } = useDemoRestriction();
 
   const [type, setType] = useState<'Lost' | 'Found'>('Lost');
   const [title, setTitle] = useState('');
@@ -40,6 +43,7 @@ export default function ReportLostFound() {
   };
 
   const handleSubmit = async () => {
+    if (!checkRestriction('report item')) return;
     if (!title || !description || !location) {
       Alert.alert('Missing Info', 'Please fill in the title, description, and location.');
       return;

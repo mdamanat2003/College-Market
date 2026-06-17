@@ -6,7 +6,7 @@ interface ProductState {
   products: any[];
   isLoading: boolean;
   error: string | null;
-  fetchProducts: (category?: string, search?: string) => Promise<void>;
+  fetchProducts: (category?: string, search?: string, college?: string) => Promise<void>;
   fetchProductById: (productId: string) => Promise<any | null>;
   addProduct: (productData: any) => Promise<boolean>;
   toggleWishlist: (productId: string) => Promise<boolean | null>;
@@ -17,12 +17,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchProducts: async (category = '', search = '') => {
+  fetchProducts: async (category = '', search = '', college = '') => {
     set({ isLoading: true, error: null });
     try {
       const query = new URLSearchParams();
       if (category && category !== 'All') query.append('category', category);
       if (search) query.append('search', search);
+      if (college && college !== 'All Colleges') query.append('college', college);
 
       const response = await api.get(`/products?${query.toString()}`);
       set({ products: response.data.products, isLoading: false });

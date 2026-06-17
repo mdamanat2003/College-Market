@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Navbar } from '../../components/layout/Navbar';
 import { useEventStore } from '../../store/eventStore';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
+import { compressImage } from '../../utils/imageCompressor';
 
 const CATEGORIES = ['Cultural', 'Technical', 'Sports', 'Workshop', 'Other'];
 
@@ -37,11 +38,12 @@ export default function CreateEvent() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 0.8,
+      quality: 1, // Capture highest quality first
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const compressedUri = await compressImage(result.assets[0].uri);
+      setImage(compressedUri);
     }
   };
 

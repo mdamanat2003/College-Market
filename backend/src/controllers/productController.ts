@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import Fuse from 'fuse.js';
 import Product from '../models/Product';
 import Notification from '../models/Notification'; // Naya Notification model
 import { asyncHandler } from '../utils/asyncHandler';
@@ -65,21 +66,31 @@ export const toggleWishlist = asyncHandler(async (req: AuthRequest, res: Respons
 // @desc    Get all available products
 // @route   GET /api/products
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
-  const { category, search } = req.query;
+  const { category, search, college } = req.query;
   
   let query: any = { status: 'Available' };
 
-  if (category) query.category = category;
+  if (category && category !== 'All') query.category = category;
+  if (college && college !== 'All Colleges') query.college = college;
   
-  if (search) {
-    query.title = { $regex: search, $options: 'i' };
-  }
-
   const products = await Product.find(query)
     .populate('seller', 'name avatar college rating ratingCount') 
     .sort({ createdAt: -1 }); 
 
-  const productsWithSeller = products.filter((product: any) => product.seller);
+  let productsWithSeller = products.filter((product: any) => product.seller);
+
+  // Advanced Fuzzy Search logic using Fuse.js
+  if (search && typeof search === 'string') {
+    const fuse = new Fuse(productsWithSeller, {
+      keys: ['title', 'description', 'category'],
+      threshold: 0.35, // Typos up to a certain degree
+      distance: 100,
+      ignoreLocation: true, // Finds matches anywhere in the string
+    });
+    
+    const results = fuse.search(search);
+    productsWithSeller = results.map(result => result.item);
+  }
 
   res.json({ success: true, count: productsWithSeller.length, products: productsWithSeller });
 });

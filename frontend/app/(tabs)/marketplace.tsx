@@ -12,7 +12,7 @@ const CATEGORIES = ['All', 'Electronics', 'Books', 'Furniture', 'Vehicles', 'Oth
 
 export default function MarketplaceHome() {
   const { user } = useAuthStore();
-  const { products, fetchProducts, isLoading } = useProductStore();
+  const { products, fetchProducts, isLoading, searchQuery } = useProductStore();
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeCollege, setActiveCollege] = useState<string>(user?.college || 'All Colleges'); 
   const { width } = useWindowDimensions();
@@ -37,8 +37,8 @@ export default function MarketplaceHome() {
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
   useEffect(() => {
-    fetchProducts(activeCategory, '', activeCollege);
-  }, [activeCategory, activeCollege, fetchProducts]);
+    fetchProducts(activeCategory, searchQuery, activeCollege);
+  }, [activeCategory, activeCollege, searchQuery, fetchProducts]);
 
   const toggleCollegeFilter = () => {
     if (activeCollege === 'All Colleges') {
@@ -173,11 +173,13 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   gridList: {
+    flexGrow: 1, // 👈 Added to push footer down
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.md,
     paddingBottom: 0,
   },
   phoneGridList: {
+    flexGrow: 1, // 👈 Added to push footer down
     paddingHorizontal: 18,
     paddingTop: 30,
   },

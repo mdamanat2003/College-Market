@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'; // 👈 Adde
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
 import { useChatStore } from '../../store/chatStore';
+import { useProductStore } from '../../store/productStore';
 
 // 👈 Naye Features Array (Aap isme aur bhi add kar sakte hain baad me)
 const NAV_ITEMS = [
@@ -28,6 +29,8 @@ const NAV_ITEMS = [
 export const Navbar = () => {
   const { user } = useAuthStore();
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
+  const { searchQuery, setSearchQuery } = useProductStore();
+  const [localSearch, setLocalSearch] = useState(searchQuery);
   const router = useRouter();
   const currentPath = usePathname();
   const { width } = useWindowDimensions();
@@ -35,6 +38,13 @@ export const Navbar = () => {
 
   const isPhone = width <= 480;
   const isMobile = width < 600;
+
+  const handleSearch = () => {
+    setSearchQuery(localSearch);
+    if (currentPath !== '/marketplace') {
+      router.push('/marketplace');
+    }
+  };
 
   return (
     <View style={[styles.wrapper, { paddingTop: insets.top }]}>
@@ -52,6 +62,10 @@ export const Navbar = () => {
               placeholder="Search for books, electronics, PyQs..."
               placeholderTextColor={COLORS.textMuted}
               style={styles.searchInput}
+              value={localSearch}
+              onChangeText={setLocalSearch}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
             />
           </View>
         )}

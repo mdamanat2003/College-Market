@@ -23,8 +23,32 @@ import academicRoutes from "./routes/academicRoutes";
 import lostFoundRoutes from "./routes/lostFoundRoutes";
 import eventRoutes from "./routes/eventRoutes";
 import fs from "fs";
+import { rateLimit } from "express-rate-limit";
 
 dotenv.config();
+
+// Rate Limiting Definitions
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: {
+    success: false,
+    message: "Too many requests from this IP, please try again after 15 minutes",
+  },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit each IP to 20 requests per 15 minutes for auth (Login/Register)
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many login/register attempts, please try again after 15 minutes",
+  },
+});
 
 // ... (apke baki imports)
 
@@ -76,18 +100,18 @@ const startServer = async () => {
     });
 
     // Routes
-    app.use("/api/auth", authRoutes);
-    app.use("/api/products", productRoutes);
-    app.use("/api/chat", chatRoutes);
-    app.use("/api/offers", offerRoutes);
-    app.use("/api/orders", orderRoutes);
-    app.use("/api/reviews", reviewRoutes);
-    app.use("/api/requests", requestRoutes);
-    app.use("/api/notifications", notificationRoutes);
-    app.use("/api/admin", adminRoutes);
-    app.use("/api/academic", academicRoutes);
-    app.use("/api/lost-found", lostFoundRoutes);
-    app.use("/api/events", eventRoutes);
+    app.use("/api/auth", authLimiter, authRoutes);
+    app.use("/api/products", apiLimiter, productRoutes);
+    app.use("/api/chat", apiLimiter, chatRoutes);
+    app.use("/api/offers", apiLimiter, offerRoutes);
+    app.use("/api/orders", apiLimiter, orderRoutes);
+    app.use("/api/reviews", apiLimiter, reviewRoutes);
+    app.use("/api/requests", apiLimiter, requestRoutes);
+    app.use("/api/notifications", apiLimiter, notificationRoutes);
+    app.use("/api/admin", apiLimiter, adminRoutes);
+    app.use("/api/academic", apiLimiter, academicRoutes);
+    app.use("/api/lost-found", apiLimiter, lostFoundRoutes);
+    app.use("/api/events", apiLimiter, eventRoutes);
 
     // Serve frontend static files in production
     // const frontendDist = path.join(__dirname, "../../frontend/dist");

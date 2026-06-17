@@ -92,7 +92,7 @@ export const api = axios.create({
 // Request Interceptor: Automatically attach token if exists
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem('userToken');
+    const token = await AsyncStorage.getItem('userAccessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -107,10 +107,30 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token expire ho gaya hai ya invalid hai
-      await AsyncStorage.removeItem('userToken');
-      // Aage chal ke hum yahan se user ko login screen par redirect kar sakte hain
+    const originalRequest = error.config;
+
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = await AsyncStorage.getItem('userRefreshToken');
+
+      if (refreshToken) {
+        try {
+          const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+          const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+          await AsyncStorage.setItem('userAccessToken', accessToken);
+          await AsyncStorage.setItem('userRefreshToken', newRefreshToken);
+
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh token fail ho gaya (expired or invalid)
+          await AsyncStorage.removeItem('userAccessToken');
+          await AsyncStorage.removeItem('userRefreshToken');
+          // Yahan hum event emit kar sakte hain ya store ko clear kar sakte hain
+          return Promise.reject(refreshError);
+        }
+      }
     }
     return Promise.reject(error);
   }

@@ -1,17 +1,47 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Navbar } from '../../components/layout/Navbar';
+import Footer from '../../components/layout/Footer';
 import { useAcademicStore } from '../../store/academicStore';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 
 const BRANCHES = ['CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
 const SEMESTERS = ['1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem'];
 
+const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDownload: (url: string) => void }) => (
+  <View style={styles.noteCard}>
+    <View style={styles.noteIconBox}>
+      <Ionicons 
+        name={item.fileType === 'pdf' ? "document-text" : "image"} 
+        size={24} 
+        color={COLORS.primary} 
+      />
+    </View>
+    <View style={styles.noteInfo}>
+      <Text style={styles.noteTitle} numberOfLines={1}>{item.title}</Text>
+      <View style={styles.noteMeta}>
+        <Text style={styles.noteSubject}>{item.subject}</Text>
+        <View style={styles.uploaderBox}>
+            <Ionicons name="person-outline" size={12} color={COLORS.textMuted} />
+            <Text style={styles.uploaderName}>{item.uploadedBy?.name || 'User'}</Text>
+        </View>
+      </View>
+    </View>
+    <TouchableOpacity 
+      style={styles.downloadBtn}
+      onPress={() => handleDownload(item.fileUrl)}
+    >
+      <Ionicons name="eye-outline" size={20} color={COLORS.primary} />
+    </TouchableOpacity>
+  </View>
+));
+
 export default function AcademicHub() {
   const router = useRouter();
   const { materials, fetchMaterials, isLoading, error } = useAcademicStore();
+  const listRef = useRef<FlatList>(null);
   
   const [selectedBranch, setSelectedBranch] = useState('CSE');
   const [selectedSemester, setSelectedSemester] = useState('8th Sem');
@@ -20,9 +50,19 @@ export default function AcademicHub() {
     fetchMaterials(selectedBranch, selectedSemester);
   }, [selectedBranch, selectedSemester]);
 
-  const handleDownload = (url: string) => {
-    Linking.openURL(url).catch((err) => console.error("Couldn't load page", err));
+  const handleBackToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
+
+  const handleDownload = React.useCallback((url: string) => {
+    Linking.openURL(url).catch((err) => console.error("Couldn't load page", err));
+  }, []);
+
+  const renderItem = React.useCallback(({ item }: { item: any }) => (
+    <AcademicCard item={item} handleDownload={handleDownload} />
+  ), [handleDownload]);
+
+  const keyExtractor = React.useCallback((item: any) => item._id, []);
 
   return (
     <View style={styles.container}>
@@ -99,39 +139,23 @@ export default function AcademicHub() {
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             data={materials}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <View style={styles.noteCard}>
-                <View style={styles.noteIconBox}>
-                  <Ionicons 
-                    name={item.fileType === 'pdf' ? "document-text" : "image"} 
-                    size={24} 
-                    color={COLORS.primary} 
-                  />
-                </View>
-                <View style={styles.noteInfo}>
-                  <Text style={styles.noteTitle} numberOfLines={1}>{item.title}</Text>
-                  <View style={styles.noteMeta}>
-                    <Text style={styles.noteSubject}>{item.subject}</Text>
-                    <View style={styles.uploaderBox}>
-                       <Ionicons name="person-outline" size={12} color={COLORS.textMuted} />
-                       <Text style={styles.uploaderName}>{item.uploadedBy?.name || 'User'}</Text>
-                    </View>
-                  </View>
-                </View>
-                <TouchableOpacity 
-                  style={styles.downloadBtn}
-                  onPress={() => handleDownload(item.fileUrl)}
-                >
-                  <Ionicons name="eye-outline" size={20} color={COLORS.primary} />
-                </TouchableOpacity>
-              </View>
-            )}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            removeClippedSubviews={true}
+            initialNumToRender={8}
+            maxToRenderPerBatch={8}
+            windowSize={5}
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Ionicons name="document-outline" size={48} color={COLORS.textMuted} />
                 <Text style={styles.emptyText}>No materials found for this selection.</Text>
+              </View>
+            }
+            ListFooterComponent={
+              <View style={styles.footerWrapper}>
+                <Footer onBackToTop={handleBackToTop} />
               </View>
             }
             contentContainerStyle={styles.listContent}
@@ -161,7 +185,7 @@ const styles = StyleSheet.create({
   activeChipText: { color: '#fff' },
   
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: SPACING.md, color: COLORS.heading },
-  listContent: { gap: SPACING.sm, paddingBottom: 100 },
+  listContent: { flexGrow: 1, gap: SPACING.sm, paddingBottom: 0 },
   noteCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, marginBottom: 10 },
   noteIconBox: { width: 48, height: 48, backgroundColor: COLORS.primaryLight, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginRight: SPACING.md },
   noteInfo: { flex: 1 },
@@ -174,6 +198,7 @@ const styles = StyleSheet.create({
   errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2', padding: 10, borderRadius: RADIUS.md, marginBottom: SPACING.md, gap: 8 },
   errorText: { color: COLORS.danger, fontSize: 13, fontWeight: '600' },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyState: { alignItems: 'center', marginTop: 40, gap: 12 },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40, gap: 12 },
   emptyText: { color: COLORS.textMuted, fontSize: 15 },
+  footerWrapper: { marginHorizontal: -SPACING.lg, marginTop: 40 },
 });

@@ -4,10 +4,17 @@ import nodemailer from 'nodemailer';
 import User from '../models/User';
 import { asyncHandler } from '../utils/asyncHandler';
 
-// Helper to generate JWT
-const generateToken = (id: string) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-    expiresIn: (process.env.JWT_EXPIRE || '30d') as jwt.SignOptions['expiresIn'],
+// Helper to generate Access Token (Short-lived: 15 mins)
+const generateAccessToken = (id: string) => {
+  return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET as string, {
+    expiresIn: '15m',
+  });
+};
+
+// Helper to generate Refresh Token (Long-lived: 7 days)
+const generateRefreshToken = (id: string) => {
+  return jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET || (process.env.JWT_SECRET + '_refresh') as string, {
+    expiresIn: '7d',
   });
 };
 
@@ -102,7 +109,8 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
       college: user.college,
       rating: (user as any).rating,
       ratingCount: (user as any).ratingCount,
-      token: generateToken(user.id),
+      accessToken: generateAccessToken(user.id),
+      refreshToken: generateRefreshToken(user.id),
     });
   } else {
     res.status(400);
@@ -144,11 +152,45 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
       college: user.college,
       rating: (user as any).rating,
       ratingCount: (user as any).ratingCount,
-      token: generateToken(user.id),
+      accessToken: generateAccessToken(user.id),
+      refreshToken: generateRefreshToken(user.id),
     });
   } else {
     res.status(401);
     throw new Error('Invalid email or password');
+  }
+});
+
+// @desc    Refresh Access Token
+// @route   POST /api/auth/refresh
+export const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    res.status(401);
+    throw new Error('No refresh token provided');
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || (process.env.JWT_SECRET + '_refresh') as string) as any;
+    
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      res.status(401);
+      throw new Error('Invalid refresh token');
+    }
+
+    const newAccessToken = generateAccessToken(user.id);
+    const newRefreshToken = generateRefreshToken(user.id);
+
+    res.json({
+      success: true,
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (error) {
+    res.status(401);
+    throw new Error('Invalid or expired refresh token');
   }
 });
 

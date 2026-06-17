@@ -1,9 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { api } from '../services/api';
+import Footer from '../components/layout/Footer';
 import { useChatStore } from '../store/chatStore';
 import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
@@ -11,6 +12,7 @@ export default function NotificationsScreen() {
   const router = useRouter();
   const { startConversation } = useChatStore();
   const { fetchUnreadNotificationsCount, setUnreadNotifications } = useChatStore();
+  const listRef = useRef<FlatList>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -34,6 +36,10 @@ export default function NotificationsScreen() {
       loadNotifications();
     }, [loadNotifications])
   );
+
+  const handleBackToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   const markRead = async (notificationId: string) => {
     try {
@@ -123,14 +129,23 @@ export default function NotificationsScreen() {
         <View style={styles.center}>
           <Ionicons name="notifications-off-outline" size={60} color={COLORS.border} />
           <Text style={styles.emptyText}>No notifications yet.</Text>
+          <View style={styles.footerWrapper}>
+            <Footer onBackToTop={handleBackToTop} />
+          </View>
         </View>
       ) : (
         <FlatList
+          ref={listRef}
           data={notifications}
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          ListFooterComponent={
+            <View style={styles.footerWrapper}>
+              <Footer onBackToTop={handleBackToTop} />
+            </View>
+          }
         />
       )}
     </View>
@@ -143,8 +158,8 @@ const styles = StyleSheet.create({
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl },
-  emptyText: { fontSize: 16, color: COLORS.textMuted, marginTop: SPACING.md },
-  listContent: { padding: SPACING.md },
+  emptyText: { fontSize: 16, color: COLORS.textMuted, marginTop: SPACING.md, marginBottom: 40 },
+  listContent: { flexGrow: 1, padding: SPACING.md },
   card: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACING.md, backgroundColor: COLORS.card, borderRadius: RADIUS.lg, padding: SPACING.md, marginBottom: SPACING.sm, borderWidth: 1, borderColor: COLORS.border },
   unreadCard: { borderColor: COLORS.primaryLight },
   iconWrap: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface },
@@ -154,4 +169,5 @@ const styles = StyleSheet.create({
   meta: { fontSize: 12, color: COLORS.primary, marginTop: 4, fontWeight: '600' },
   actionBox: { justifyContent: 'center', alignItems: 'center', paddingLeft: SPACING.sm },
   actionText: { fontSize: 12, color: 'red', fontWeight: '700' },
+  footerWrapper: { marginHorizontal: -SPACING.md, marginTop: 'auto', width: '100%' },
 });

@@ -17,7 +17,8 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isLoading: boolean;
   error: string | null;
   login: (data: any) => Promise<boolean>;
@@ -30,7 +31,8 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  token: null,
+  accessToken: null,
+  refreshToken: null,
   isLoading: false,
   error: null,
 
@@ -38,10 +40,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.post('/auth/login', credentials);
-      const { token, ...userData } = response.data;
+      const { accessToken, refreshToken, ...userData } = response.data;
       
-      await AsyncStorage.setItem('userToken', token);
-      set({ user: userData, token, isLoading: false });
+      await AsyncStorage.setItem('userAccessToken', accessToken);
+      await AsyncStorage.setItem('userRefreshToken', refreshToken);
+      set({ user: userData, accessToken, refreshToken, isLoading: false });
       return true;
     } catch (error: any) {
       set({ 
@@ -63,7 +66,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       college: 'Demo College',
       isDemo: true,
     };
-    set({ user: demoUser, token: 'demo_token', isLoading: false, error: null });
+    set({ 
+      user: demoUser, 
+      accessToken: 'demo_token', 
+      refreshToken: 'demo_refresh_token',
+      isLoading: false, 
+      error: null 
+    });
   },
 
   ensureRealUser: () => {
@@ -78,8 +87,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await api.post('/auth/register', userData);
-      await AsyncStorage.removeItem('userToken');
-      set({ user: null, token: null, isLoading: false });
+      await AsyncStorage.removeItem('userAccessToken');
+      await AsyncStorage.removeItem('userRefreshToken');
+      set({ user: null, accessToken: null, refreshToken: null, isLoading: false });
       return true;
     } catch (error: any) {
       set({ 
@@ -91,21 +101,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    await AsyncStorage.removeItem('userToken');
-    set({ user: null, token: null });
+    await AsyncStorage.removeItem('userAccessToken');
+    await AsyncStorage.removeItem('userRefreshToken');
+    set({ user: null, accessToken: null, refreshToken: null });
   },
 
   // App start hone par call karenge taaki user logged in rahe
   checkAuth: async () => {
-    const token = await AsyncStorage.getItem('userToken');
-    if (!token) return;
+    const accessToken = await AsyncStorage.getItem('userAccessToken');
+    const refreshToken = await AsyncStorage.getItem('userRefreshToken');
+    if (!accessToken) return;
 
     try {
       const response = await api.get('/auth/me');
-      set({ user: response.data.user, token });
+      set({ user: response.data.user, accessToken, refreshToken });
     } catch {
-      await AsyncStorage.removeItem('userToken');
-      set({ user: null, token: null });
+      // checkAuth me refresh token logic automatic handle hoga interceptor se
+      // Agar wo fail hota hai toh logout
+      if (!refreshToken) {
+        await AsyncStorage.removeItem('userAccessToken');
+        set({ user: null, accessToken: null, refreshToken: null });
+      }
     }
   },
 }));

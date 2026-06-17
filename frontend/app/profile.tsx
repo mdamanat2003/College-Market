@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/authStore';
 import { useOrderStore } from '../store/orderStore';
 import OrderCard from '../components/OrderCard';
+import Footer from '../components/layout/Footer';
 import { Button } from '../components/ui/Button';
 import { PlaceholderImage } from '../components/ui/PlaceholderImage';
 import { SafeImage } from '../components/ui/SafeImage';
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { orders, fetchMyOrders, releaseEscrow, isLoading } = useOrderStore();
+  const scrollRef = useRef<ScrollView>(null);
   
   const [activeTab, setActiveTab] = useState<'Purchases' | 'Sales'>('Purchases');
 
@@ -25,6 +27,10 @@ export default function ProfileScreen() {
   const handleLogout = () => {
     logout();
     router.replace('/(auth)/login');
+  };
+
+  const handleBackToTop = () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   const handleReleaseEscrow = async (orderId: string) => {
@@ -184,6 +190,9 @@ export default function ProfileScreen() {
             );
           })
         )}
+        <View style={styles.footerWrapper}>
+          <Footer onBackToTop={handleBackToTop} />
+        </View>
       </ScrollView>
     </View>
   );
@@ -194,7 +203,7 @@ const styles = StyleSheet.create({
   header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text },
-  scrollContent: { padding: SPACING.lg, maxWidth: 800, width: '100%', alignSelf: 'center' },
+  scrollContent: { flexGrow: 1, padding: SPACING.lg, maxWidth: 800, width: '100%', alignSelf: 'center' },
   
   profileCard: { flexDirection: 'row', backgroundColor: COLORS.card, padding: SPACING.lg, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, marginBottom: SPACING.xl, alignItems: 'center' },
   avatar: { width: 70, height: 70, borderRadius: 35, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: SPACING.lg },
@@ -211,7 +220,7 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 15, fontWeight: '600', color: COLORS.textMuted },
   activeTabText: { color: COLORS.primary },
 
-  emptyState: { alignItems: 'center', marginTop: SPACING.xxl },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 200 },
   emptyText: { fontSize: 16, color: COLORS.textMuted, marginTop: SPACING.sm },
 
   orderCard: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, padding: SPACING.md, marginBottom: SPACING.md, borderWidth: 1, borderColor: COLORS.border },
@@ -233,5 +242,6 @@ const styles = StyleSheet.create({
   actionBox: { marginTop: SPACING.md, backgroundColor: '#F8FAFC', padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
   actionHint: { fontSize: 13, color: COLORS.text, marginBottom: SPACING.sm, textAlign: 'center', fontWeight: '500' },
   actionBoxInfo: { marginTop: SPACING.md, backgroundColor: '#FFFBEB', padding: SPACING.md, borderRadius: RADIUS.md, flexDirection: 'row', alignItems: 'flex-start' },
-  actionHintInfo: { fontSize: 13, color: '#92400E', marginLeft: SPACING.sm, flex: 1, lineHeight: 18 }
+  actionHintInfo: { fontSize: 13, color: '#92400E', marginLeft: SPACING.sm, flex: 1, lineHeight: 18 },
+  footerWrapper: { marginHorizontal: -SPACING.lg, marginTop: 40 },
 });

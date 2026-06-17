@@ -1,28 +1,78 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Navbar } from '../../components/layout/Navbar';
+import Footer from '../../components/layout/Footer';
 import { useLostFoundStore } from '../../store/lostFoundStore';
 import { useAuthStore } from '../../store/authStore';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 
 const CATEGORIES = ['All', 'Electronics', 'Documents', 'Keys', 'Wallets', 'Bags', 'Others'];
 
+const LostFoundCard = React.memo(({ item, user, handleResolve }: { item: any, user: any, handleResolve: (id: string) => void }) => (
+  <View style={[styles.itemCard, item.status === 'Resolved' && styles.resolvedCard]}>
+    {item.image ? (
+      <Image source={{ uri: item.image }} style={styles.itemImage} />
+    ) : (
+      <View style={styles.placeholderImage}>
+        <Ionicons name="image-outline" size={32} color={COLORS.textMuted} />
+      </View>
+    )}
+    <View style={styles.itemInfo}>
+      <View style={styles.itemHeader}>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+        <View style={[styles.statusBadge, item.status === 'Resolved' ? styles.statusResolved : styles.statusActive]}>
+          <Text style={styles.statusText}>{item.status}</Text>
+        </View>
+      </View>
+      <Text style={styles.itemDesc} numberOfLines={2}>{item.description}</Text>
+      <View style={styles.itemMeta}>
+        <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
+        <Text style={styles.metaText}>{item.location}</Text>
+      </View>
+      <View style={styles.itemFooter}>
+        <View style={styles.reporterBox}>
+          <Ionicons name="person-circle-outline" size={16} color={COLORS.primary} />
+          <Text style={styles.reporterText}>{item.reporter?.name || 'Unknown User'}</Text>
+        </View>
+        {item.reporter?._id === user?._id && item.status === 'Active' && (
+          <TouchableOpacity 
+            style={styles.resolveBtn}
+            onPress={() => handleResolve(item._id)}
+          >
+            <Text style={styles.resolveBtnText}>Mark Resolved</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  </View>
+));
+
 export default function LostFoundList() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { items, fetchItems, isLoading, updateStatus, error } = useLostFoundStore();
+  const listRef = useRef<FlatList>(null);
   
   const [activeTab, setActiveTab] = useState<'Lost' | 'Found'>('Lost');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   useEffect(() => {
     fetchItems({ type: activeTab, category: selectedCategory, search });
   }, [activeTab, selectedCategory, search]);
 
-  const handleResolve = async (id: string) => {
+  const handleSearch = () => {
+    setSearch(searchInput);
+  };
+
+  const handleBackToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
+  const handleResolve = React.useCallback(async (id: string) => {
     const success = await updateStatus(id, 'Resolved');
     if (success) {
       Alert.alert('Success', 'Item marked as resolved!');
@@ -31,7 +81,13 @@ export default function LostFoundList() {
       const errorMessage = useLostFoundStore.getState().error;
       Alert.alert('Update Failed', errorMessage || 'Something went wrong while updating status.');
     }
-  };
+  }, [updateStatus]);
+
+  const renderItem = React.useCallback(({ item }: { item: any }) => (
+    <LostFoundCard item={item} user={user} handleResolve={handleResolve} />
+  ), [user, handleResolve]);
+
+  const keyExtractor = React.useCallback((item: any) => item._id, []);
 
   return (
     <View style={styles.container}>
@@ -78,9 +134,11 @@ export default function LostFoundList() {
           <TextInput
             style={styles.searchInput}
             placeholder="Search for items..."
-            value={search}
-            onChangeText={setSearch}
+            value={searchInput}
+            onChangeText={setSearchInput}
+            onSubmitEditing={handleSearch}
             placeholderTextColor={COLORS.textMuted}
+            returnKeyType="search"
           />
         </View>
 
@@ -109,50 +167,23 @@ export default function LostFoundList() {
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             data={items}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <View style={[styles.itemCard, item.status === 'Resolved' && styles.resolvedCard]}>
-                {item.image ? (
-                  <Image source={{ uri: item.image }} style={styles.itemImage} />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Ionicons name="image-outline" size={32} color={COLORS.textMuted} />
-                  </View>
-                )}
-                <View style={styles.itemInfo}>
-                  <View style={styles.itemHeader}>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
-                    <View style={[styles.statusBadge, item.status === 'Resolved' ? styles.statusResolved : styles.statusActive]}>
-                      <Text style={styles.statusText}>{item.status}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.itemDesc} numberOfLines={2}>{item.description}</Text>
-                  <View style={styles.itemMeta}>
-                    <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
-                    <Text style={styles.metaText}>{item.location}</Text>
-                  </View>
-                  <View style={styles.itemFooter}>
-                    <View style={styles.reporterBox}>
-                      <Ionicons name="person-circle-outline" size={16} color={COLORS.primary} />
-                      <Text style={styles.reporterText}>{item.reporter?.name || 'Unknown User'}</Text>
-                    </View>
-                    {item.reporter?._id === user?._id && item.status === 'Active' && (
-                      <TouchableOpacity 
-                        style={styles.resolveBtn}
-                        onPress={() => handleResolve(item._id)}
-                      >
-                        <Text style={styles.resolveBtnText}>Mark Resolved</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              </View>
-            )}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            removeClippedSubviews={true}
+            initialNumToRender={8}
+            maxToRenderPerBatch={8}
+            windowSize={5}
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Ionicons name="search-outline" size={64} color={COLORS.textMuted} />
                 <Text style={styles.emptyText}>No items found.</Text>
+              </View>
+            }
+            ListFooterComponent={
+              <View style={styles.footerWrapper}>
+                <Footer onBackToTop={handleBackToTop} />
               </View>
             }
             contentContainerStyle={styles.listContent}
@@ -187,7 +218,7 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
   activeChipText: { color: '#fff' },
 
-  listContent: { gap: SPACING.md, paddingBottom: 100 },
+  listContent: { flexGrow: 1, gap: SPACING.md, paddingBottom: 0 },
   itemCard: { flexDirection: 'row', backgroundColor: COLORS.card, borderRadius: RADIUS.lg, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border },
   resolvedCard: { opacity: 0.7 },
   itemImage: { width: 100, height: '100%', minHeight: 120 },
@@ -211,6 +242,7 @@ const styles = StyleSheet.create({
   resolveBtnText: { fontSize: 11, fontWeight: '700', color: COLORS.primary },
 
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyState: { alignItems: 'center', marginTop: 60, gap: 12 },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 60, gap: 12 },
   emptyText: { color: COLORS.textMuted, fontSize: 16 },
+  footerWrapper: { marginHorizontal: -SPACING.lg, marginTop: 40 },
 });

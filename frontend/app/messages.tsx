@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
+import Footer from '../components/layout/Footer';
 import { PlaceholderImage } from '../components/ui/PlaceholderImage';
 import { COLORS, SPACING, RADIUS } from '../theme/colors';
 
@@ -12,10 +13,15 @@ export default function MessagesInboxScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { conversations, fetchConversations } = useChatStore();
+  const listRef = useRef<FlatList>(null);
 
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  const handleBackToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   // Helper function: Conversation me se dusre bande (Buyer/Seller) ka data nikalna
   const getOtherParticipant = (participants: any[]) => {
@@ -97,14 +103,23 @@ export default function MessagesInboxScreen() {
             <Ionicons name="chatbubbles-outline" size={60} color={COLORS.border} />
             <Text style={styles.emptyText}>No messages yet.</Text>
             <Text style={styles.emptySubtext}>When you contact sellers or buyers contact you, chats will appear here.</Text>
+            <View style={styles.footerWrapper}>
+              <Footer onBackToTop={handleBackToTop} />
+            </View>
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             data={conversations}
             keyExtractor={(item) => item._id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              <View style={styles.footerWrapper}>
+                <Footer onBackToTop={handleBackToTop} />
+              </View>
+            }
           />
         )}
       </View>
@@ -136,6 +151,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   listContent: {
+    flexGrow: 1, // 👈 Added to push footer down
     padding: SPACING.md,
   },
   center: {
@@ -155,6 +171,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     textAlign: 'center',
     marginTop: SPACING.sm,
+    marginBottom: 40,
   },
   chatItem: {
     flexDirection: 'row',
@@ -236,5 +253,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 10,
     fontWeight: '700',
+  },
+  footerWrapper: {
+    marginTop: 'auto',
+    width: '100%',
   },
 });

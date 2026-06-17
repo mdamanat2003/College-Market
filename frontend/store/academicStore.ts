@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
 
 interface AcademicMaterial {
@@ -26,40 +28,49 @@ interface AcademicState {
   uploadMaterial: (formData: FormData) => Promise<boolean>;
 }
 
-export const useAcademicStore = create<AcademicState>((set) => ({
-  materials: [],
-  isLoading: false,
-  error: null,
+export const useAcademicStore = create<AcademicState>()(
+  persist(
+    (set) => ({
+      materials: [],
+      isLoading: false,
+      error: null,
 
-  fetchMaterials: async (branch = '', semester = '') => {
-    set({ isLoading: true, error: null });
-    try {
-      const query = new URLSearchParams();
-      if (branch) query.append('branch', branch);
-      if (semester) query.append('semester', semester);
+      fetchMaterials: async (branch = '', semester = '') => {
+        set({ isLoading: true, error: null });
+        try {
+          const query = new URLSearchParams();
+          if (branch) query.append('branch', branch);
+          if (semester) query.append('semester', semester);
 
-      const response = await api.get(`/academic?${query.toString()}`);
-      set({ materials: response.data, isLoading: false });
-    } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to fetch materials', 
-        isLoading: false 
-      });
+          const response = await api.get(`/academic?${query.toString()}`);
+          set({ materials: response.data, isLoading: false });
+        } catch (error: any) {
+          set({ 
+            error: error.response?.data?.message || 'Failed to fetch materials', 
+            isLoading: false 
+          });
+        }
+      },
+
+      uploadMaterial: async (formData) => {
+        set({ isLoading: true, error: null });
+        try {
+          await api.post('/academic/upload', formData);
+          set({ isLoading: false });
+          return true;
+        } catch (error: any) {
+          set({ 
+            error: error.response?.data?.message || 'Upload failed', 
+            isLoading: false 
+          });
+          return false;
+        }
+      },
+    }),
+    {
+      name: 'academic-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({ materials: state.materials }),
     }
-  },
-
-  uploadMaterial: async (formData) => {
-    set({ isLoading: true, error: null });
-    try {
-      await api.post('/academic/upload', formData);
-      set({ isLoading: false });
-      return true;
-    } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Upload failed', 
-        isLoading: false 
-      });
-      return false;
-    }
-  },
-}));
+  )
+);

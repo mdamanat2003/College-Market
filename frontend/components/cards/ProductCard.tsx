@@ -9,7 +9,7 @@ interface ProductCardProps {
   product: any;
 }
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = React.memo(({ product }: ProductCardProps) => {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isPhone = width <= 480;
@@ -39,7 +39,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -14,9 +14,8 @@ export default function ManageUsersScreen() {
     fetchUsers();
   }, []);
 
-  const handleSearch = (text: string) => {
-    setSearch(text);
-    fetchUsers(text); // Live search on type
+  const handleSearch = () => {
+    fetchUsers(search); 
   };
 
   const renderUserItem = ({ item }: { item: any }) => (
@@ -61,7 +60,9 @@ export default function ManageUsersScreen() {
           placeholder="Search by name, email, or college..."
           placeholderTextColor={COLORS.textMuted}
           value={search}
-          onChangeText={handleSearch}
+          onChangeText={setSearch}
+          onSubmitEditing={handleSearch}
+          returnKeyType="search"
         />
       </View>
 

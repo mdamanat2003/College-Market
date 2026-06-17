@@ -14,9 +14,8 @@ export default function ManageProductsScreen() {
     fetchProducts();
   }, []);
 
-  const handleSearch = (text: string) => {
-    setSearch(text);
-    fetchProducts(text);
+  const handleSearch = () => {
+    fetchProducts(search);
   };
 
   const handleDelete = (id: string, title: string) => {
@@ -79,7 +78,9 @@ export default function ManageProductsScreen() {
           placeholder="Search listings by title or category..."
           placeholderTextColor={COLORS.textMuted}
           value={search}
-          onChangeText={handleSearch}
+          onChangeText={setSearch}
+          onSubmitEditing={handleSearch}
+          returnKeyType="search"
         />
       </View>
 

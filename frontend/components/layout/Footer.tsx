@@ -172,14 +172,12 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 100,
     paddingTop: 42,
     paddingBottom: 42, // Content ke hisab se padding
     marginBottom: 0,   // 👈 Niche ka koi bhi default margin khatam karne ke liye
     backgroundColor: COLORS.primary,
   },
   phoneFooter: {
-    marginTop: 116,
     paddingTop: 40,
     paddingBottom: 39,
   },

@@ -26,7 +26,7 @@ export const markAsRead = asyncHandler(async (req: AuthRequest, res: Response) =
   const notification = await Notification.findOneAndUpdate(
     { _id: req.params.id, recipient: req.user._id },
     { isRead: true },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   if (!notification) {

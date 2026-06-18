@@ -55,7 +55,7 @@
     "serve": "^14.2.6",
     "socket.io-client": "^4.8.3",
     "zod": "^4.4.3",
-    "zustand": "^5.0.13"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

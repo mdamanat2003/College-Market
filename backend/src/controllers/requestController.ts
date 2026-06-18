@@ -28,6 +28,6 @@ export const updateRequestStatus = asyncHandler(async (req: any, res: Response) 
     res.status(400);
     throw new Error('Invalid status');
   }
-  const updated = await RequestModel.findByIdAndUpdate(id, { status }, { new: true });
+  const updated = await RequestModel.findByIdAndUpdate(id, { status }, { returnDocument: 'after' });
   res.status(200).json({ success: true, request: updated });
 });

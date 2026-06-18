@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import User from '../models/User';
+import RegistrationOtp from '../models/RegistrationOtp';
 import { asyncHandler } from '../utils/asyncHandler';
 
 // Helper to generate Access Token (Short-lived: 15 mins)
@@ -27,6 +28,96 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER, // Aapka email (e.g., test@gmail.com)
     pass: process.env.EMAIL_PASS, // Aapka Gmail App Password
   },
+});
+
+// @desc    Send Registration OTP to Email and Phone
+// @route   POST /api/auth/send-registration-otp
+export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, phone } = req.body;
+
+  if (!email) {
+    res.status(400);
+    throw new Error('Please provide email');
+  }
+
+  // Check if user already exists
+  const emailExists = await User.findOne({ email });
+  if (emailExists) {
+    res.status(400);
+    throw new Error('Email already registered');
+  }
+
+  if (phone) {
+    const phoneExists = await User.findOne({ phone });
+    if (phoneExists) {
+      res.status(400);
+      throw new Error('Phone number already registered');
+    }
+  }
+
+  // Generate 6 Digit random OTPs
+  const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Save OTP to temporary collection (valid for 5 minutes)
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+  
+  await RegistrationOtp.findOneAndUpdate(
+    { email },
+    { emailOtp, phone, expiresAt },
+    { upsert: true, returnDocument: 'after' }
+  );
+
+  // Send Email OTP
+  const mailOptions = {
+    from: `"Ooplabdh" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Ooplabdh - Registration OTP',
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #f4f7fe; border-radius: 10px;">
+        <h2 style="color: #316BEF;">Welcome to Ooplabdh!</h2>
+        <p>Your OTP for email verification is:</p>
+        <h1 style="color: #316BEF; letter-spacing: 5px; background: #fff; display: inline-block; padding: 10px 20px; border-radius: 8px; border: 1px solid #dce3ee;">${emailOtp}</h1>
+        <p style="color: #64748B; font-size: 14px;">This OTP is valid for 5 minutes. Do not share it with anyone.</p>
+      </div>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+
+  res.json({
+    success: true,
+    message: "OTP sent to your email",
+  });
+});
+
+// @desc    Verify Registration OTP
+// @route   POST /api/auth/verify-registration-otp
+export const verifyRegistrationOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, emailOtp } = req.body;
+
+  if (!emailOtp) {
+    res.status(400);
+    throw new Error('Please provide email OTP');
+  }
+
+  const otpRecord = await RegistrationOtp.findOne({
+    email,
+    emailOtp,
+    expiresAt: { $gt: new Date() }
+  });
+
+  if (!otpRecord) {
+    res.status(400);
+    throw new Error('Invalid or expired OTP');
+  }
+
+  // Optional: Delete OTP record after verification or keep it for a short while
+  // await otpRecord.deleteOne();
+
+  res.json({
+    success: true,
+    message: "Email verified successfully",
+  });
 });
 
 // @desc    Register a new user
@@ -229,9 +320,9 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
   // Email format prepare karo
   const mailOptions = {
-    from: `"CampusCart Support" <${process.env.EMAIL_USER}>`,
+    from: `"Ooplabdh Support" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: 'CampusCart - Password Reset OTP',
+    subject: 'Ooplabdh - Password Reset OTP',
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
         <h2>Password Reset Request</h2>

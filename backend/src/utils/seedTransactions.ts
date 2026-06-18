@@ -14,7 +14,7 @@ export const seedTransactions = async () => {
     // ... rest of the code
 
     await User.updateOne(
-      { email: 'testseller@campuscart.com' },
+      { email: 'testseller@ooplabdh.com' },
       {
         $set: {
           name: 'Test Seller',
@@ -28,7 +28,7 @@ export const seedTransactions = async () => {
     );
 
     await User.updateOne(
-      { email: 'testbuyer@campuscart.com' },
+      { email: 'testbuyer@ooplabdh.com' },
       {
         $set: {
           name: 'Test Buyer',
@@ -41,8 +41,8 @@ export const seedTransactions = async () => {
       { upsert: true }
     );
 
-    const seller = await User.findOne({ email: 'testseller@campuscart.com' });
-    const buyer = await User.findOne({ email: 'testbuyer@campuscart.com' });
+    const seller = await User.findOne({ email: 'testseller@ooplabdh.com' });
+    const buyer = await User.findOne({ email: 'testbuyer@ooplabdh.com' });
 
     if (!seller || !buyer) {
       console.warn('Seed users not found after upsert, aborting transaction seed');
@@ -154,7 +154,7 @@ export const seedTransactions = async () => {
 
     // Create notifications for admin and participants so admin UI shows history
     try {
-      const admin = await User.findOne({ email: 'admin@campuscart.com' });
+      const admin = await User.findOne({ email: 'admin@ooplabdh.com' });
       if (admin) {
         const createdOrders = Array.isArray(created) ? created : [created];
         const notifBatch: any[] = [];

@@ -16,6 +16,7 @@ import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
 import { useChatStore } from '../../store/chatStore';
 import { useProductStore } from '../../store/productStore';
+import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
 // 👈 Naye Features Array (Aap isme aur bhi add kar sakte hain baad me)
 const NAV_ITEMS = [
@@ -51,8 +52,7 @@ export const Navbar = () => {
       {/* --- UPPER BAR (Aapka Purana Code) --- */}
       <View style={[styles.header, isPhone && styles.phoneHeader]}>
         <TouchableOpacity style={styles.brandContainer} onPress={() => router.push('/home')}>
-          <Ionicons name="cart" size={24} color={COLORS.primary} />
-          {!isMobile && <Text style={styles.brandText}>CampusCart</Text>}
+          <OoplabdhLogo size="sm" markOnly={isMobile} compact={isMobile} />
         </TouchableOpacity>
 
         {!isMobile && (
@@ -162,13 +162,6 @@ const styles = StyleSheet.create({
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  brandText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.primary,
-    letterSpacing: -0.5,
-    marginLeft: SPACING.xs,
   },
 
   searchContainer: {

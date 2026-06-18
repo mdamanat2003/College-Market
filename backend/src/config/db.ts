@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(process.cwd(), "..", ".env") });
 const isLocalMongoUri = (value: string) => /localhost|127\.0\.0\.1/i.test(value);
 
 const connectDB = async () => {
-  const localUri = "mongodb://127.0.0.1:27017/campuscart";
+  const localUri = "mongodb://127.0.0.1:27017/ooplabdh";
   const configuredUris = [process.env.MONGO_URI, process.env.MONGODB_URI].filter(
     (value): value is string => Boolean(value && value.trim())
   );
@@ -25,7 +25,7 @@ const connectDB = async () => {
 
     if (!configuredUris.length) {
       console.warn(
-        "MONGODB_URI/MONGO_URI not found. Falling back to local MongoDB: mongodb://127.0.0.1:27017/campuscart"
+        "MONGODB_URI/MONGO_URI not found. Falling back to local MongoDB: mongodb://127.0.0.1:27017/ooplabdh"
       );
     } else if (!isProduction && isLocalMongoUri(uri)) {
       console.warn(

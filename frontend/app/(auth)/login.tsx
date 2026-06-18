@@ -118,7 +118,7 @@ export default function Login() {
           <View style={styles.pageShell}>
             <View style={styles.hero}>
               <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Sign in to continue to CampusCart</Text>
+              <Text style={styles.subtitle}>Sign in to continue to Ooplabdh</Text>
             </View>
 
             <View style={styles.card}>

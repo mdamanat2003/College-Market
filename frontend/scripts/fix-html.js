@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, '../dist');
+const rootPublicPath = path.join(__dirname, '../../public');
 
 function walk(dir) {
   if (!fs.existsSync(dir)) return;
@@ -31,3 +32,4 @@ function walk(dir) {
 }
 
 walk(distPath);
+walk(rootPublicPath);

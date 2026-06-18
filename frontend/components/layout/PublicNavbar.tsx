@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
+import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
 type ActiveRoute = 'home' | 'about' | 'contact';
 
@@ -70,19 +71,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
         <View style={[styles.navbar, styles.navbarMobile]}>
         <View style={styles.mobileTopRow}>
           <TouchableOpacity style={styles.brandRow} onPress={() => navigateTo('/home')}>
-            <View style={[styles.brandMark, styles.brandMarkMobile]}>
-              <Ionicons name="cart-outline" size={18} color="#7dd3fc" />
-            </View>
-            <View style={styles.brandTextBlock}>
-              <Text style={[styles.brandTitle, isTiny && styles.brandTitleTiny]} numberOfLines={1}>
-                CampusCart
-              </Text>
-              {!isTiny && (
-                <Text style={styles.brandSubtitle} numberOfLines={1}>
-                  College marketplace
-                </Text>
-              )}
-            </View>
+            <OoplabdhLogo size="sm" compact={isTiny} markOnly={isTiny} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -123,13 +112,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
     <View style={{ paddingTop: insets.top }}>
       <View style={[styles.navbar, isCompact && styles.navbarCompact]}>
       <TouchableOpacity style={styles.brandRow} onPress={() => navigateTo('/home')}>
-        <View style={styles.brandMark}>
-          <Ionicons name="cart-outline" size={18} color="#7dd3fc" />
-        </View>
-        <View style={styles.brandTextBlock}>
-          <Text style={styles.brandTitle} numberOfLines={1}>CampusCart</Text>
-          {!isTiny && <Text style={styles.brandSubtitle}>College marketplace, reimagined</Text>}
-        </View>
+        <OoplabdhLogo size="sm" />
       </TouchableOpacity>
 
       <View style={[styles.navActions, isCompact && styles.navActionsCompact]}>
@@ -193,36 +176,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     flexShrink: 1,
-  },
-  brandMark: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandMarkMobile: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-  },
-  brandTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  brandTitleTiny: {
-    fontSize: 17,
-  },
-  brandTextBlock: {
-    minWidth: 0,
-    flexShrink: 1,
-  },
-  brandSubtitle: {
-    marginTop: 2,
-    fontSize: 12,
-    color: COLORS.textMuted,
   },
   navActions: {
     flexDirection: 'row',

@@ -23,6 +23,8 @@ interface AuthState {
   error: string | null;
   login: (data: any) => Promise<boolean>;
   register: (data: any) => Promise<boolean>;
+  sendRegistrationOtp: (data: { email: string, phone?: string }) => Promise<{success: boolean, message?: string}>;
+  verifyRegistrationOtp: (data: { email: string, emailOtp: string }) => Promise<{success: boolean, message?: string}>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   loginAsDemo: () => void;
@@ -97,6 +99,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false 
       });
       return false;
+    }
+  },
+
+  sendRegistrationOtp: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post('/auth/send-registration-otp', data);
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to send OTP';
+      set({ error: message, isLoading: false });
+      return { success: false, message };
+    }
+  },
+
+  verifyRegistrationOtp: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await api.post('/auth/verify-registration-otp', data);
+      set({ isLoading: false });
+      return { success: true };
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'OTP verification failed';
+      set({ error: message, isLoading: false });
+      return { success: false, message };
     }
   },
 

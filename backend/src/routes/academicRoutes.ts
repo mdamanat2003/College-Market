@@ -35,7 +35,7 @@ const localStorage = multer.diskStorage({
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'campuscart_notes',
+    folder: 'ooplabdh_notes',
     resource_type: 'auto',
     allowed_formats: ['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'],
   } as any, 

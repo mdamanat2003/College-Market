@@ -26,7 +26,7 @@ export default function Contact() {
         <View style={styles.heroTextBlock}>
           <Text style={styles.kicker}>Contact</Text>
           <Text style={[styles.title, isCompact && styles.titleCompact, isTiny && styles.titleTiny]}>
-            Get in touch with CampusCart.
+            Get in touch with Ooplabdh.
           </Text>
           <Text style={styles.body}>
             Have a question, feedback, or partnership idea? Send us a message and we will get back to you.

@@ -90,7 +90,7 @@ export default function Footer({ onBackToTop }: FooterProps) {
   return (
     <>
       <View style={[styles.footer, isPhone && styles.phoneFooter]}>
-        <Text style={styles.footerText}>CampusCart 2026. All rights reserved.</Text>
+        <Text style={styles.footerText}>Ooplabdh 2026. All rights reserved.</Text>
 
         <View style={[styles.footerLinks, isPhone && styles.phoneFooterLinks]}>
           <TouchableOpacity style={styles.footerLinkButton} onPress={() => router.push('/about')}>
@@ -122,7 +122,7 @@ export default function Footer({ onBackToTop }: FooterProps) {
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Review CampusCart</Text>
+            <Text style={styles.modalTitle}>Review Ooplabdh</Text>
             <View style={styles.starRow}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <TouchableOpacity key={star} onPress={() => setReviewRating(star)}>

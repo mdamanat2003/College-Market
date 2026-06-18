@@ -8,6 +8,7 @@ import axios from 'axios';
 import Footer from '../layout/Footer';
 import { PublicNavbar } from '../layout/PublicNavbar';
 import { useChatStore } from '../../store/chatStore';
+import { useAuthStore } from '../../store/authStore';
 import { api, SOCKET_URL } from '../../services/api';
 import { SPACING } from '../../theme/colors';
 
@@ -25,12 +26,12 @@ const stats = [
 ];
 
 const initialReviews = [
-  { id: 1, name: 'Rahul Sharma', time: '1 MONTH AGO', text: '"Alhamdulillah learning a lot with CampusCart. The escrow feature is unique and very safe to use for buying textbooks."', initial: 'R' },
+  { id: 1, name: 'Rahul Sharma', time: '1 MONTH AGO', text: '"Alhamdulillah learning a lot with Ooplabdh. The escrow feature is unique and very safe to use for buying textbooks."', initial: 'R' },
   { id: 2, name: 'Priya Patel', time: '2 MONTHS AGO', text: '"Great online platform for our college. Selling my old laptop was a breeze. Live chat helped me negotiate quickly. Highly recommended!"', initial: 'P' },
   { id: 3, name: 'Mustan Ali', time: '2 WEEKS AGO', text: '"Awesome experience! Bought a monitor for my dorm setup. Smooth deal and instant verification. The UI feels incredibly premium."', initial: 'M' },
   { id: 4, name: 'Safdar Khan', time: '1 MONTH AGO', text: '"Best campus marketplace out there. Sold my college cycle within an hour. Chat features are really fast and fluid."', initial: 'S' },
   { id: 5, name: 'Masab Mallick', time: '3 WEEKS AGO', text: '"Highly secure app. No spam or noisy clutter like WhatsApp groups. Perfect for buying and selling second-hand gadgets safely on campus."', initial: 'M' },
-  { id: 6, name: 'Adnan Karim', time: '3 MONTHS AGO', text: '"I suggest my friends to use CampusCart instead of WhatsApp groups. Messages don\'t get lost and transactions are secure."', initial: 'A' }
+  { id: 6, name: 'Adnan Karim', time: '3 MONTHS AGO', text: '"I suggest my friends to use Ooplabdh instead of WhatsApp groups. Messages don\'t get lost and transactions are secure."', initial: 'A' }
 ];
 
 function FeatureCardItem({ item, isTablet, isDesktop }: { item: any, isTablet: boolean, isDesktop: boolean }) {
@@ -63,6 +64,7 @@ function FeatureCardItem({ item, isTablet, isDesktop }: { item: any, isTablet: b
 
 export default function LandingPage() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const scrollRef = useRef<ScrollView>(null);
   const reviewsScrollRef = useRef<ScrollView>(null); 
   const scrollOffset = useRef(0); 
@@ -266,7 +268,7 @@ export default function LandingPage() {
               <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerThree, { opacity: gradientLayerThreeOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.12 }] }]} />
               <View style={styles.welcomeSheen} />
               <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
-                {isMobile ? <>WELCOME TO{'\n'}CAMPUSCART</> : 'WELCOME TO CAMPUSCART'}
+                {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
               </Animated.Text>
             </View>
           </View>
@@ -281,10 +283,10 @@ export default function LandingPage() {
                 Buy, sell, and chat across campus with confidence.
               </Text>
               <Text style={styles.subheadline}>
-                CampusCart is the premium marketplace for college communities, combining escrow-backed safety, verified profiles, and instant messaging in one polished experience.
+                Ooplabdh is the premium marketplace for college communities, combining escrow-backed safety, verified profiles, and instant messaging in one polished experience.
               </Text>
               <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
-                <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/(auth)/register')}>
+                <TouchableOpacity style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
                   <Text style={styles.primaryButtonText}>Get Started</Text>
                   <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
                 </TouchableOpacity>
@@ -308,7 +310,7 @@ export default function LandingPage() {
               <View style={styles.mockupCard}>
                 <View style={[styles.mockupTopBar, isMockupCompact && styles.mockupTopBarCompact]}>
                   <View style={styles.mockupHeaderCopy}>
-                    <Text style={styles.mockupKicker}>CampusCart Dashboard</Text>
+                    <Text style={styles.mockupKicker}>Ooplabdh Dashboard</Text>
                     <Text style={[styles.mockupTitle, isMobile && styles.mockupTitleMobile]}>Student commerce at a glance</Text>
                   </View>
                   <View style={[styles.onlinePill, isMockupCompact && styles.onlinePillCompact]}>
@@ -365,10 +367,10 @@ export default function LandingPage() {
           </View>
 
           <View style={styles.sectionCopyCentered}>
-            <Text style={styles.sectionLabel}>About CampusCart</Text>
+            <Text style={styles.sectionLabel}>About Ooplabdh</Text>
             <Text style={styles.sectionTitleLarge}>A polished marketplace built for student life.</Text>
             <Text style={styles.sectionBodyCentered}>
-              CampusCart blends the calm confidence of premium SaaS design with the practical needs of a campus marketplace, making every step from discovery to payment feel effortless.
+              Ooplabdh blends the calm confidence of premium SaaS design with the practical needs of a campus marketplace, making every step from discovery to payment feel effortless.
             </Text>
           </View>
 
@@ -440,7 +442,7 @@ export default function LandingPage() {
               <Text style={styles.sectionLabelLeft}>Ready to launch</Text>
               <Text style={styles.ctaTitle}>A premium campus marketplace that feels safe, fast, and built just for you.</Text>
             </View>
-            <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/(auth)/register')}>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
               <Text style={styles.primaryButtonText}>Sign Up Now</Text>
               <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
             </TouchableOpacity>
@@ -480,7 +482,7 @@ export default function LandingPage() {
             
             <TextInput
               style={[styles.modalInput, styles.modalInputArea]}
-              placeholder="Share your thoughts about CampusCart..."
+              placeholder="Share your thoughts about Ooplabdh..."
               placeholderTextColor="rgba(255,255,255,0.4)"
               multiline
               numberOfLines={4}

@@ -102,18 +102,24 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCollegeList, setShowCollegeList] = useState(false);
   const [serverError, setServerError] = useState('');
-  const [focusedField, setFocusedField] = useState<RegisterFieldName | null>(null);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [emailOtp, setEmailOtp] = useState('');
+  const [focusedField, setFocusedField] = useState<RegisterFieldName | 'emailOtp' | null>(null);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === 'web' && width >= 900;
   const router = useRouter();
   const registerStore = useAuthStore((s) => s.register);
+  const sendOtpStore = useAuthStore((s) => s.sendRegistrationOtp);
+  const verifyOtpStore = useAuthStore((s) => s.verifyRegistrationOtp);
   const authError = useAuthStore((s) => s.error);
 
   const {
     control,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors, isValid, isSubmitting },
     setError,
   } = useForm<RegisterFormValues>({
@@ -131,15 +137,54 @@ export default function Register() {
     },
   });
 
+  const watchedEmail = watch('email');
+  const watchedPhone = watch('phone');
   const watchedCollege = watch('college');
   const watchedPassword = watch('password') || '';
   const passwordStrength = getPasswordStrength(watchedPassword);
 
-  const inputStyle = (field: RegisterFieldName, hasError: boolean) => [
+  const inputStyle = (field: string, hasError: boolean) => [
     styles.input,
     focusedField === field && styles.inputFocused,
     hasError && styles.inputError,
   ];
+
+  const handleSendOtp = async () => {
+    setServerError('');
+    const email = getValues('email');
+    const phone = getValues('phone');
+
+    if (!email || !phone || errors.email || errors.phone) {
+      Alert.alert('Error', 'Please enter a valid email and phone number first.');
+      return;
+    }
+
+    const result = await sendOtpStore({ email, phone });
+    if (result.success) {
+      setIsOtpSent(true);
+      Alert.alert('OTP Sent', 'Please check your email for the verification code.');
+    } else {
+      setServerError(result.message || 'Failed to send OTP. Please try again.');
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setServerError('');
+    if (!emailOtp) {
+      Alert.alert('Error', 'Please enter the email OTP.');
+      return;
+    }
+
+    const email = getValues('email');
+
+    const result = await verifyOtpStore({ email, emailOtp });
+    if (result.success) {
+      setIsVerified(true);
+      Alert.alert('Verified!', 'Your email has been verified. You can now complete registration.');
+    } else {
+      setServerError(result.message || 'OTP verification failed.');
+    }
+  };
 
   const mapServerErrorToField = (message: string): keyof RegisterFormValues | null => {
     const lowerMessage = message.toLowerCase();
@@ -153,6 +198,11 @@ export default function Register() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     setServerError('');
+
+    if (!isVerified) {
+      Alert.alert('Verification Required', 'Please verify your email and phone number before registering.');
+      return;
+    }
 
     try {
       if (values.college === 'Other') {
@@ -201,7 +251,7 @@ export default function Register() {
           <View style={styles.pageShell}>
             <View style={styles.hero}>
               <Text style={styles.heroTitle}>Create Your Account</Text>
-              <Text style={styles.heroSubtitle}>Join CampusCart and start trading with your campus community.</Text>
+              <Text style={styles.heroSubtitle}>Join Ooplabdh and start trading with your campus community.</Text>
             </View>
 
             {serverError ? (
@@ -302,6 +352,50 @@ export default function Register() {
                     {errors.phone ? <Text style={styles.fieldErrorText}>{errors.phone.message}</Text> : null}
                   </View>
                 </View>
+
+                {/* OTP Section */}
+                {!isVerified && (
+                  <View style={styles.otpContainer}>
+                    {!isOtpSent ? (
+                      <TouchableOpacity
+                        style={[styles.verifyButton, (!watchedEmail || !watchedPhone || Boolean(errors.email) || Boolean(errors.phone)) && styles.buttonDisabled]}
+                        onPress={handleSendOtp}
+                        disabled={!watchedEmail || !watchedPhone || Boolean(errors.email) || Boolean(errors.phone)}
+                      >
+                        <Text style={styles.verifyButtonText}>Send Verification OTP</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <View style={styles.otpInputGroup}>
+                        <View style={styles.inputGroup}>
+                          <Text style={styles.label}>Email OTP</Text>
+                          <TextInput
+                            style={inputStyle('emailOtp', false)}
+                            placeholder="6-digit code"
+                            keyboardType="number-pad"
+                            value={emailOtp}
+                            onChangeText={setEmailOtp}
+                            maxLength={6}
+                            onFocus={() => setFocusedField('emailOtp')}
+                            onBlur={() => setFocusedField(null)}
+                          />
+                        </View>
+                        <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyOtp}>
+                          <Text style={styles.verifyButtonText}>Verify Code</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setIsOtpSent(false)}>
+                          <Text style={styles.resendText}>Edit email/phone or resend OTP</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {isVerified && (
+                  <View style={styles.verifiedBadge}>
+                    <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                    <Text style={styles.verifiedText}>Email & Phone Verified</Text>
+                  </View>
+                )}
 
                 <View style={[styles.row, isDesktop && styles.rowDesktop]}>
                   <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
@@ -729,5 +823,49 @@ const styles = StyleSheet.create({
     color: COLORS.link,
     fontSize: 15,
     fontWeight: '800',
+  },
+  otpContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 8,
+  },
+  otpInputGroup: {
+    gap: 12,
+  },
+  verifyButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  verifyButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  resendText: {
+    color: COLORS.primary,
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    gap: 8,
+  },
+  verifiedText: {
+    color: COLORS.success,
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

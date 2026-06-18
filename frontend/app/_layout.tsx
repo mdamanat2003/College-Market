@@ -31,7 +31,7 @@ export default function RootLayout() {
       return;
     }
 
-    const styleId = 'campuscart-web-reset';
+    const styleId = 'ooplabdh-web-reset';
     if (document.getElementById(styleId)) {
       return;
     }

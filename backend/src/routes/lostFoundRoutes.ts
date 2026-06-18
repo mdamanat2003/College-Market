@@ -35,7 +35,7 @@ const localStorage = multer.diskStorage({
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'campuscart_lost_found',
+    folder: 'ooplabdh_lost_found',
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   } as any,
 });

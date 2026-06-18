@@ -62,7 +62,7 @@ export default function CheckoutScreen() {
       key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID, // .env se uthaya
       amount: order.amount, // Paise me (paise backend se aayega)
       currency: "INR",
-      name: "CampusCart Escrow",
+      name: "Ooplabdh Escrow",
       description: `Payment for ${product.title}`,
       order_id: order.razorpayOrderId,
       prefill: {
@@ -153,7 +153,7 @@ export default function CheckoutScreen() {
         </View>
 
         <Text style={styles.trustText}>
-          Your money is held safely in CampusCart Escrow. The seller gets paid only when you receive the item.
+          Your money is held safely in Ooplabdh Escrow. The seller gets paid only when you receive the item.
         </Text>
 
         <Button 

@@ -31,7 +31,7 @@ const team: TeamMember[] = [
   {
     name: 'MD AMANAT ULLAH',
     role: 'Chief Executive Officer (CEO)',
-    desc: 'Leading the technical vision and full-stack architecture for CampusCart.',
+    desc: 'Leading the technical vision and full-stack architecture for Ooplabdh.',
     initials: 'MA',
     accent: '#EFF6FF', // Softer pastel blue
     text: '#2563EB',
@@ -128,7 +128,7 @@ export default function About() {
               Redefining Campus{'\n'}Commerce.
             </Text>
             <Text style={styles.heroBody}>
-              CampusCart was born from a simple frustration: students needed a safer,
+              Ooplabdh was born from a simple frustration: students needed a safer,
               cleaner way to buy, sell, and connect without relying on noisy group chats.
             </Text>
 
@@ -204,7 +204,7 @@ export default function About() {
           <Text style={styles.sectionKicker}>Our Team</Text>
           <Text style={[styles.sectionTitle, isTiny && styles.sectionTitleTiny]}>Meet the minds behind it.</Text>
           <Text style={styles.sectionBody}>
-            The team building CampusCart as a reliable, premium experience for every student on campus.
+            The team building Ooplabdh as a reliable, premium experience for every student on campus.
           </Text>
         </View>
 
@@ -275,7 +275,7 @@ export default function About() {
             style={({ pressed }) => [styles.ctaButton, pressed && styles.buttonPressed]} 
             onPress={() => router.push('/(auth)/register')}
           >
-            <Text style={styles.ctaButtonText}>Join CampusCart</Text>
+            <Text style={styles.ctaButtonText}>Join Ooplabdh</Text>
             <Ionicons name="arrow-forward" size={16} color="#0F172A" />
           </Pressable>
         </View>

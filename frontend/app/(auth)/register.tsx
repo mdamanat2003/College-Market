@@ -23,18 +23,18 @@ import { COLLEGES } from '../../constants/colleges';
 import { useAuthStore } from '../../store/authStore';
 
 const COLORS = {
-  background: '#F5F7FB',
-  card: '#FFFFFF',
-  primary: '#316BEF',
-  primaryHover: '#2563EB',
-  heading: '#1E293B',
-  label: '#374151',
-  placeholder: '#94A3B8',
-  border: '#DCE3EE',
-  link: '#2563EB',
-  success: '#16A34A',
+  background: '#09090b',
+  card: '#18181b',
+  primary: '#38BDF8', // Sky 400
+  primaryHover: '#0ea5e9',
+  heading: '#F8FAFC',
+  label: '#E2E8F0',
+  placeholder: '#64748B',
+  border: '#27272a',
+  link: '#38BDF8',
+  success: '#10B981',
   error: '#EF4444',
-  helper: '#64748B',
+  helper: '#94A3B8',
 };
 
 type RegisterFieldName =
@@ -650,18 +650,18 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 24,
-    shadowColor: 'rgba(30, 41, 59, 0.08)',
+    shadowColor: '#38bdf8',
     shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 1,
+    shadowOpacity: 0.04,
     shadowRadius: 35,
     elevation: 3,
   },
   errorBox: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: 'rgba(239, 68, 68, 0.2)',
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: COLORS.error,
-    backgroundColor: '#FFFBFB',
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
   },
   selectInput: {
     minHeight: 54,
@@ -733,7 +733,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2F7',
+    borderBottomColor: COLORS.border,
   },
   collegeItemText: {
     color: COLORS.heading,
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
   strengthTrack: {
     height: 6,
     borderRadius: 999,
-    backgroundColor: '#E8EEF7',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
   },
   strengthFill: {
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
-    shadowColor: 'rgba(124, 157, 240, 0.26)',
+    shadowColor: 'rgba(56, 189, 248, 0.26)',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 1,
     shadowRadius: 22,
@@ -805,7 +805,7 @@ const styles = StyleSheet.create({
     opacity: 0.58,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#09090b',
     fontSize: 16,
     fontWeight: '800',
   },
@@ -825,11 +825,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   otpContainer: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     marginTop: 8,
   },
   otpInputGroup: {
@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   verifyButtonText: {
-    color: '#FFFFFF',
+    color: '#09090b',
     fontWeight: '700',
     fontSize: 14,
   },
@@ -856,11 +856,11 @@ const styles = StyleSheet.create({
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0FDF4',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#DCFCE7',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
     gap: 8,
   },
   verifiedText: {

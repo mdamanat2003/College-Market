@@ -1,18 +1,18 @@
 export const COLORS = {
   // Brand Colors
-  primary: '#0F172A', // Premium dark slate (Stripe/Linear vibe)
+  primary: '#F8FAFC', // Slate 50 (Text/Icon accents on dark background)
   primaryLight: '#334155',
-  accent: '#3B82F6',  // Trust blue
+  accent: '#38BDF8',  // Sky 400 (Vibrant highlight)
   
   // Backgrounds
-  background: '#F8FAFC',
-  card: '#FFFFFF',
-  surface: '#F1F5F9',
-  heading: '#1E293B',
+  background: '#09090b', // Zinc 950
+  card: '#18181b',       // Zinc 900
+  surface: '#27272a',    // Zinc 800
+  heading: '#F8FAFC',
   
   // Text
-  text: '#0F172A',
-  textMuted: '#64748B',
+  text: '#F1F5F9',       // Slate 100
+  textMuted: '#94A3B8',  // Slate 400
   
   // Status
   success: '#10B981',
@@ -20,8 +20,9 @@ export const COLORS = {
   warning: '#F59E0B',
   
   // Borders
-  border: '#E2E8F0',
+  border: '#27272a',     // Zinc 800
 };
+
 
 export const SPACING = {
   xs: 4,

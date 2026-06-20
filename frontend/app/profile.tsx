@@ -236,12 +236,12 @@ const styles = StyleSheet.create({
   productImg: { width: 60, height: 60, borderRadius: RADIUS.sm, backgroundColor: COLORS.surface, marginRight: SPACING.md },
   productDetails: { flex: 1 },
   productTitle: { fontSize: 16, fontWeight: '600', color: COLORS.text },
-  productPrice: { fontSize: 16, fontWeight: '700', color: COLORS.primary, marginTop: 2 },
+  productPrice: { fontSize: 16, fontWeight: '700', color: COLORS.accent, marginTop: 2 },
   partnerText: { fontSize: 12, color: COLORS.textMuted, marginTop: 4 },
 
-  actionBox: { marginTop: SPACING.md, backgroundColor: '#F8FAFC', padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
+  actionBox: { marginTop: SPACING.md, backgroundColor: COLORS.surface, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
   actionHint: { fontSize: 13, color: COLORS.text, marginBottom: SPACING.sm, textAlign: 'center', fontWeight: '500' },
-  actionBoxInfo: { marginTop: SPACING.md, backgroundColor: '#FFFBEB', padding: SPACING.md, borderRadius: RADIUS.md, flexDirection: 'row', alignItems: 'flex-start' },
-  actionHintInfo: { fontSize: 13, color: '#92400E', marginLeft: SPACING.sm, flex: 1, lineHeight: 18 },
+  actionBoxInfo: { marginTop: SPACING.md, backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: SPACING.md, borderRadius: RADIUS.md, flexDirection: 'row', alignItems: 'flex-start', borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.2)' },
+  actionHintInfo: { fontSize: 13, color: COLORS.warning, marginLeft: SPACING.sm, flex: 1, lineHeight: 18 },
   footerWrapper: { marginHorizontal: -SPACING.lg, marginTop: 40 },
 });

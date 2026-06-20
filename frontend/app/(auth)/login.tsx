@@ -16,18 +16,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
 
 const COLORS = {
-  background: '#F5F7FB',
-  card: '#FFFFFF',
-  signIn: '#2563EB',
-  focus: '#7C9DF0',
-  heading: '#1E293B',
-  label: '#374151',
-  placeholder: '#94A3B8',
-  border: '#DCE3EE',
-  link: '#2563EB',
+  background: '#09090b',
+  card: '#18181b',
+  signIn: '#38BDF8', // Sky 400
+  focus: '#7dd3fc',
+  heading: '#F8FAFC',
+  label: '#E2E8F0',
+  placeholder: '#64748B',
+  border: '#27272a',
+  link: '#38BDF8',
   error: '#EF4444',
-  success: '#16A34A',
-  helper: '#64748B',
+  success: '#10B981',
+  helper: '#94A3B8',
 };
 
 type LoginFieldName = 'email' | 'password';
@@ -212,7 +212,7 @@ export default function Login() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: COLORS.border, marginTop: 8, boxShadow: 'none', elevation: 0 }]}
+                  style={[styles.button, { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: COLORS.border, marginTop: 8, boxShadow: 'none', elevation: 0 }]}
                   onPress={handleDemoLogin}
                   activeOpacity={0.86}
                 >
@@ -276,16 +276,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 24,
-    boxShadow: '0 14px 35px rgba(30, 41, 59, 0.08)',
+    shadowColor: '#38bdf8',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.04,
+    shadowRadius: 35,
     elevation: 3,
   },
   form: { gap: 16 },
   userTypeRow: {
     flexDirection: 'row',
     gap: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 999,
@@ -303,7 +306,7 @@ const styles = StyleSheet.create({
   },
   userTypePillActive: {
     borderColor: COLORS.signIn,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
   },
   userTypeText: {
     color: COLORS.label,
@@ -384,16 +387,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
-    boxShadow: '0 10px 22px rgba(37, 99, 235, 0.24)',
+    shadowColor: 'rgba(56, 189, 248, 0.24)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 1,
+    shadowRadius: 22,
     elevation: 4,
     transitionProperty: 'box-shadow, opacity, transform',
     transitionDuration: '180ms',
   },
   buttonHovered: {
-    boxShadow: '0 14px 28px rgba(37, 99, 235, 0.28)',
+    boxShadow: '0 14px 28px rgba(56, 189, 248, 0.28)',
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#09090b',
     fontSize: 16,
     fontWeight: '800',
   },

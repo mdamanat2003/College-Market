@@ -62,7 +62,7 @@ export default function MarketplaceHome() {
             <Ionicons 
               name={activeCollege === 'All Colleges' ? "business-outline" : "school"} 
               size={18} 
-              color={activeCollege === 'All Colleges' ? COLORS.text : '#fff'} 
+              color={activeCollege === 'All Colleges' ? COLORS.text : COLORS.background} 
             />
             <Text style={[styles.filterToggleText, activeCollege !== 'All Colleges' && styles.filterToggleTextActive]}>
               {activeCollege === 'All Colleges' ? "Show My College Only" : `Showing: ${activeCollege}`}
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   activeText: {
-    color: '#fff',
+    color: COLORS.background,
   },
   gridList: {
     flexGrow: 1, // 👈 Added to push footer down
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   filterToggleTextActive: {
-    color: '#fff',
+    color: COLORS.background,
   },
   emptyState: {
     flex: 1,

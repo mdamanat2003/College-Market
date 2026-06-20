@@ -42,6 +42,8 @@ export default function AdminRequests() {
     }
   };
 
+  const contactRequests = requests.filter(r => !r.message || !r.message.includes('[Academic Request]'));
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Contact Requests</Text>
@@ -56,9 +58,9 @@ export default function AdminRequests() {
                 <Text style={{ color: '#fff' }}>Retry</Text>
               </TouchableOpacity>
             </View>
-          ) : requests.length === 0 ? (
-            <Text style={styles.empty}>No requests</Text>
-          ) : requests.map((r) => (
+          ) : contactRequests.length === 0 ? (
+            <Text style={styles.empty}>No general requests found.</Text>
+          ) : contactRequests.map((r) => (
             <View key={r._id} style={styles.item}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{r.name} · {r.email}</Text>

@@ -10,6 +10,7 @@ import { useDemoRestriction } from '../hooks/use-demo-restriction';
 import { API_URL } from '../services/api';
 import Footer from '../components/layout/Footer';
 import { compressImage } from '../utils/imageCompressor';
+import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
 export default function AddItemScreen() {
   const router = useRouter();
@@ -191,7 +192,7 @@ export default function AddItemScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           
@@ -203,7 +204,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={[styles.inputField, errors.title ? styles.inputFieldError : null]} 
               placeholder="e.g., Engineering Mathematics Book" 
-              placeholderTextColor="#cbd5e1"
+              placeholderTextColor={COLORS.textMuted}
               value={title} 
               onChangeText={(text) => {
                 setTitle(text);
@@ -219,7 +220,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={[styles.inputField, errors.price ? styles.inputFieldError : null]} 
               placeholder="e.g., 450" 
-              placeholderTextColor="#cbd5e1"
+              placeholderTextColor={COLORS.textMuted}
               keyboardType="numeric" 
               value={price} 
               onChangeText={(text) => {
@@ -268,7 +269,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={[styles.inputField, styles.textArea, errors.description ? styles.inputFieldError : null]} 
               placeholder="Describe your product condition, usage period, etc." 
-              placeholderTextColor="#cbd5e1"
+              placeholderTextColor={COLORS.textMuted}
               multiline 
               numberOfLines={4} 
               value={description} 
@@ -316,7 +317,7 @@ export default function AddItemScreen() {
             <TextInput 
               style={styles.input} 
               placeholder="Paste Cloudinary/Image URL here" 
-              placeholderTextColor="#cbd5e1"
+              placeholderTextColor={COLORS.textMuted}
               value={linkInput}
               onChangeText={setLinkInput}
             />
@@ -329,7 +330,7 @@ export default function AddItemScreen() {
 
           {/* Submit Button */}
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitButtonText}>Add Now</Text>}
+            {isSubmitting ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.submitButtonText}>Add Now</Text>}
           </TouchableOpacity>
 
           <View style={styles.footerWrapper}>
@@ -343,225 +344,209 @@ export default function AddItemScreen() {
           }
 
           const styles = StyleSheet.create({
-          scrollContainer: { 
-          flexGrow: 1,
-          padding: 24, 
-          backgroundColor: '#f9fafb',
-          width: '100%',
-          maxWidth: 600,
-          alignSelf: 'center',
-          },
-          mainTitle: { 
-          fontSize: 28, 
-          fontWeight: '800', 
-          color: '#111827', 
-          marginBottom: 6,
-          letterSpacing: -0.5
-          },
-          formGroup: { 
-          marginBottom: 20, 
-          gap: 8 
-          },
-          label: { 
-          fontSize: 14, 
-          fontWeight: '600', 
-          color: '#374151',
-          textTransform: 'uppercase',
-          letterSpacing: 0.5
-          },
-          inputField: { 
-          borderWidth: 1, 
-          borderColor: '#e5e7eb', 
-          borderRadius: 12,
-          paddingHorizontal: 16, 
-          height: 52, 
-          fontSize: 16, 
-          backgroundColor: '#ffffff',
-          color: '#111827',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.03,
-          shadowRadius: 2,
-          elevation: 1,
-          },
-          chipsContainer: {
-          paddingVertical: 4,
-          gap: 10,
-          flexDirection: 'row',
-          },
-          chipButton: {
-          backgroundColor: '#edf2f7', 
-          paddingHorizontal: 22,
-          paddingVertical: 12,
-          borderRadius: 25,
-          borderWidth: 1,
-          borderColor: '#e2e8f0',
-          justifyContent: 'center',
-          alignItems: 'center',
-          },
-          chipButtonActive: {
-          backgroundColor: '#2563eb', 
-          borderColor: '#2563eb',
-          },
-          chipText: {
-          fontSize: 15,
-          fontWeight: '600',
-          color: '#1e293b',
-          },
-          chipTextActive: {
-          color: '#ffffff',
-          },
-          textArea: { 
-          height: 120, 
-          paddingTop: 14, 
-          textAlignVertical: 'top' 
-          },
-          title: { 
-          fontSize: 15, 
-          fontWeight: '700', 
-          marginBottom: 12, 
-          color: '#374151', 
-          marginTop: 16 
-          },
-          previewScroll: { 
-          maxHeight: 140, 
-          marginBottom: 20 
-          },
-          imageWrapper: { 
-          marginRight: 14, 
-          position: 'relative', 
-          marginTop: 5 
-          },
-          imagePreview: { 
-          width: 110, 
-          height: 110, 
-          borderRadius: 14, 
-          resizeMode: 'cover',
-          borderWidth: 1,
-          borderColor: '#e5e7eb'
-          },
-          deleteBadge: { 
-          position: 'absolute', 
-          top: -6, 
-          right: -6, 
-          backgroundColor: '#ef4444', 
-          width: 22, 
-          height: 22, 
-          borderRadius: 11, 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.2,
-          shadowRadius: 3,
-          elevation: 3
-          },
-          deleteText: { 
-          color: 'white', 
-          fontWeight: 'bold', 
-          fontSize: 11 
-          },
-          emptyBox: { 
-          width: '100%', 
-          height: 120, 
-          minWidth: 320, 
-          backgroundColor: '#ffffff', 
-          borderRadius: 14, 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          borderWidth: 2, 
-          borderColor: '#e5e7eb', 
-          borderStyle: 'dashed' 
-          },
-          placeholderText: { 
-          color: '#9ca3af', 
-          fontSize: 14,
-          fontWeight: '500' 
-          },
-          buttonRow: { 
-          flexDirection: 'row', 
-          gap: 14, 
-          marginBottom: 18 
-          },
-          button: { 
-          flex: 1, 
-          backgroundColor: '#2563eb', 
-          paddingVertical: 14, 
-          borderRadius: 12, 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          shadowColor: '#2563eb',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 2
-          },
-          galleryButton: { 
-          backgroundColor: '#10b981' 
-          },
-          buttonText: { 
-          color: '#fff', 
-          fontWeight: '700',
-          fontSize: 15
-          },
-          orText: { 
-          textAlign: 'center', 
-          marginVertical: 12, 
-          fontWeight: '700', 
-          color: '#9ca3af',
-          fontSize: 13
-          },
-          linkInputContainer: { 
-          flexDirection: 'row', 
-          gap: 10, 
-          marginBottom: 32 
-          },
-          input: { 
-          flex: 1, 
-          borderWidth: 1, 
-          borderColor: '#e5e7eb', 
-          borderRadius: 12, 
-          paddingHorizontal: 16, 
-          height: 52, 
-          backgroundColor: '#ffffff' 
-          },
-          linkButton: { 
-          backgroundColor: '#4b5563', 
-          paddingHorizontal: 18, 
-          justifyContent: 'center', 
-          borderRadius: 12 
-          },
-          submitButton: { 
-          backgroundColor: '#2563eb', 
-          padding: 16, 
-          borderRadius: 12, 
-          alignItems: 'center', 
-          shadowColor: '#2563eb', 
-          shadowOffset: { width: 0, height: 4 }, 
-          shadowOpacity: 0.2, 
-          shadowRadius: 8, 
-          elevation: 4,
-          marginTop: 10,
-          marginBottom: 30
-          },
-          submitButtonText: { 
-          color: '#fff', 
-          fontSize: 16, 
-          fontWeight: '700' 
-          },
-          errorText: {
-          color: '#ef4444',
-          fontSize: 13,
-          fontWeight: '600',
-          marginTop: 4,
-          paddingLeft: 4,
-          },
-          inputFieldError: {
-          borderColor: '#ef4444',
-          backgroundColor: '#fff5f5',
-          },
-          footerWrapper: {
-          marginHorizontal: -24,
-          marginTop: 40,
-          },
-          });
+  scrollContainer: { 
+    flexGrow: 1,
+    padding: 24, 
+    backgroundColor: COLORS.background,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
+  },
+  mainTitle: { 
+    fontSize: 28, 
+    fontWeight: '800', 
+    color: COLORS.heading, 
+    marginBottom: 6,
+    letterSpacing: -0.5
+  },
+  formGroup: { 
+    marginBottom: 20, 
+    gap: 8 
+  },
+  label: { 
+    fontSize: 14, 
+    fontWeight: '600', 
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
+  inputField: { 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    borderRadius: RADIUS.md,
+    paddingHorizontal: 16, 
+    height: 52, 
+    fontSize: 16, 
+    backgroundColor: COLORS.card,
+    color: COLORS.heading,
+  },
+  chipsContainer: {
+    paddingVertical: 4,
+    gap: 10,
+    flexDirection: 'row',
+  },
+  chipButton: {
+    backgroundColor: COLORS.surface, 
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderRadius: RADIUS.round,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chipButtonActive: {
+    backgroundColor: COLORS.primary, 
+    borderColor: COLORS.primary,
+  },
+  chipText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  chipTextActive: {
+    color: COLORS.background,
+  },
+  textArea: { 
+    height: 120, 
+    paddingTop: 14, 
+    textAlignVertical: 'top' 
+  },
+  title: { 
+    fontSize: 15, 
+    fontWeight: '700', 
+    marginBottom: 12, 
+    color: COLORS.heading, 
+    marginTop: 16 
+  },
+  previewScroll: { 
+    maxHeight: 140, 
+    marginBottom: 20 
+  },
+  imageWrapper: { 
+    marginRight: 14, 
+    position: 'relative', 
+    marginTop: 5 
+  },
+  imagePreview: { 
+    width: 110, 
+    height: 110, 
+    borderRadius: RADIUS.md, 
+    resizeMode: 'cover',
+    borderWidth: 1,
+    borderColor: COLORS.border
+  },
+  deleteBadge: { 
+    position: 'absolute', 
+    top: -6, 
+    right: -6, 
+    backgroundColor: COLORS.danger, 
+    width: 22, 
+    height: 22, 
+    borderRadius: 11, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  deleteText: { 
+    color: 'white', 
+    fontWeight: 'bold', 
+    fontSize: 11 
+  },
+  emptyBox: { 
+    width: '100%', 
+    height: 120, 
+    minWidth: 320, 
+    backgroundColor: COLORS.card, 
+    borderRadius: RADIUS.md, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    borderWidth: 2, 
+    borderColor: COLORS.border, 
+    borderStyle: 'dashed' 
+  },
+  placeholderText: { 
+    color: COLORS.textMuted, 
+    fontSize: 14,
+    fontWeight: '500' 
+  },
+  buttonRow: { 
+    flexDirection: 'row', 
+    gap: 14, 
+    marginBottom: 18 
+  },
+  button: { 
+    flex: 1, 
+    backgroundColor: COLORS.surface, 
+    paddingVertical: 14, 
+    borderRadius: RADIUS.md, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border
+  },
+  galleryButton: { 
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 0
+  },
+  buttonText: { 
+    color: COLORS.text, 
+    fontWeight: '700',
+    fontSize: 15
+  },
+  orText: { 
+    textAlign: 'center', 
+    marginVertical: 12, 
+    fontWeight: '700', 
+    color: COLORS.textMuted,
+    fontSize: 13
+  },
+  linkInputContainer: { 
+    flexDirection: 'row', 
+    gap: 10, 
+    marginBottom: 32 
+  },
+  input: { 
+    flex: 1, 
+    borderWidth: 1, 
+    borderColor: COLORS.border, 
+    borderRadius: RADIUS.md, 
+    paddingHorizontal: 16, 
+    height: 52, 
+    backgroundColor: COLORS.card,
+    color: COLORS.heading
+  },
+  linkButton: { 
+    backgroundColor: COLORS.surface, 
+    paddingHorizontal: 18, 
+    justifyContent: 'center', 
+    borderRadius: RADIUS.md 
+  },
+  submitButton: { 
+    backgroundColor: COLORS.primary, 
+    padding: 16, 
+    borderRadius: RADIUS.md, 
+    alignItems: 'center', 
+    marginTop: 10,
+    marginBottom: 30
+  },
+  submitButtonText: { 
+    color: COLORS.background, 
+    fontSize: 16, 
+    fontWeight: '700' 
+  },
+  errorText: {
+    color: COLORS.danger,
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+    paddingLeft: 4,
+  },
+  inputFieldError: {
+    borderColor: COLORS.danger,
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+  },
+  footerWrapper: {
+    marginHorizontal: -24,
+    marginTop: 40,
+  },
+});

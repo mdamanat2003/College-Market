@@ -36,7 +36,9 @@ export default function ManageUsersScreen() {
         style={[styles.actionBtn, item.isBlocked ? styles.unblockBtn : styles.blockBtn]}
         onPress={() => toggleBlockUser(item._id)}
       >
-        <Text style={styles.actionBtnText}>{item.isBlocked ? 'Unblock' : 'Block'}</Text>
+        <Text style={[styles.actionBtnText, item.isBlocked ? styles.unblockBtnText : styles.blockBtnText]}>
+          {item.isBlocked ? 'Unblock' : 'Block'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -104,9 +106,11 @@ const styles = StyleSheet.create({
   blockedBadge: { backgroundColor: '#FEE2E2', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#FCA5A5' },
   badgeText: { color: '#DC2626', fontSize: 11, fontWeight: '600' },
 
-  actionBtn: { paddingHorizontal: SPACING.md, paddingVertical: 8, borderRadius: RADIUS.sm, justifyContent: 'center', alignItems: 'center', minWidth: 80 },
-  blockBtn: { backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FCA5A5' },
-  unblockBtn: { backgroundColor: '#D1FAE5', borderWidth: 1, borderColor: '#6EE7B7' },
-  actionBtnText: { fontSize: 13, fontWeight: '600', color: COLORS.text },
+  actionBtn: { paddingHorizontal: SPACING.md, paddingVertical: 8, justifyContent: 'center', alignItems: 'center', minWidth: 80 },
+  blockBtn: { backgroundColor: 'transparent' },
+  unblockBtn: { backgroundColor: 'transparent' },
+  actionBtnText: { fontSize: 14, fontWeight: '600' },
+  blockBtnText: { color: '#EF4444' },
+  unblockBtnText: { color: '#10B981' },
   emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.xl, fontSize: 15 }
 });

@@ -258,6 +258,17 @@ export default function AdminDashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/academic-requests' as any)}>
+          <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
+            <Ionicons name="book-outline" size={24} color="#0284C7" />
+          </View>
+          <View style={styles.moduleInfo}>
+            <Text style={styles.moduleTitle}>Notes & PyQ Requests</Text>
+            <Text style={styles.moduleDesc}>Fulfill or manage study material requests</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+        </TouchableOpacity>
+
       </ScrollView>
     </View>
   );

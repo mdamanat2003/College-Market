@@ -100,7 +100,7 @@ export default function LostFoundList() {
             style={styles.reportBtn} 
             onPress={() => router.push('/lost-found/report')}
           >
-            <Ionicons name="add-circle-outline" size={20} color="#fff" />
+            <Ionicons name="add-circle-outline" size={20} color={COLORS.background} />
             <Text style={styles.reportBtnText}>Report Item</Text>
           </TouchableOpacity>
         </View>
@@ -200,13 +200,13 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
   pageTitle: { fontSize: 24, fontWeight: '800', color: COLORS.heading },
   reportBtn: { flexDirection: 'row', backgroundColor: COLORS.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: RADIUS.md, gap: 6, alignItems: 'center' },
-  reportBtnText: { color: '#fff', fontWeight: '600' },
+  reportBtnText: { color: COLORS.background, fontWeight: '600' },
   
   tabContainer: { flexDirection: 'row', backgroundColor: COLORS.card, borderRadius: RADIUS.lg, padding: 4, marginBottom: SPACING.md, borderWidth: 1, borderColor: COLORS.border },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: RADIUS.md },
   activeTab: { backgroundColor: COLORS.primary },
   tabText: { fontWeight: '600', color: COLORS.textMuted },
-  activeTabText: { color: '#fff' },
+  activeTabText: { color: COLORS.background },
 
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, paddingHorizontal: 12, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border, marginBottom: SPACING.md },
   searchInput: { flex: 1, height: 44, color: COLORS.text, paddingLeft: 8 },
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
   activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
-  activeChipText: { color: '#fff' },
+  activeChipText: { color: COLORS.background },
 
   listContent: { flexGrow: 1, gap: SPACING.md, paddingBottom: 0 },
   itemCard: { flexDirection: 'row', backgroundColor: COLORS.card, borderRadius: RADIUS.lg, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border },

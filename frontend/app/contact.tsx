@@ -77,7 +77,7 @@ export default function Contact() {
             }
           }}>
             <Text style={styles.primaryButtonText}>Send Message</Text>
-            <Ionicons name="send-outline" size={16} color="#fff" />
+            <Ionicons name="send-outline" size={16} color={COLORS.background} />
           </TouchableOpacity>
         </View>
       </View>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: COLORS.background,
     fontSize: 14,
     fontWeight: '700',
   },

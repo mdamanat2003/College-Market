@@ -15,7 +15,7 @@ import {
 
 import Footer from '../components/layout/Footer';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
-import { SPACING } from '../theme/colors';
+import { COLORS, SPACING } from '../theme/colors';
 
 type TeamMember = {
   name: string;
@@ -291,7 +291,7 @@ export default function About() {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#FAFAFA', // Ultra light neutral background
+    backgroundColor: COLORS.background, // Zinc 950
   },
   content: {
     paddingHorizontal: SPACING.md,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 300,
-    backgroundColor: 'rgba(59,130,246,0.06)',
+    backgroundColor: 'rgba(56,189,248,0.06)',
     filter: Platform.OS === 'web' ? 'blur(60px)' : undefined,
   },
   glowMint: {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     width: 350,
     height: 350,
     borderRadius: 350,
-    backgroundColor: 'rgba(16,185,129,0.05)',
+    backgroundColor: 'rgba(124,58,237,0.05)',
     filter: Platform.OS === 'web' ? 'blur(80px)' : undefined,
   },
   hero: {
@@ -344,12 +344,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: '#F0F9FF',
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
     borderWidth: 1,
-    borderColor: '#E0F2FE',
+    borderColor: 'rgba(56, 189, 248, 0.2)',
   },
   pillText: {
-    color: '#0284C7',
+    color: COLORS.accent,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     fontSize: 44,
     lineHeight: 48,
     fontWeight: '900',
-    color: '#0F172A',
+    color: COLORS.heading,
     letterSpacing: -1, // Startup style typography
   },
   heroTitleTiny: {
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     fontSize: 17,
     lineHeight: 26,
-    color: '#475569',
+    color: COLORS.textMuted,
   },
   ctaRow: {
     flexDirection: 'row',
@@ -383,15 +383,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 14,
     borderRadius: 999,
-    backgroundColor: '#2563EB',
-    shadowColor: '#2563EB',
+    backgroundColor: '#fff',
+    shadowColor: '#fff',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: '#09090b',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -402,9 +402,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 14,
     borderRadius: 999,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   secondaryButtonText: {
-    color: '#334155',
+    color: COLORS.text,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -427,9 +427,9 @@ const styles = StyleSheet.create({
   },
   heroStatCard: {
     borderRadius: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: COLORS.border,
     padding: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -439,9 +439,9 @@ const styles = StyleSheet.create({
   },
   heroStatCardAlt: {
     borderRadius: 24,
-    backgroundColor: '#0F172A',
+    backgroundColor: COLORS.surface,
     padding: 24,
-    shadowColor: '#0F172A',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
@@ -451,13 +451,13 @@ const styles = StyleSheet.create({
     fontSize: 48,
     lineHeight: 52,
     fontWeight: '900',
-    color: '#2563EB',
+    color: COLORS.accent,
     letterSpacing: -1,
   },
   heroStatLabel: {
     marginTop: 4,
     fontSize: 15,
-    color: '#64748B',
+    color: COLORS.textMuted,
     fontWeight: '600',
   },
   sectionGrid: {
@@ -471,8 +471,9 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 24,
     padding: 28,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.card,
     borderWidth: 1,
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.03,
@@ -480,10 +481,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   problemCard: {
-    borderColor: '#FEE2E2',
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   solutionCard: {
-    borderColor: '#DBEAFE',
+    borderColor: 'rgba(56, 189, 248, 0.2)',
   },
   pillarHeader: {
     flexDirection: 'row',
@@ -499,16 +500,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   problemIcon: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   solutionIcon: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
   },
   pillarTitle: {
     flex: 1,
     fontSize: 22,
     fontWeight: '800',
-    color: '#0F172A',
+    color: COLORS.heading,
     letterSpacing: -0.5,
   },
   bulletList: {
@@ -528,16 +529,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeDanger: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   badgeSuccess: {
-    backgroundColor: '#D1FAE5',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
   },
   bulletText: {
     flex: 1,
     fontSize: 15,
     lineHeight: 24,
-    color: '#475569',
+    color: COLORS.textMuted,
   },
   sectionHeading: {
     gap: 8,
@@ -549,14 +550,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
     fontSize: 13,
-    color: '#2563EB',
+    color: COLORS.accent,
     fontWeight: '800',
   },
   sectionTitle: {
     fontSize: 32,
     lineHeight: 38,
     fontWeight: '900',
-    color: '#0F172A',
+    color: COLORS.heading,
     letterSpacing: -0.5,
     textAlign: 'center',
   },
@@ -568,7 +569,7 @@ const styles = StyleSheet.create({
     maxWidth: 600,
     fontSize: 16,
     lineHeight: 24,
-    color: '#64748B',
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   founderWrap: {
@@ -580,9 +581,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 28,
     padding: 32,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 16,
@@ -599,7 +600,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
     overflow: 'hidden',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     paddingTop: 15, 
   },
   avatarText: {
@@ -611,21 +612,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontWeight: '800',
-    color: '#0F172A',
+    color: COLORS.heading,
   },
   memberRole: {
     marginTop: 4,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '700',
-    color: '#2563EB',
+    color: COLORS.accent,
   },
   memberDesc: {
     marginTop: 12,
     textAlign: 'center',
     fontSize: 15,
     lineHeight: 24,
-    color: '#64748B',
+    color: COLORS.textMuted,
   },
   teamGrid: {
     gap: 20,
@@ -646,9 +647,9 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     paddingHorizontal: 24,
     paddingVertical: 32,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: COLORS.border,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 16,
@@ -668,7 +669,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   teamCardActive: {
-    borderColor: '#BFDBFE',
+    borderColor: COLORS.accent,
     transform: [{ translateY: -6 }],
     shadowOpacity: 0.08,
     shadowRadius: 24,
@@ -683,7 +684,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
     overflow: 'hidden',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     paddingTop: 12,
   },
   avatarTextSmall: {
@@ -700,21 +701,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
     fontWeight: '800',
-    color: '#0F172A',
+    color: COLORS.heading,
   },
   memberRoleSmall: {
     marginTop: 4,
     textAlign: 'center',
     fontSize: 13,
     fontWeight: '700',
-    color: '#2563EB',
+    color: COLORS.accent,
   },
   memberDescSmall: {
     marginTop: 12,
     textAlign: 'center',
     fontSize: 14,
     lineHeight: 22,
-    color: '#64748B',
+    color: COLORS.textMuted,
     maxWidth: 240,
   },
   ctaPanel: {
@@ -734,7 +735,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 250,
-    backgroundColor: 'rgba(37, 99, 235, 0.2)', // Soft primary glow
+    backgroundColor: 'rgba(56, 189, 248, 0.2)', // Soft primary glow
   },
   ctaCircle2: {
     position: 'absolute',

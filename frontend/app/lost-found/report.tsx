@@ -109,13 +109,13 @@ export default function ReportLostFound() {
               style={[styles.typeBtn, type === 'Lost' && styles.typeBtnLost]} 
               onPress={() => setType('Lost')}
             >
-              <Text style={[styles.typeBtnText, type === 'Lost' && styles.activeTypeText]}>I Lost Something</Text>
+              <Text style={[styles.typeBtnText, type === 'Lost' && styles.activeLostText]}>I Lost Something</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.typeBtn, type === 'Found' && styles.typeBtnFound]} 
               onPress={() => setType('Found')}
             >
-              <Text style={[styles.typeBtnText, type === 'Found' && styles.activeTypeText]}>I Found Something</Text>
+              <Text style={[styles.typeBtnText, type === 'Found' && styles.activeFoundText]}>I Found Something</Text>
             </TouchableOpacity>
           </View>
 
@@ -186,7 +186,7 @@ export default function ReportLostFound() {
             onPress={handleSubmit}
             disabled={isLoading}
           >
-            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>Post Report</Text>}
+            {isLoading ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.submitBtnText}>Post Report</Text>}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -208,7 +208,8 @@ const styles = StyleSheet.create({
   typeBtnLost: { backgroundColor: '#FEE2E2', borderColor: '#F87171' },
   typeBtnFound: { backgroundColor: '#D1FAE5', borderColor: '#34D399' },
   typeBtnText: { fontWeight: '700', fontSize: 13, color: COLORS.textMuted },
-  activeTypeText: { color: COLORS.heading },
+  activeLostText: { color: '#7F1D1D' },
+  activeFoundText: { color: '#064E3B' },
 
   imagePicker: { height: 160, backgroundColor: COLORS.surface, borderRadius: RADIUS.md, marginBottom: SPACING.lg, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border, borderStyle: 'dashed' },
   imagePlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
@@ -224,9 +225,9 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
   activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
-  activeChipText: { color: '#fff' },
+  activeChipText: { color: COLORS.background },
 
   submitBtn: { backgroundColor: COLORS.primary, height: 56, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginTop: SPACING.lg },
   submitBtnDisabled: { opacity: 0.7 },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  submitBtnText: { color: COLORS.background, fontSize: 16, fontWeight: '700' },
 });

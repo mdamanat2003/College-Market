@@ -237,7 +237,7 @@ export default function CreateEvent() {
           </View>
 
           <TouchableOpacity style={[styles.submitBtn, isLoading && styles.submitBtnDisabled]} onPress={handleSubmit} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>Create Event</Text>}
+            {isLoading ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.submitBtnText}>Create Event</Text>}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -272,9 +272,9 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
   activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
-  activeChipText: { color: '#fff' },
+  activeChipText: { color: COLORS.background },
 
   submitBtn: { backgroundColor: COLORS.primary, height: 56, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginTop: SPACING.lg },
   submitBtnDisabled: { opacity: 0.7 },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  submitBtnText: { color: COLORS.background, fontSize: 16, fontWeight: '700' },
 });

@@ -248,8 +248,8 @@ export default function LandingPage() {
     ? [{ translateY: welcomeTextLift }, { rotate: welcomeTextRotate }]
     : [{ translateY: welcomeTextLift }, { scale: welcomeTextScale }, { rotate: welcomeTextRotate }];
   const animatedTextColor = textColorAnim.interpolate({
-    inputRange: [0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.84, 1],
-    outputRange: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3', '#FF0000'],
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ['#38BDF8', '#818CF8', '#C084FC', '#818CF8', '#38BDF8'],
   });
 
   return (
@@ -511,16 +511,16 @@ const styles = StyleSheet.create({
   glowBlue: { position: 'absolute', top: 80, right: -90, width: 240, height: 240, borderRadius: 240, backgroundColor: 'rgba(59,130,246,0.18)' },
   glowPurple: { position: 'absolute', top: 320, left: -120, width: 280, height: 280, borderRadius: 280, backgroundColor: 'rgba(124,58,237,0.14)' },
   navWrap: { paddingHorizontal: SPACING.md, marginBottom: SPACING.lg },
-  welcomeBand: { width: '100%', paddingHorizontal: SPACING.md, paddingTop: 6, paddingBottom: 28, backgroundColor: '#F9FAFB' },
+  welcomeBand: { width: '100%', paddingHorizontal: SPACING.md, paddingTop: 6, paddingBottom: 28, backgroundColor: 'transparent' },
   welcomeBandMobile: { paddingHorizontal: 10, paddingBottom: 22 },
-  welcomeCard: { width: '100%', minHeight: 190, borderRadius: 30, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)', shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.16, shadowRadius: 32, elevation: 8 },
+  welcomeCard: { width: '100%', minHeight: 190, borderRadius: 30, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', shadowColor: '#8b5cf6', shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.16, shadowRadius: 32, elevation: 8 },
   welcomeCardMobile: { minHeight: 188, paddingHorizontal: 14, borderRadius: 24 },
   welcomeGradientLayer: { position: 'absolute', top: -28, right: -40, bottom: -28, left: -40 },
-  welcomeGradientBase: { backgroundColor: '#BFDBFE', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(120deg, #DBEAFE 0%, #CFFAFE 35%, #DCFCE7 68%, #FDE68A 100%)', backgroundSize: '180% 180%' } as any : null) },
-  welcomeGradientLayerTwo: { backgroundColor: '#FBCFE8', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #FCE7F3 0%, #E0E7FF 42%, #BAE6FD 72%, #D9F99D 100%)', backgroundSize: '200% 200%' } as any : null) },
-  welcomeGradientLayerThree: { backgroundColor: '#DDD6FE', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(145deg, #FDE68A 0%, #A7F3D0 32%, #BFDBFE 66%, #F5D0FE 100%)', backgroundSize: '220% 220%' } as any : null) },
-  welcomeSheen: { position: 'absolute', top: 1, right: 1, bottom: 1, left: 1, borderRadius: 29, backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
-  welcomeTitle: { fontSize: 82, lineHeight: 88, fontWeight: '900', textAlign: 'center', letterSpacing: -6, textShadowColor: 'rgba(255,255,255,0.55)', textShadowOffset: { width: 0, height: 3 }, textShadowRadius: 16, zIndex: 10 },
+  welcomeGradientBase: { backgroundColor: '#09090b', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(120deg, #09090b 0%, #1e1b4b 50%, #020617 100%)', backgroundSize: '200% 200%' } as any : null) },
+  welcomeGradientLayerTwo: { backgroundColor: '#1e1e24', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #0f172a 0%, #311042 50%, #09090b 100%)', backgroundSize: '200% 200%' } as any : null) },
+  welcomeGradientLayerThree: { backgroundColor: '#09090b', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(145deg, #09090b 0%, #172554 50%, #2e1065 100%)', backgroundSize: '220% 220%' } as any : null) },
+  welcomeSheen: { position: 'absolute', top: 1, right: 1, bottom: 1, left: 1, borderRadius: 29, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  welcomeTitle: { fontSize: 82, lineHeight: 88, fontWeight: '900', textAlign: 'center', letterSpacing: -2, textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8, zIndex: 10 },
   welcomeTitleMobile: { width: '100%', fontSize: 42, lineHeight: 48, letterSpacing: 0, paddingHorizontal: 4 },
   welcomeTitleCompact: { fontSize: 37, lineHeight: 43 },
   hero: { paddingHorizontal: SPACING.md, paddingTop: 28, gap: 24 },

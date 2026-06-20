@@ -106,7 +106,7 @@ export default function EventsList() {
             style={styles.createBtn} 
             onPress={() => router.push('/events/create')}
           >
-            <Ionicons name="add" size={20} color="#fff" />
+            <Ionicons name="add" size={20} color={COLORS.background} />
             <Text style={styles.createBtnText}>Host Event</Text>
           </TouchableOpacity>
         </View>
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
   pageTitle: { fontSize: 24, fontWeight: '800', color: COLORS.heading },
   createBtn: { flexDirection: 'row', backgroundColor: COLORS.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: RADIUS.md, gap: 6, alignItems: 'center' },
-  createBtnText: { color: '#fff', fontWeight: '600' },
+  createBtnText: { color: COLORS.background, fontWeight: '600' },
   
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, paddingHorizontal: 12, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border, marginBottom: SPACING.md },
   searchInput: { flex: 1, height: 44, color: COLORS.text, paddingLeft: 8 },
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
   activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
-  activeChipText: { color: '#fff' },
+  activeChipText: { color: COLORS.background },
 
   listContent: { flexGrow: 1, gap: SPACING.lg, paddingBottom: 0 },
   eventCard: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border },
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   categoryBadge: { backgroundColor: COLORS.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4, borderWidth: 1, borderColor: COLORS.border },
   categoryText: { fontSize: 11, fontWeight: '600', color: COLORS.text },
   registerBtn: { backgroundColor: COLORS.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.md },
-  registerBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  registerBtnText: { color: COLORS.background, fontSize: 13, fontWeight: '700' },
 
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 60, gap: 12 },

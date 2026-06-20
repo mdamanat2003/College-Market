@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     paddingTop: 42,
     paddingBottom: 42, // Content ke hisab se padding
     marginBottom: 0,   // 👈 Niche ka koi bhi default margin khatam karne ke liye
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.card,
   },
   phoneFooter: {
     paddingTop: 40,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 420,
     borderRadius: 18,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
     padding: 22,
   },
   modalTitle: {

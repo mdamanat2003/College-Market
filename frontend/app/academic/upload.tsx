@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { Platform } from 'react-native';
@@ -24,14 +24,15 @@ const SEMESTERS = ['1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th S
 
 export default function UploadAcademic() {
   const router = useRouter();
+  const { branch: paramBranch, semester: paramSemester, subject: paramSubject } = useLocalSearchParams();
   const { user } = useAuthStore();
   const { uploadMaterial, isLoading } = useAcademicStore();
   const { checkRestriction } = useDemoRestriction();
 
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState('');
-  const [branch, setBranch] = useState('CSE');
-  const [semester, setSemester] = useState('8th Sem');
+  const [subject, setSubject] = useState((paramSubject as string) || '');
+  const [branch, setBranch] = useState((paramBranch as string) || 'CSE');
+  const [semester, setSemester] = useState((paramSemester as string) || '8th Sem');
   const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
   const pickDocument = async () => {
@@ -181,7 +182,7 @@ export default function UploadAcademic() {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={COLORS.background} />
           ) : (
             <Text style={styles.submitBtnText}>Upload Now</Text>
           )}
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 20, fontWeight: '700', color: COLORS.heading },
   formCard: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, padding: SPACING.lg, borderWidth: 1, borderColor: COLORS.border },
-  filePickerBtn: { height: 120, borderWidth: 2, borderColor: COLORS.primaryLight, borderStyle: 'dashed', borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg, backgroundColor: '#F8FAFC' },
+  filePickerBtn: { height: 120, borderWidth: 2, borderColor: COLORS.primaryLight, borderStyle: 'dashed', borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg, backgroundColor: COLORS.surface },
   filePickerText: { marginTop: 8, color: COLORS.text, fontWeight: '500', textAlign: 'center', paddingHorizontal: 16 },
   inputGroup: { marginBottom: SPACING.lg },
   label: { fontSize: 14, fontWeight: '700', color: COLORS.textMuted, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },
@@ -206,8 +207,8 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
   activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
-  activeChipText: { color: '#fff' },
+  activeChipText: { color: COLORS.background },
   submitBtn: { backgroundColor: COLORS.primary, height: 56, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginTop: SPACING.md, boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)' },
   submitBtnDisabled: { opacity: 0.7 },
-  submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  submitBtnText: { color: COLORS.background, fontSize: 16, fontWeight: '700' },
 });

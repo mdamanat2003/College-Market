@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api'; // Path check kar lijiyega
+import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
 export default function OrderCard({ item, refreshOrders }: { item: any, refreshOrders: () => void }) {
   // Refund States
@@ -85,9 +86,9 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
       </View>
 
       <View style={{ marginVertical: 10 }}>
-         <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.product?.title || 'Unknown Product'}</Text>
-         <Text style={{ fontSize: 14, color: '#666' }}>₹{item.amount || item.product?.price}</Text>
-         <Text style={{ fontSize: 12, color: '#888' }}>Seller: {item.seller?.name || 'Unknown'}</Text>
+         <Text style={{ fontSize: 16, fontWeight: 'bold', color: COLORS.heading }}>{item.product?.title || 'Unknown Product'}</Text>
+         <Text style={{ fontSize: 14, color: COLORS.textMuted }}>₹{item.amount || item.product?.price}</Text>
+         <Text style={{ fontSize: 12, color: COLORS.textMuted }}>Seller: {item.seller?.name || 'Unknown'}</Text>
       </View>
 
       {/* Buttons Logic */}
@@ -131,7 +132,7 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
               </TouchableOpacity>
             ))}
             {selectedReason === 'Other' && (
-              <TextInput style={styles.textInput} placeholder="Describe reason..." multiline value={otherDesc} onChangeText={setOtherDesc} />
+              <TextInput style={styles.textInput} placeholder="Describe reason..." placeholderTextColor={COLORS.textMuted} multiline value={otherDesc} onChangeText={setOtherDesc} />
             )}
             <View style={styles.modalActions}>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
@@ -146,7 +147,7 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Review & Rate {item.seller?.name || 'Seller'}</Text>
-            <Text style={{color: '#666', marginBottom: 15, textAlign: 'center'}}>One review includes both your star rating and feedback.</Text>
+            <Text style={{color: COLORS.textMuted, marginBottom: 15, textAlign: 'center'}}>One review includes both your star rating and feedback.</Text>
             
             {/* 5-Star Interactive UI */}
             <View style={styles.starsContainer}>
@@ -164,6 +165,7 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
             <TextInput
               style={styles.textInput}
               placeholder="Write a review (optional)..."
+              placeholderTextColor={COLORS.textMuted}
               multiline
               numberOfLines={3}
               value={comment}
@@ -188,31 +190,31 @@ export default function OrderCard({ item, refreshOrders }: { item: any, refreshO
 
 const styles = StyleSheet.create({
   // ... (Aapke baaki purane styles yahan rahenge)
-  card: { padding: 15, backgroundColor: '#fff', borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: '#eee' },
+  card: { padding: 15, backgroundColor: COLORS.card, borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: COLORS.border },
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  orderId: { color: '#666', fontWeight: 'bold' },
-  statusBadge: { color: '#D97706', fontWeight: '600' },
+  orderId: { color: COLORS.textMuted, fontWeight: 'bold' },
+  statusBadge: { color: COLORS.warning, fontWeight: '600' },
   actionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, gap: 10 },
-  helpBtn: { flex: 1, padding: 10, backgroundColor: '#FEE2E2', borderRadius: 8, alignItems: 'center' },
-  helpText: { color: '#DC2626', fontWeight: 'bold' },
-  receiveBtn: { flex: 1, padding: 10, backgroundColor: '#D1FAE5', borderRadius: 8, alignItems: 'center' },
-  receiveText: { color: '#059669', fontWeight: 'bold' },
+  helpBtn: { flex: 1, padding: 10, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: 8, alignItems: 'center' },
+  helpText: { color: COLORS.danger, fontWeight: 'bold' },
+  receiveBtn: { flex: 1, padding: 10, backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: 8, alignItems: 'center' },
+  receiveText: { color: COLORS.success, fontWeight: 'bold' },
   
   // Rating Button Style
-  rateBtn: { flex: 1, padding: 10, backgroundColor: '#FEF3C7', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#FDE68A' },
-  rateBtnText: { color: '#D97706', fontWeight: 'bold' },
+  rateBtn: { flex: 1, padding: 10, backgroundColor: 'rgba(245, 158, 11, 0.1)', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.2)' },
+  rateBtnText: { color: COLORS.warning, fontWeight: 'bold' },
 
   // Modal Styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-  modalContent: { backgroundColor: '#fff', padding: 20, borderRadius: 15 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 5, textAlign: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 20 },
+  modalContent: { backgroundColor: COLORS.card, padding: 20, borderRadius: 15, borderWidth: 1, borderColor: COLORS.border },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 5, textAlign: 'center', color: COLORS.heading },
   starsContainer: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 20 },
   radioOption: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, gap: 10 },
-  radioText: { fontSize: 15, color: '#333' },
-  textInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, minHeight: 80, textAlignVertical: 'top' },
+  radioText: { fontSize: 15, color: COLORS.text },
+  textInput: { borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 10, minHeight: 80, textAlignVertical: 'top', backgroundColor: COLORS.background, color: COLORS.heading },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20, gap: 15 },
   cancelBtn: { padding: 10 },
-  cancelText: { color: '#666', fontWeight: 'bold' },
-  submitBtn: { backgroundColor: '#2563EB', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
-  submitText: { color: '#fff', fontWeight: 'bold' }
+  cancelText: { color: COLORS.textMuted, fontWeight: 'bold' },
+  submitBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  submitText: { color: COLORS.background, fontWeight: 'bold' }
 });

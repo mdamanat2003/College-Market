@@ -19,16 +19,20 @@ export const Button = ({ title, onPress, loading, variant = 'primary', disabled 
       style={[
         styles.button, 
         isOutline ? styles.outline : styles.primary,
-        disabled && styles.disabled
+        disabled && styles.disabled,
+        style
       ]} 
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={isOutline ? COLORS.primary : '#fff'} />
+        <ActivityIndicator color={isOutline ? COLORS.primary : COLORS.background} />
       ) : (
-        <Text style={[styles.text, isOutline && styles.textOutline]}>{title}</Text>
+        <Text style={[
+          styles.text, 
+          isOutline ? styles.textOutline : styles.textPrimary
+        ]}>{title}</Text>
       )}
     </TouchableOpacity>
   );
@@ -56,9 +60,11 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  textPrimary: {
+    color: COLORS.background,
   },
   textOutline: {
     color: COLORS.text,

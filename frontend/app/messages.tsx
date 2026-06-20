@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     marginRight: SPACING.md,
   },
   avatarText: {
-    color: '#fff',
+    color: COLORS.background,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.card,
   },
   unreadCount: {
-    color: '#fff',
+    color: COLORS.background,
     fontSize: 10,
     fontWeight: '700',
   },

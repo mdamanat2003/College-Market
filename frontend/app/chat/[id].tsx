@@ -119,7 +119,7 @@ export default function ChatRoomScreen() {
           onPress={handleSend}
           disabled={!text.trim()}
         >
-          <Ionicons name="send" size={20} color="#fff" />
+          <Ionicons name="send" size={20} color={COLORS.background} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -139,10 +139,10 @@ const styles = StyleSheet.create({
   bubbleOwn: { backgroundColor: COLORS.primary, borderBottomRightRadius: 4 },
   bubbleOther: { backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, borderBottomLeftRadius: 4 },
   messageText: { fontSize: 15, lineHeight: 20 },
-  textOwn: { color: '#fff' },
+  textOwn: { color: COLORS.background },
   textOther: { color: COLORS.text },
   timeText: { fontSize: 10, marginTop: 4, alignSelf: 'flex-end' },
-  timeOwn: { color: 'rgba(255,255,255,0.7)' },
+  timeOwn: { color: 'rgba(9, 9, 11, 0.7)' },
   timeOther: { color: COLORS.textMuted },
   inputContainer: { flexDirection: 'row', padding: SPACING.md, backgroundColor: COLORS.card, borderTopWidth: 1, borderTopColor: COLORS.border, alignItems: 'center' },
   input: { flex: 1, backgroundColor: COLORS.surface, minHeight: 40, maxHeight: 100, borderRadius: 20, paddingHorizontal: SPACING.md, paddingTop: 10, paddingBottom: 10, fontSize: 15, color: COLORS.text },

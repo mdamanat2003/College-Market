@@ -1,5 +1,7 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
 import cors from "cors";
 import http from "http";
 import path from "path";
@@ -24,8 +26,6 @@ import lostFoundRoutes from "./routes/lostFoundRoutes";
 import eventRoutes from "./routes/eventRoutes";
 import fs from "fs";
 import { rateLimit } from "express-rate-limit";
-
-dotenv.config();
 
 // Rate Limiting Definitions
 const apiLimiter = rateLimit({

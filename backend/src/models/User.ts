@@ -15,6 +15,7 @@ export interface IUser extends Document {
   // 👇 Ye 2 lines nayi add karni hain
   resetOtp?: string | null;
   resetOtpExpires?: Date | null;
+  isBlocked?: boolean;
   
   matchPassword(enteredPassword: string): Promise<boolean>;
 }

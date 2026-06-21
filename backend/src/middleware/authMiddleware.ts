@@ -19,8 +19,18 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET as string) as any;
 
       // Get user from the token payload, exclude password
-      req.user = await User.findById(decoded.id).select('-password') as IUser;
+      const user = await User.findById(decoded.id).select('-password') as IUser;
 
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
+      }
+
+      // Check if user is blocked
+      if ((user as any).isBlocked) {
+        return res.status(403).json({ success: false, message: 'Your account has been blocked. Please contact admin.' });
+      }
+
+      req.user = user;
       next();
     } catch (error) {
       return res.status(401).json({ success: false, message: 'Not authorized, token failed' });

@@ -13,6 +13,7 @@ interface User {
   rating?: number;
   ratingCount?: number;
   isDemo?: boolean;
+  avatar?: string;
 }
 
 interface AuthState {
@@ -25,6 +26,7 @@ interface AuthState {
   register: (data: any) => Promise<boolean>;
   sendRegistrationOtp: (data: { email: string, phone?: string }) => Promise<{success: boolean, message?: string}>;
   verifyRegistrationOtp: (data: { email: string, emailOtp: string }) => Promise<{success: boolean, message?: string}>;
+  updateProfile: (formData: FormData) => Promise<boolean>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   loginAsDemo: () => void;
@@ -125,6 +127,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const message = error.response?.data?.message || 'OTP verification failed';
       set({ error: message, isLoading: false });
       return { success: false, message };
+    }
+  },
+
+  updateProfile: async (formData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.put('/auth/update-profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (response.data.success) {
+        set({ user: response.data.user, isLoading: false });
+        return true;
+      }
+      set({ isLoading: false });
+      return false;
+    } catch (error: any) {
+      set({ 
+        error: error.response?.data?.message || 'Failed to update profile', 
+        isLoading: false 
+      });
+      return false;
     }
   },
 

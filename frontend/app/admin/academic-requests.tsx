@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 300, gap: 12 },
   emptyText: { color: COLORS.textMuted, fontSize: 15, textAlign: 'center' },
   
-  card: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderHeight: 1, borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md, overflow: 'hidden' },
+  card: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md, overflow: 'hidden' },
   resolvedCard: { opacity: 0.6, borderColor: COLORS.border },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.sm },
   subjectInfo: { flex: 1, gap: 6 },

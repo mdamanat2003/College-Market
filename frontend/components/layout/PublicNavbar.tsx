@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
@@ -21,7 +21,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { width } = useWindowDimensions();
   const isCompact = width < 720;
-  const isTiny = width < 390;
+  const isTiny = width < 360;
 
   const navItems = [
     { label: 'Home', href: '/home', key: 'home' as const },
@@ -42,7 +42,11 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
       accessibilityRole="button"
       accessibilityLabel="Open profile"
     >
-      <Text style={styles.profileInitial}>{profileInitial}</Text>
+      {user?.avatar ? (
+        <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />
+      ) : (
+        <Text style={styles.profileInitial}>{profileInitial}</Text>
+      )}
     </TouchableOpacity>
   ) : (
     <TouchableOpacity style={styles.loginButton} onPress={() => navigateTo('/(auth)/login')}>
@@ -54,7 +58,11 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
   const mobileAuthAction = user ? (
     <TouchableOpacity style={styles.mobileProfileButton} onPress={() => navigateTo('/profile')}>
       <View style={styles.mobileProfileIcon}>
-        <Text style={styles.profileInitial}>{profileInitial}</Text>
+        {user?.avatar ? (
+          <Image source={{ uri: user.avatar }} style={styles.mobileProfileAvatarImg} />
+        ) : (
+          <Text style={styles.profileInitial}>{profileInitial}</Text>
+        )}
       </View>
       <Text style={styles.loginButtonText}>Profile</Text>
     </TouchableOpacity>
@@ -229,9 +237,14 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 999,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  profileAvatarImg: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
   },
   profileInitial: {
     color: '#fff',
@@ -300,8 +313,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 999,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  mobileProfileAvatarImg: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
   },
 });

@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: COLORS.error,
-    backgroundColor: '#FFFBFB',
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
   },
   passwordInputWrap: {
     position: 'relative',

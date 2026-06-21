@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import User from '../models/User';
@@ -271,6 +273,11 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
       throw new Error('Invalid refresh token');
     }
 
+    if (user.isBlocked) {
+      res.status(403);
+      throw new Error('Your account has been blocked. Please contact admin.');
+    }
+
     const newAccessToken = generateAccessToken(user.id);
     const newRefreshToken = generateRefreshToken(user.id);
 
@@ -383,4 +390,54 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
   await user.save();
 
   res.json({ success: true, message: "Password updated successfully. You can now login with your new password." });
+});
+
+// @desc    Update user profile & avatar
+// @route   PUT /api/auth/update-profile
+export const updateProfile = asyncHandler(async (req: any, res: Response) => {
+  let avatarUrl = req.body.avatar;
+
+  if (req.file) {
+    const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
+    if (isCloudinaryConfigured) {
+      avatarUrl = req.file.path;
+    } else {
+      const forwardedProtoHeader = req.headers['x-forwarded-proto'];
+      const forwardedProto = Array.isArray(forwardedProtoHeader) ? forwardedProtoHeader[0] : forwardedProtoHeader;
+      const publicProtocol = process.env.PUBLIC_BASE_URL?.startsWith('https://') || forwardedProto === 'https' || process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+      const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${publicProtocol}://${req.get('host')}/uploads`;
+
+      avatarUrl = `${uploadsBase}/${req.file.filename}`;
+    }
+  }
+
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  if (req.body.name) user.name = req.body.name.trim();
+  if (req.body.phone) user.phone = req.body.phone.trim();
+  if (req.body.college) user.college = req.body.college.trim();
+  if (avatarUrl !== undefined) user.avatar = avatarUrl;
+
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Profile updated successfully",
+    user: {
+      _id: user._id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      college: user.college,
+      avatar: user.avatar,
+      role: user.role,
+      rating: (user as any).rating,
+      ratingCount: (user as any).ratingCount,
+    }
+  });
 });

@@ -57,10 +57,14 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
   const rzp = getRazorpayInstance();
 
+  // Calculate platform fee (5%) and total amount
+  const price = product.price;
+  const platformFee = Math.round(price * 0.05);
+  const totalAmount = price + platformFee;
+
   // Razorpay expects amount in paise (multiply by 100)
-  const amount = product.price;
   const options = {
-    amount: amount * 100,
+    amount: totalAmount * 100,
     currency: 'INR',
     receipt: `receipt_order_${Date.now()}`,
   };
@@ -73,7 +77,8 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     buyer: req.user._id,
     seller: product.seller,
     product: productId,
-    amount,
+    amount: totalAmount,
+    platformFee,
     razorpayOrderId: razorpayOrder.id,
     status: 'Pending' // Standardized status
   });

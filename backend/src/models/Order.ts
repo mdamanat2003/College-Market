@@ -11,6 +11,7 @@ export interface IOrder extends Document {
   
   // ✅ FIX: status ko interface me add kar diya
   status: 'Pending' | 'Paid' | 'EscrowLocked' | 'Completed' | 'Cancelled'; 
+  platformFee?: number;
   
   razorpayOrderId: string; // RZP order ID
   razorpayPaymentId?: string; // RZP payment ID (after success)
@@ -60,6 +61,7 @@ const orderSchema: Schema = new Schema(
     },
 
     razorpayOrderId: { type: String, required: true },
+    platformFee: { type: Number, default: 0 },
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
   },

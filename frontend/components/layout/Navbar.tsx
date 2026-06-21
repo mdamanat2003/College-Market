@@ -7,18 +7,18 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   ScrollView,
-  Platform, // 👈 Added Platform
+  Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // 👈 Added useSafeAreaInsets
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
 import { useChatStore } from '../../store/chatStore';
 import { useProductStore } from '../../store/productStore';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
-// 👈 Naye Features Array (Aap isme aur bhi add kar sakte hain baad me)
 const NAV_ITEMS = [
   { id: 'home', name: 'Home', path: '/home', icon: 'home-outline', activeIcon: 'home' },
   { id: 'market', name: 'Marketplace', path: '/marketplace', icon: 'cart-outline', activeIcon: 'cart' },
@@ -39,6 +39,7 @@ export const Navbar = () => {
 
   const isPhone = width <= 480;
   const isMobile = width < 600;
+  const isTiny = width < 360;
 
   const handleSearch = () => {
     setSearchQuery(localSearch);
@@ -49,10 +50,10 @@ export const Navbar = () => {
 
   return (
     <View style={[styles.wrapper, { paddingTop: insets.top }]}>
-      {/* --- UPPER BAR (Aapka Purana Code) --- */}
+      {/* --- UPPER BAR --- */}
       <View style={[styles.header, isPhone && styles.phoneHeader]}>
         <TouchableOpacity style={styles.brandContainer} onPress={() => router.push('/home')}>
-          <OoplabdhLogo size="sm" markOnly={isMobile} compact={isMobile} />
+          <OoplabdhLogo size="sm" markOnly={isTiny} compact={isPhone} />
         </TouchableOpacity>
 
         {!isMobile && (
@@ -93,12 +94,16 @@ export const Navbar = () => {
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.profileBtn, isPhone && styles.phoneProfileBtn]} onPress={() => router.push('/profile')}>
-            <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
+            {user?.avatar ? (
+              <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />
+            ) : (
+              <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* --- LOWER BAR (Naye Features Navigation) --- */}
+      {/* --- LOWER BAR --- */}
       <View style={styles.subHeader}>
         <ScrollView 
           horizontal 
@@ -106,7 +111,6 @@ export const Navbar = () => {
           contentContainerStyle={[styles.navScrollContent, isPhone && styles.phoneNavScrollContent]}
         >
           {NAV_ITEMS.map((item) => {
-            // Check agar URL us item ke path se match karta hai
             const isActive = currentPath === item.path || currentPath.startsWith(`${item.path}/`);
 
             return (
@@ -134,13 +138,11 @@ export const Navbar = () => {
 };
 
 const styles = StyleSheet.create({
-  // Naya Wrapper jo dono bars ko ek jaisa dikhayega
   wrapper: {
     backgroundColor: COLORS.card,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     zIndex: 10,
-    // Web shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -158,12 +160,10 @@ const styles = StyleSheet.create({
     height: 63,
     paddingHorizontal: 18,
   },
-
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   searchContainer: {
     flex: 1,
     maxWidth: 500,
@@ -189,7 +189,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -197,7 +196,6 @@ const styles = StyleSheet.create({
   phoneRightIcons: {
     gap: 14,
   },
-
   sellBtn: {
     backgroundColor: COLORS.accent,
     flexDirection: 'row',
@@ -222,7 +220,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
-
   iconButton: {
     padding: SPACING.xs,
     position: 'relative',
@@ -236,7 +233,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   badge: {
     position: 'absolute',
     top: 4,
@@ -256,7 +252,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
-
   profileBtn: {
     width: 36,
     height: 36,
@@ -270,24 +265,27 @@ const styles = StyleSheet.create({
     height: 36,
     backgroundColor: COLORS.primaryLight,
   },
+  profileAvatarImg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
   profileInitial: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
   },
-
-  // --- NAYE SUB-NAVBAR KE STYLES ---
   subHeader: {
     height: 48,
     borderTopWidth: 1,
-    borderTopColor: COLORS.surface, // Dono bars ke beech ek halki line
+    borderTopColor: COLORS.surface,
   },
   navScrollContent: {
     flexGrow: 1,
     paddingHorizontal: SPACING.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 18, // Buttons ke beech ka gap
+    gap: 18,
   },
   phoneNavScrollContent: {
     paddingHorizontal: 18,
@@ -302,7 +300,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   activeNavItem: {
-    backgroundColor: COLORS.surface, // Active tab ka light background
+    backgroundColor: COLORS.surface,
   },
   navText: {
     fontSize: 14,

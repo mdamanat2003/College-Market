@@ -5,6 +5,26 @@ import Notification from '../models/Notification'; // Naya Notification model
 import { asyncHandler } from '../utils/asyncHandler';
 import path from 'path';
 import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const uploadBufferToCloudinary = (buffer: Buffer, folder: string): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  });
+};
 
 // Auth Request type jisme user object aur multer files ho sakein
 interface AuthRequest extends Request {
@@ -147,23 +167,38 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
 
     // 2. Local Files check - save uploaded files to backend /uploads and return accessible URLs
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-      const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
+      const isCloudinaryConfigured = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 
-      // ensure directory exists
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      if (isCloudinaryConfigured) {
+        // Upload to Cloudinary concurrently
+        const uploadPromises = req.files.map((file: any) => 
+          uploadBufferToCloudinary(file.buffer, 'ooplabdh_products')
+        );
+        const uploadResults = await Promise.all(uploadPromises);
+        uploadResults.forEach((result: any) => {
+          if (result && result.secure_url) {
+            finalImagesArray.push(result.secure_url);
+          }
+        });
+      } else {
+        const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
 
-      req.files.forEach((file: any, idx: number) => {
-        try {
-          const ext = file.originalname && file.originalname.includes('.') ? '' : `.${file.mimetype.split('/')[1]}`;
-          const safeName = `${Date.now()}_${idx}_${file.originalname || 'upload'}${ext}`.replace(/\s+/g, '_');
-          const outPath = path.join(uploadDir, safeName);
-          fs.writeFileSync(outPath, file.buffer);
-          const publicUrl = `${uploadsBase}/${safeName}`;
-          finalImagesArray.push(publicUrl);
-        } catch (err) {
-          console.error('File write error:', err);
-        }
-      });
+        // ensure directory exists
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+        req.files.forEach((file: any, idx: number) => {
+          try {
+            const ext = file.originalname && file.originalname.includes('.') ? '' : `.${file.mimetype.split('/')[1]}`;
+            const safeName = `${Date.now()}_${idx}_${file.originalname || 'upload'}${ext}`.replace(/\s+/g, '_');
+            const outPath = path.join(uploadDir, safeName);
+            fs.writeFileSync(outPath, file.buffer);
+            const publicUrl = `${uploadsBase}/${safeName}`;
+            finalImagesArray.push(publicUrl);
+          } catch (err) {
+            console.error('File write error:', err);
+          }
+        });
+      }
     }
 
     if (finalImagesArray.length === 0) {

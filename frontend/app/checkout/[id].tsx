@@ -117,6 +117,9 @@ export default function CheckoutScreen() {
     );
   }
 
+  const platformFee = Math.round(product.price * 0.05);
+  const totalAmount = product.price + platformFee;
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -143,12 +146,12 @@ export default function CheckoutScreen() {
             <Text style={styles.billText}>₹{product.price}</Text>
           </View>
           <View style={styles.billRow}>
-            <Text style={styles.billText}>Escrow Fee (0%)</Text>
-            <Text style={styles.billText}>₹0</Text>
+            <Text style={styles.billText}>Platform Fee (5%)</Text>
+            <Text style={styles.billText}>₹{platformFee}</Text>
           </View>
           <View style={[styles.billRow, styles.totalRow]}>
             <Text style={styles.totalText}>Total Amount</Text>
-            <Text style={styles.totalText}>₹{product.price}</Text>
+            <Text style={styles.totalText}>₹{totalAmount}</Text>
           </View>
         </View>
 
@@ -157,7 +160,7 @@ export default function CheckoutScreen() {
         </Text>
 
         <Button 
-          title={`Pay ₹${product.price} Securely`} 
+          title={`Pay ₹${totalAmount} Securely`} 
           onPress={handlePayment} 
           loading={orderLoading} 
         />

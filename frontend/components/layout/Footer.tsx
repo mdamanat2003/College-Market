@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: '#fff',
+    color: COLORS.background,
     fontWeight: '800',
   },
 });

@@ -101,6 +101,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCollegeList, setShowCollegeList] = useState(false);
+  const [collegeSearchQuery, setCollegeSearchQuery] = useState('');
   const [serverError, setServerError] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -142,6 +143,10 @@ export default function Register() {
   const watchedCollege = watch('college');
   const watchedPassword = watch('password') || '';
   const passwordStrength = getPasswordStrength(watchedPassword);
+
+  const filteredColleges = COLLEGES.filter((college) =>
+    college.toLowerCase().includes(collegeSearchQuery.toLowerCase())
+  );
 
   const inputStyle = (field: string, hasError: boolean) => [
     styles.input,
@@ -409,7 +414,11 @@ export default function Register() {
                             style={[styles.selectInput, focusedField === 'college' && styles.inputFocused, errors.college && styles.inputError]}
                             onPress={() => {
                               setFocusedField('college');
-                              setShowCollegeList((current) => !current);
+                              setShowCollegeList((current) => {
+                                const next = !current;
+                                if (!next) setCollegeSearchQuery('');
+                                return next;
+                              });
                             }}
                             activeOpacity={0.9}
                           >
@@ -420,20 +429,56 @@ export default function Register() {
                           </TouchableOpacity>
 
                           {showCollegeList ? (
-                            <View style={styles.collegeList}>
-                              {COLLEGES.map((college) => (
-                                <TouchableOpacity
-                                  key={college}
-                                  onPress={() => {
-                                    onChange(college);
-                                    setShowCollegeList(false);
-                                    setFocusedField(null);
-                                  }}
-                                  style={styles.collegeItem}
-                                >
-                                  <Text style={styles.collegeItemText}>{college}</Text>
-                                </TouchableOpacity>
-                              ))}
+                            <View style={styles.collegeListContainer}>
+                              <View style={styles.searchBarContainer}>
+                                <Ionicons name="search-outline" size={18} color={COLORS.placeholder} style={styles.searchIcon} />
+                                <TextInput
+                                  style={styles.collegeSearchInput}
+                                  placeholder="Search college..."
+                                  placeholderTextColor={COLORS.placeholder}
+                                  value={collegeSearchQuery}
+                                  onChangeText={setCollegeSearchQuery}
+                                  autoCapitalize="none"
+                                  autoCorrect={false}
+                                />
+                                {collegeSearchQuery ? (
+                                  <TouchableOpacity onPress={() => setCollegeSearchQuery('')}>
+                                    <Ionicons name="close-circle" size={18} color={COLORS.helper} />
+                                  </TouchableOpacity>
+                                ) : null}
+                              </View>
+                              <ScrollView style={styles.collegeListScroll} nestedScrollEnabled={true} keyboardShouldPersistTaps="handled">
+                                {filteredColleges.map((college) => (
+                                  <TouchableOpacity
+                                    key={college}
+                                    onPress={() => {
+                                      onChange(college);
+                                      setShowCollegeList(false);
+                                      setFocusedField(null);
+                                      setCollegeSearchQuery('');
+                                    }}
+                                    style={styles.collegeItem}
+                                  >
+                                    <Text style={styles.collegeItemText}>{college}</Text>
+                                  </TouchableOpacity>
+                                ))}
+                                {filteredColleges.length === 0 ? (
+                                  <View style={styles.noResultsContainer}>
+                                    <Text style={styles.noResultsText}>No colleges found</Text>
+                                    <TouchableOpacity
+                                      style={styles.selectOtherBtn}
+                                      onPress={() => {
+                                        onChange('Other');
+                                        setShowCollegeList(false);
+                                        setFocusedField(null);
+                                        setCollegeSearchQuery('');
+                                      }}
+                                    >
+                                      <Text style={styles.selectOtherBtnText}>Select "Other"</Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                ) : null}
+                              </ScrollView>
                             </View>
                           ) : null}
                         </View>
@@ -719,15 +764,57 @@ const styles = StyleSheet.create({
   },
   selectTextPlaceholder: { color: COLORS.placeholder },
   selectTextActive: { color: COLORS.heading },
-  collegeList: {
-    maxHeight: 220,
+  collegeListContainer: {
+    maxHeight: 250,
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 14,
     marginTop: 8,
     overflow: 'hidden',
-    zIndex: 20,
+    zIndex: 30,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    height: 48,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  collegeSearchInput: {
+    flex: 1,
+    color: COLORS.heading,
+    fontSize: 14,
+    height: '100%',
+    padding: 0,
+  },
+  collegeListScroll: {
+    maxHeight: 200,
+  },
+  noResultsContainer: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  noResultsText: {
+    color: COLORS.helper,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  selectOtherBtn: {
+    backgroundColor: COLORS.border,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  selectOtherBtnText: {
+    color: COLORS.heading,
+    fontSize: 13,
+    fontWeight: '600',
   },
   collegeItem: {
     paddingVertical: 12,

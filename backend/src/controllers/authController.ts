@@ -40,6 +40,11 @@ const transporter = nodemailer.createTransport({
 export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Response) => {
   const { email, phone } = req.body;
 
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    res.status(500);
+    throw new Error('SMTP environment variables (EMAIL_USER or EMAIL_PASS) are not configured on the server. Please set them in Render dashboard settings.');
+  }
+
   if (!email) {
     res.status(400);
     throw new Error('Please provide email');

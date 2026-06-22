@@ -26,13 +26,17 @@ const generateRefreshToken = (id: string) => {
 // ==========================================
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  port: 587,             // <-- 465 hata kar 587 (STARTTLS port) kar diya
+  secure: false,         // <-- Port 587 ke liye yeh hamesha 'false' rehta hai
+  requireTLS: true,      // <-- Par connection ko forcefully secure banayega
   auth: {
-    user: process.env.EMAIL_USER, // Aapka email (e.g., test@gmail.com)
-    pass: process.env.EMAIL_PASS, // Aapka Gmail App Password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
-  family: 4, // Force IPv4 to prevent connect ENETUNREACH errors on hosts without IPv6 outbound support
+  logger: true,          // <-- Terminal me har single step print karega
+  debug: true,           // <-- Agar fail hua toh exact reason dega
+  connectionTimeout: 10000, // 10 seconds max wait
+  family: 4              // <-- WAPAS LAGA DIYA: Force IPv4 (Render bypass)
 } as any);
 
 // @desc    Send Registration OTP to Email and Phone
@@ -67,10 +71,10 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
 
   // Generate 6 Digit random OTPs
   const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
-  
+
   // Save OTP to temporary collection (valid for 5 minutes)
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-  
+
   await RegistrationOtp.findOneAndUpdate(
     { email },
     { emailOtp, phone, expiresAt },
@@ -274,7 +278,7 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || (process.env.JWT_SECRET + '_refresh') as string) as any;
-    
+
     const user = await User.findById(decoded.id);
     if (!user) {
       res.status(401);
@@ -327,7 +331,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
   // 6 Digit random OTP generate
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  
+
   // OTP ko 10 minutes ke liye database me save karo
   (user as any).resetOtp = otp;
   (user as any).resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
@@ -390,11 +394,11 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
 
   // Update password (Schema ka pre-save hook khud isko hash kar dega)
   user.password = newPassword;
-  
+
   // OTP variables ko database se remove kar do
   (user as any).resetOtp = undefined;
   (user as any).resetOtpExpires = undefined;
-  
+
   await user.save();
 
   res.json({ success: true, message: "Password updated successfully. You can now login with your new password." });

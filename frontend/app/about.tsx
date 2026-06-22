@@ -33,7 +33,7 @@ const team: TeamMember[] = [
     role: 'Chief Executive Officer (CEO)',
     desc: 'Leading the technical vision and full-stack architecture for Ooplabdh.',
     initials: 'MA',
-    accent: '#EFF6FF', // Softer pastel blue
+    accent: '#5bb0ff', // Matches the image's sky blue background
     text: '#2563EB',
     photo: require('../assets/images/team/amanat.png'),
   },
@@ -548,8 +548,8 @@ const styles = StyleSheet.create({
   },
   sectionKicker: {
     textTransform: 'uppercase',
-    letterSpacing: 2,
-    fontSize: 13,
+    letterSpacing: 4,
+    fontSize: 18,
     color: COLORS.accent,
     fontWeight: '800',
   },

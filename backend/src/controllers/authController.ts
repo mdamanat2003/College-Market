@@ -25,12 +25,15 @@ const generateRefreshToken = (id: string) => {
 // Nodemailer SMTP Setup
 // ==========================================
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Google SMTP use kar rahe hain
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER, // Aapka email (e.g., test@gmail.com)
     pass: process.env.EMAIL_PASS, // Aapka Gmail App Password
   },
-});
+  family: 4, // Force IPv4 to prevent connect ENETUNREACH errors on hosts without IPv6 outbound support
+} as any);
 
 // @desc    Send Registration OTP to Email and Phone
 // @route   POST /api/auth/send-registration-otp

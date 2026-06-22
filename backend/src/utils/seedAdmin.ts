@@ -3,8 +3,13 @@ import User from "../models/User";
 
 export const seedAdmin = async () => {
   try {
-    // 1. Pehle purane kharaab admin ko delete karo (agar koi error state me bana ho)
-    await User.deleteOne({ email: 'admin@ooplabdh.com' });
+    // 1. Pehle purane kharaab admin ko delete karo (email ya username matching) taaki unique key conflict na ho
+    await User.deleteMany({
+      $or: [
+        { email: 'admin@ooplabdh.com' },
+        { username: 'super_admin' }
+      ]
+    });
     
     // 2. Password ko yahan strictly 1 baar hash karo
     const salt = await bcrypt.genSalt(10);

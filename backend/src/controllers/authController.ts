@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 import User from '../models/User';
 import RegistrationOtp from '../models/RegistrationOtp';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -35,7 +36,9 @@ const transporter = nodemailer.createTransport({
   logger: true,          // <-- Terminal me har single step print karega
   debug: true,           // <-- Agar fail hua toh exact reason dega
   connectionTimeout: 10000, // 10 seconds max wait
-  family: 4              // <-- Force IPv4 to prevent connect ENETUNREACH errors on Render
+  lookup: (hostname: any, options: any, callback: any) => {
+    dns.lookup(hostname, { family: 4 }, callback);
+  }
 } as any);
 
 // @desc    Send Registration OTP to Email and Phone

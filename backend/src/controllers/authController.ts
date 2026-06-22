@@ -26,9 +26,8 @@ const generateRefreshToken = (id: string) => {
 // ==========================================
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,             // <-- 465 hata kar 587 (STARTTLS port) kar diya
-  secure: false,         // <-- Port 587 ke liye yeh hamesha 'false' rehta hai
-  requireTLS: true,      // <-- Par connection ko forcefully secure banayega
+  port: 465,             // <-- Back to port 465 because Render blocks outbound port 587
+  secure: true,          // <-- true for 465 (SSL/TLS)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -36,7 +35,7 @@ const transporter = nodemailer.createTransport({
   logger: true,          // <-- Terminal me har single step print karega
   debug: true,           // <-- Agar fail hua toh exact reason dega
   connectionTimeout: 10000, // 10 seconds max wait
-  family: 4              // <-- WAPAS LAGA DIYA: Force IPv4 (Render bypass)
+  family: 4              // <-- Force IPv4 to prevent connect ENETUNREACH errors on Render
 } as any);
 
 // @desc    Send Registration OTP to Email and Phone

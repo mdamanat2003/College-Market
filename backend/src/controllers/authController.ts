@@ -39,8 +39,11 @@ const transporter = nodemailer.createTransport({
   logger: true,
   debug: true,
   connectionTimeout: 10000,
-  // ❌ Removed duplicate lookup override, global dns override handles it perfectly.
-});
+  // 👇 ISKO WAPAS LAGA DIYA HAI (Render ke bypass ke liye zaroori hai)
+  lookup: (hostname: any, options: any, callback: any) => {
+    dns.lookup(hostname, { family: 4 }, callback);
+  }
+} as any);
 
 // @desc    Send Registration OTP to Email and Phone
 // @route   POST /api/auth/send-registration-otp

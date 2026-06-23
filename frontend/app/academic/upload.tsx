@@ -208,7 +208,24 @@ const styles = StyleSheet.create({
   activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
   activeChipText: { color: COLORS.background },
-  submitBtn: { backgroundColor: COLORS.primary, height: 56, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginTop: SPACING.md, boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)' },
+  submitBtn: {
+    backgroundColor: COLORS.primary,
+    height: 56,
+    borderRadius: RADIUS.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: SPACING.md,
+    ...Platform.select({
+      web: { boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)' } as any,
+      default: {
+        shadowColor: '#2563EB',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        elevation: 4,
+      },
+    }),
+  },
   submitBtnDisabled: { opacity: 0.7 },
   submitBtnText: { color: COLORS.background, fontSize: 16, fontWeight: '700' },
 });

@@ -212,7 +212,7 @@ export default function Login() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: COLORS.border, marginTop: 8, boxShadow: 'none', elevation: 0 }]}
+                  style={[styles.button, { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: COLORS.border, marginTop: 8, ...Platform.select({ web: { boxShadow: 'none' } as any, default: {} }), elevation: 0 }]}
                   onPress={handleDemoLogin}
                   activeOpacity={0.86}
                 >
@@ -333,12 +333,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: COLORS.heading,
-    transitionProperty: 'border-color, box-shadow, background-color',
-    transitionDuration: '180ms',
+    ...Platform.select({
+      web: {
+        transitionProperty: 'border-color, box-shadow, background-color',
+        transitionDuration: '180ms',
+      } as any,
+      default: {},
+    }),
   },
   inputFocused: {
     borderColor: COLORS.focus,
-    boxShadow: '0 0 0 3px rgba(124, 157, 240, 0.14)',
+    ...Platform.select({
+      web: { boxShadow: '0 0 0 3px rgba(124, 157, 240, 0.14)' } as any,
+      default: {},
+    }),
   },
   inputError: {
     borderColor: COLORS.error,
@@ -392,11 +400,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 22,
     elevation: 4,
-    transitionProperty: 'box-shadow, opacity, transform',
-    transitionDuration: '180ms',
+    ...Platform.select({
+      web: {
+        transitionProperty: 'box-shadow, opacity, transform',
+        transitionDuration: '180ms',
+      } as any,
+      default: {},
+    }),
   },
   buttonHovered: {
-    boxShadow: '0 14px 28px rgba(56, 189, 248, 0.28)',
+    ...Platform.select({
+      web: { boxShadow: '0 14px 28px rgba(56, 189, 248, 0.28)' } as any,
+      default: {},
+    }),
   },
   buttonText: {
     color: '#09090b',

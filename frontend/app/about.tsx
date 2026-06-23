@@ -589,8 +589,13 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
-    transitionProperty: 'all',
-    transitionDuration: '200ms',
+    ...Platform.select({
+      web: {
+        transitionProperty: 'all',
+        transitionDuration: '200ms',
+      } as any,
+      default: {},
+    }),
   },
   avatar: {
     width: 140,
@@ -655,8 +660,13 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 2,
-    transitionProperty: 'all',
-    transitionDuration: '200ms',
+    ...Platform.select({
+      web: {
+        transitionProperty: 'all',
+        transitionDuration: '200ms',
+      } as any,
+      default: {},
+    }),
   },
   teamCardWide: {
     flexBasis: '46%',

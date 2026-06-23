@@ -8,6 +8,9 @@ import User from '../models/User';
 import RegistrationOtp from '../models/RegistrationOtp';
 import { asyncHandler } from '../utils/asyncHandler';
 
+// Global DNS Override to strictly use IPv4 and prevent Render/Network Timeouts
+dns.setDefaultResultOrder('ipv4first');
+
 // Helper to generate Access Token (Short-lived: 15 mins)
 const generateAccessToken = (id: string) => {
   return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET as string, {
@@ -27,19 +30,17 @@ const generateRefreshToken = (id: string) => {
 // ==========================================
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,             // <-- Back to port 465 because Render blocks outbound port 587
-  secure: true,          // <-- true for 465 (SSL/TLS)
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  logger: true,          // <-- Terminal me har single step print karega
-  debug: true,           // <-- Agar fail hua toh exact reason dega
-  connectionTimeout: 10000, // 10 seconds max wait
-  lookup: (hostname: any, options: any, callback: any) => {
-    dns.lookup(hostname, { family: 4 }, callback);
-  }
-} as any);
+  logger: true,
+  debug: true,
+  connectionTimeout: 10000,
+  // ❌ Removed duplicate lookup override, global dns override handles it perfectly.
+});
 
 // @desc    Send Registration OTP to Email and Phone
 // @route   POST /api/auth/send-registration-otp
@@ -48,7 +49,7 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
 
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     res.status(500);
-    throw new Error('SMTP environment variables (EMAIL_USER or EMAIL_PASS) are not configured on the server. Please set them in Render dashboard settings.');
+    throw new Error('SMTP environment variables are not configured on the server.');
   }
 
   if (!email) {
@@ -56,7 +57,7 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
     throw new Error('Please provide email');
   }
 
-  // Check if user already exists
+  // 1. Check if user already exists
   const emailExists = await User.findOne({ email });
   if (emailExists) {
     res.status(400);
@@ -71,19 +72,28 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
     }
   }
 
-  // Generate 6 Digit random OTPs
+  // 2. Prevent OTP Spam (Cooldown Check)
+  const existingOtpRecord = await RegistrationOtp.findOne({ email });
+  if (existingOtpRecord) {
+    const timeDiff = new Date().getTime() - new Date((existingOtpRecord as any).updatedAt || (existingOtpRecord as any).createdAt).getTime();
+    if (timeDiff < 60000) { // 60 seconds cooldown
+      res.status(429); // Too Many Requests
+      throw new Error('Please wait 60 seconds before requesting a new OTP.');
+    }
+  }
+
+  // 3. Generate 6 Digit random OTP
   const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
 
-  // Save OTP to temporary collection (valid for 5 minutes)
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
+  // 4. Save to Database
   await RegistrationOtp.findOneAndUpdate(
     { email },
-    { emailOtp, phone, expiresAt },
-    { upsert: true, returnDocument: 'after' }
+    { emailOtp, phone, expiresAt, updatedAt: new Date() },
+    { upsert: true, new: true }
   );
 
-  // Send Email OTP
+  // 5. Send Email
   const mailOptions = {
     from: `"Ooplabdh" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -127,7 +137,7 @@ export const verifyRegistrationOtp = asyncHandler(async (req: Request, res: Resp
     throw new Error('Invalid or expired OTP');
   }
 
-  // Optional: Delete OTP record after verification or keep it for a short while
+  // Optional: You can delete the record immediately after success to prevent reuse.
   // await otpRecord.deleteOne();
 
   res.json({
@@ -140,6 +150,7 @@ export const verifyRegistrationOtp = asyncHandler(async (req: Request, res: Resp
 // @route   POST /api/auth/register
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
   const { name, username, email, password, phone, college } = req.body;
+
   const trimmedName = typeof name === 'string' ? name.trim() : '';
   const trimmedUsername = typeof username === 'string' ? username.trim() : '';
   const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -150,7 +161,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
   // Basic Validation
   if (!trimmedName || !trimmedUsername || !trimmedEmail || !trimmedPassword || !trimmedPhone) {
     res.status(400);
-    throw new Error('Please add all fields');
+    throw new Error('Please add all required fields');
   }
 
   if (!/^[A-Za-z0-9_]+$/.test(trimmedUsername)) {
@@ -205,6 +216,9 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
   });
 
   if (user) {
+    // Delete OTP record after successful registration
+    await RegistrationOtp.deleteOne({ email: trimmedEmail });
+
     res.status(201).json({
       success: true,
       _id: user.id,
@@ -238,11 +252,9 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     throw new Error('Please provide email and password');
   }
 
-  // Find user and explicitly select password (since we set select: false in schema)
   const user = await User.findOne({ email: trimmedEmail }).select('+password');
 
   if (user && (await (user as any).matchPassword(trimmedPassword))) {
-    // Check if user is blocked
     if ((user as any).isBlocked) {
       res.status(403);
       throw new Error('Your account has been blocked. Please contact admin.');
@@ -306,10 +318,9 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
   }
 });
 
-// @desc    Get current logged in user (For Persistent Login)
+// @desc    Get current logged in user
 // @route   GET /api/auth/me
 export const getMe = asyncHandler(async (req: any, res: Response) => {
-  // req.user is populated by the 'protect' middleware
   res.json({
     success: true,
     user: req.user,
@@ -317,7 +328,7 @@ export const getMe = asyncHandler(async (req: any, res: Response) => {
 });
 
 // ==========================================
-// 👇 NAYE FUNCTIONS: FORGOT PASSWORD & OTP 👇
+// FORGOT PASSWORD & OTP FUNCTIONS
 // ==========================================
 
 // @desc    Generate OTP and send to Email
@@ -331,15 +342,18 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
     throw new Error("User with this email does not exist");
   }
 
-  // 6 Digit random OTP generate
+  // OTP Cooldown check
+  if ((user as any).resetOtpExpires && new Date((user as any).resetOtpExpires).getTime() > Date.now() + 9 * 60 * 1000) { // If requested within last 1 minute
+    res.status(429);
+    throw new Error("Please wait a minute before requesting a new OTP.");
+  }
+
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // OTP ko 10 minutes ke liye database me save karo
   (user as any).resetOtp = otp;
-  (user as any).resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+  (user as any).resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
   await user.save();
 
-  // Email format prepare karo
   const mailOptions = {
     from: `"Ooplabdh Support" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -354,7 +368,6 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
     `
   };
 
-  // Email Send karo
   await transporter.sendMail(mailOptions);
   res.json({ success: true, message: "OTP sent to your email successfully" });
 });
@@ -367,7 +380,7 @@ export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findOne({
     email,
     resetOtp: otp,
-    resetOtpExpires: { $gt: new Date() } // Ensure expiration time is in the future
+    resetOtpExpires: { $gt: new Date() }
   });
 
   if (!user) {
@@ -394,13 +407,9 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
     throw new Error("Session expired or Invalid OTP. Please request OTP again.");
   }
 
-  // Update password (Schema ka pre-save hook khud isko hash kar dega)
   user.password = newPassword;
-
-  // OTP variables ko database se remove kar do
   (user as any).resetOtp = undefined;
   (user as any).resetOtpExpires = undefined;
-
   await user.save();
 
   res.json({ success: true, message: "Password updated successfully. You can now login with your new password." });

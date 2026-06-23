@@ -26,33 +26,47 @@ const generateRefreshToken = (id: string) => {
 };
 
 // ==========================================
-// Nodemailer SMTP Setup
+// Resend Email API Setup (HTTPS to bypass Render SMTP restrictions)
 // ==========================================
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  logger: true,
-  debug: true,
-  connectionTimeout: 10000,
-  // 👇 ISKO WAPAS LAGA DIYA HAI (Render ke bypass ke liye zaroori hai)
-  lookup: (hostname: any, options: any, callback: any) => {
-    dns.lookup(hostname, { family: 4 }, callback);
+const sendEmail = async ({ to, subject, html }: { to: string; subject: string; html: string }) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured in the server environment.');
   }
-} as any);
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      from: 'Ooplabdh <onboarding@resend.dev>', // In Resend Free Sandbox, emails must be sent from onboarding@resend.dev
+      to,
+      subject,
+      html,
+    }),
+  });
+
+  const data = await response.json() as any;
+
+  if (!response.ok) {
+    console.error('Resend API Error:', data);
+    throw new Error(data?.message || 'Failed to send email via Resend.');
+  }
+
+  return data;
+};
+
 
 // @desc    Send Registration OTP to Email and Phone
 // @route   POST /api/auth/send-registration-otp
 export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Response) => {
   const { email, phone } = req.body;
 
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  if (!process.env.RESEND_API_KEY) {
     res.status(500);
-    throw new Error('SMTP environment variables are not configured on the server.');
+    throw new Error('RESEND_API_KEY is not configured on the server.');
   }
 
   if (!email) {
@@ -96,9 +110,8 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
     { upsert: true, new: true }
   );
 
-  // 5. Send Email
-  const mailOptions = {
-    from: `"Ooplabdh" <${process.env.EMAIL_USER}>`,
+  // 5. Send Email via Resend HTTP API
+  await sendEmail({
     to: email,
     subject: 'Ooplabdh - Registration OTP',
     html: `
@@ -109,9 +122,7 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
         <p style="color: #64748B; font-size: 14px;">This OTP is valid for 5 minutes. Do not share it with anyone.</p>
       </div>
     `
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 
   res.json({
     success: true,
@@ -357,8 +368,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
   (user as any).resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
   await user.save();
 
-  const mailOptions = {
-    from: `"Ooplabdh Support" <${process.env.EMAIL_USER}>`,
+  await sendEmail({
     to: email,
     subject: 'Ooplabdh - Password Reset OTP',
     html: `
@@ -369,9 +379,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
         <p style="color: #666; font-size: 12px;">This OTP is valid for 10 minutes only. Do not share it with anyone.</p>
       </div>
     `
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
   res.json({ success: true, message: "OTP sent to your email successfully" });
 });
 

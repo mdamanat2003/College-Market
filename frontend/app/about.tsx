@@ -48,7 +48,7 @@ const team: TeamMember[] = [
   {
     name: 'Aftab Mansoori',
     role: 'Chief Technology Officer (CTO)',
-    desc: 'Building scalable application features and smooth student workflows.',
+    desc: 'Building scalable application features and student workflows.',
     initials: 'AM',
     accent: '#ECFDF5',
     text: '#059669',
@@ -79,9 +79,11 @@ const pillars = [
     icon: 'alert-circle-outline' as const,
     tone: 'problem',
     points: [
-      'Messages get lost in busy WhatsApp and Telegram groups.',
-      'No easy way to verify the buyer or seller.',
-      'Higher risk of scams, ghosting, and messy coordination.',
+      'Freshers end up spending a fortune on new textbooks and lab gear because finding seniors to buy from is difficult.',
+      'Searching for a second-hand drafter or apron in busy hostel WhatsApp groups is a complete nightmare.',
+      'No central, safe platform to verify if the buyer or seller is an actual student from your own campus.',
+      'Freshers spend thousands on brand-new books and drafters that they only need for a few months.',
+      'Listings get lost instantly in chaotic and noisy college WhatsApp groups.',
     ],
   },
   {
@@ -89,9 +91,11 @@ const pillars = [
     icon: 'shield-checkmark-outline' as const,
     tone: 'solution',
     points: [
+      'Smart search with filters to find exactly what you need within your own college.',
       'Escrow payments protect both sides until delivery is completed.',
       'Smart search keeps listings organized and easy to find.',
       'Verified student profiles build a trusted campus community.',
+      'Hassle-free, secure, and instant in-app transactions.',
     ],
   },
 ];
@@ -133,16 +137,16 @@ export default function About() {
             </Text>
 
             <View style={styles.ctaRow}>
-              <Pressable 
-                style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]} 
+              <Pressable
+                style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]}
                 onPress={() => router.push('/(auth)/register')}
               >
                 <Text style={styles.primaryButtonText}>Get Started</Text>
                 <Ionicons name="arrow-forward" size={16} color="#fff" />
               </Pressable>
-              
-              <Pressable 
-                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]} 
+
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
                 onPress={() => router.push('/home')}
               >
                 <Ionicons name="compass-outline" size={18} color="#475569" />
@@ -157,7 +161,7 @@ export default function About() {
               <Text style={styles.heroStatLabel}>Verified Campus Network</Text>
             </View>
             <View style={styles.heroStatCardAlt}>
-              <Text style={[styles.heroStatValue, { color: '#fff' }]}>5</Text>
+              <Text style={[styles.heroStatValue, { color: '#fff' }]}>3</Text>
               <Text style={[styles.heroStatLabel, { color: '#94A3B8' }]}>Founders Building Trust</Text>
             </View>
           </View>
@@ -185,10 +189,10 @@ export default function About() {
                 {item.points.map((point) => (
                   <View key={point} style={styles.bulletRow}>
                     <View style={[styles.bulletMarkBadge, item.tone === 'solution' ? styles.badgeSuccess : styles.badgeDanger]}>
-                      <Ionicons 
-                        name={item.tone === 'solution' ? 'checkmark' : 'close'} 
-                        size={12} 
-                        color={item.tone === 'solution' ? '#059669' : '#DC2626'} 
+                      <Ionicons
+                        name={item.tone === 'solution' ? 'checkmark' : 'close'}
+                        size={12}
+                        color={item.tone === 'solution' ? '#059669' : '#DC2626'}
                       />
                     </View>
                     <Text style={styles.bulletText}>{point}</Text>
@@ -220,7 +224,7 @@ export default function About() {
           >
             <View style={[styles.avatar, { backgroundColor: team[0].accent }]}>
               {team[0].photo ? (
-                <Image source={team[0].photo} style={styles.memberPhoto} />
+                <Image source={team[0].photo} style={[styles.memberPhoto, styles.amanatPhoto]} />
               ) : (
                 <Text style={[styles.avatarText, { color: team[0].text }]}>{team[0].initials}</Text>
               )}
@@ -247,7 +251,13 @@ export default function About() {
             >
               <View style={[styles.avatarSmall, { backgroundColor: member.accent }]}>
                 {member.photo ? (
-                  <Image source={member.photo} style={styles.memberPhoto} />
+                  <Image
+                    source={member.photo}
+                    style={[
+                      styles.memberPhoto,
+                      member.name.includes('Aftab') ? styles.aftabPhoto : styles.yasirPhoto
+                    ]}
+                  />
                 ) : (
                   <Text style={[styles.avatarTextSmall, { color: member.text }]}>{member.initials}</Text>
                 )}
@@ -264,22 +274,22 @@ export default function About() {
           {/* Decorative background circles */}
           <View style={styles.ctaCircle1} />
           <View style={styles.ctaCircle2} />
-          
+
           <View style={styles.ctaTextBlock}>
             {/* <Text style={styles.ctaKicker}>READY TO LAUNCH</Text> */}
             <Text style={[styles.ctaTitle, isTiny && styles.ctaTitleTiny]}>
               A premium campus marketplace that feels safe, fast, and built just for you.
             </Text>
           </View>
-          <Pressable 
-            style={({ pressed }) => [styles.ctaButton, pressed && styles.buttonPressed]} 
+          <Pressable
+            style={({ pressed }) => [styles.ctaButton, pressed && styles.buttonPressed]}
             onPress={() => router.push('/(auth)/register')}
           >
             <Text style={styles.ctaButtonText}>Join Ooplabdh</Text>
             <Ionicons name="arrow-forward" size={16} color="#0F172A" />
           </Pressable>
         </View>
-      </View> 
+      </View>
       {/* 👆 WRAPPER KHATAM 👆 */}
 
       {/* 👇 FOOTER WRAPPER KE BAHAR HAI (To ye 100% width lega) 👇 */}
@@ -600,13 +610,12 @@ const styles = StyleSheet.create({
   avatar: {
     width: 140,
     height: 140,
-    borderRadius: 45, // Premium squircle
+    borderRadius: 70, // Half of 140 for perfect circle
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     overflow: 'hidden',
     backgroundColor: COLORS.surface,
-    paddingTop: 15, 
   },
   avatarText: {
     fontSize: 32,
@@ -689,13 +698,12 @@ const styles = StyleSheet.create({
   avatarSmall: {
     width: 120,
     height: 120,
-    borderRadius: 38,
+    borderRadius: 60, // Half of 120 for perfect circle
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     overflow: 'hidden',
     backgroundColor: COLORS.surface,
-    paddingTop: 12,
   },
   avatarTextSmall: {
     fontSize: 24,
@@ -703,9 +711,28 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   memberPhoto: {
-    width: '85%',
-    height: '85%',
-    resizeMode: 'contain',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  amanatPhoto: {
+    width: 180,
+    height: 259,
+    top: -12,
+    left: -20,
+  },
+  aftabPhoto: {
+    width: 150,
+    height: 150,
+    top: -12,
+    left: -15,
+  },
+  yasirPhoto: {
+    width: 150,
+    height: 193,
+    top: -8,
+    left: -15,
   },
   memberNameSmall: {
     textAlign: 'center',

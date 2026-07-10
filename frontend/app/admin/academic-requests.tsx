@@ -174,11 +174,11 @@ export default function AdminAcademicRequests() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: SPACING.lg, gap: SPACING.md, maxWidth: 800, width: '100%', alignSelf: 'center' },
+  scrollContent: { padding: SPACING.lg, paddingTop: 36, gap: SPACING.md, maxWidth: 800, width: '100%', alignSelf: 'center' },
   
   errorBox: { padding: SPACING.lg, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.danger, alignItems: 'center' },
   errorText: { color: COLORS.danger, fontWeight: '600', marginBottom: 12 },
@@ -188,14 +188,14 @@ const styles = StyleSheet.create({
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 300, gap: 12 },
   emptyText: { color: COLORS.textMuted, fontSize: 15, textAlign: 'center' },
   
-  card: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, padding: SPACING.md, overflow: 'hidden' },
-  resolvedCard: { opacity: 0.6, borderColor: COLORS.border },
+  card: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', padding: SPACING.md, overflow: 'hidden' },
+  resolvedCard: { opacity: 0.6, borderColor: 'rgba(255, 255, 255, 0.1)' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.sm },
   subjectInfo: { flex: 1, gap: 6 },
   subjectText: { fontSize: 16, fontWeight: '700', color: COLORS.heading },
   badgeRow: { flexDirection: 'row', gap: 6 },
   branchBadge: { backgroundColor: COLORS.primaryLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.sm },
-  semesterBadge: { backgroundColor: COLORS.surface, paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.sm, borderWidth: 1, borderColor: COLORS.border },
+  semesterBadge: { backgroundColor: COLORS.surface, paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.sm, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
   badgeText: { fontSize: 11, fontWeight: '600', color: COLORS.text },
   
   statusBox: { alignSelf: 'flex-start' },
@@ -206,14 +206,14 @@ const styles = StyleSheet.create({
   cardBody: { paddingVertical: SPACING.sm },
   detailLabel: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted, marginBottom: 4 },
   detailText: { fontSize: 14, color: COLORS.text, lineHeight: 20 },
-  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: SPACING.md },
+  divider: { height: 1, backgroundColor: 'rgba(255, 255, 255, 0.1)', marginVertical: SPACING.md },
   studentInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
   studentInfoText: { fontSize: 12, color: COLORS.textMuted },
   
   cardActions: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.sm },
   fulfillBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, paddingVertical: 10, borderRadius: RADIUS.md, gap: 6 },
   fulfillBtnText: { color: COLORS.background, fontWeight: '700', fontSize: 14 },
-  resolveBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, paddingVertical: 10, borderRadius: RADIUS.md, gap: 6, borderWidth: 1, borderColor: COLORS.border },
+  resolveBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, paddingVertical: 10, borderRadius: RADIUS.md, gap: 6, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
   resolveBtnText: { color: COLORS.text, fontWeight: '600', fontSize: 14 },
   
   resolvedLabelBox: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 8 },

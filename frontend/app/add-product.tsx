@@ -20,6 +20,7 @@ export default function AddItemScreen() {
   // Form Fields States
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
+  const [marketPrice, setMarketPrice] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState(''); 
   const [condition, setCondition] = useState('Good'); 
@@ -101,6 +102,12 @@ export default function AddItemScreen() {
     if (!description.trim()) newErrors.description = 'Description is required';
     if (images.length === 0) newErrors.images = 'Please upload at least 1 photo or paste a link';
 
+    if (marketPrice.trim() && isNaN(Number(marketPrice))) {
+      newErrors.marketPrice = 'Market price must be a valid number';
+    } else if (marketPrice.trim() && price.trim() && Number(marketPrice) < Number(price)) {
+      newErrors.marketPrice = 'Market price should be greater than or equal to selling price';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -113,6 +120,9 @@ export default function AddItemScreen() {
       const formData = new FormData();
       formData.append('title', title);
       formData.append('price', price);
+      if (marketPrice.trim()) {
+        formData.append('marketPrice', marketPrice);
+      }
       formData.append('description', description);
       formData.append('category', category);
       formData.append('condition', condition);
@@ -176,6 +186,7 @@ export default function AddItemScreen() {
         Alert.alert('Success! 🎉', 'Product listed on marketplace.');
         setTitle('');
         setPrice('');
+        setMarketPrice('');
         setDescription('');
         setCategory('');
         setImages([]);
@@ -229,6 +240,23 @@ export default function AddItemScreen() {
               }} 
             />
             {errors.price && <Text style={styles.errorText}>⚠️ {errors.price}</Text>}
+          </View>
+
+          {/* Market Price Field */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Market Price (₹) - Optional</Text>
+            <TextInput 
+              style={[styles.inputField, errors.marketPrice ? styles.inputFieldError : null]} 
+              placeholder="e.g., 600" 
+              placeholderTextColor={COLORS.textMuted}
+              keyboardType="numeric" 
+              value={marketPrice} 
+              onChangeText={(text) => {
+                setMarketPrice(text);
+                if (errors.marketPrice) setErrors({ ...errors, marketPrice: '' });
+              }} 
+            />
+            {errors.marketPrice && <Text style={styles.errorText}>⚠️ {errors.marketPrice}</Text>}
           </View>
 
           {/* Category Field */}

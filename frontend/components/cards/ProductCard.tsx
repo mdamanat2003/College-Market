@@ -86,7 +86,12 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
         <View style={[styles.content, isPhone && styles.phoneContent]}>
           <View style={styles.titleRow}>
             <Text style={styles.title} numberOfLines={1}>{product.title}</Text>
-            <Text style={styles.price}>₹{product.price}</Text>
+            <View style={styles.priceContainer}>
+              <Text style={styles.price}>₹{product.price}</Text>
+              {product.marketPrice ? (
+                <Text style={styles.marketPrice}>₹{product.marketPrice}</Text>
+              ) : null}
+            </View>
           </View>
 
           <Text style={styles.category}>{product.category} • {product.condition}</Text>
@@ -140,7 +145,7 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 4,
   },
   title: {
@@ -154,6 +159,15 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: COLORS.accent,
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  marketPrice: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textDecorationLine: 'line-through',
+    marginTop: 1,
   },
   category: {
     fontSize: 13,

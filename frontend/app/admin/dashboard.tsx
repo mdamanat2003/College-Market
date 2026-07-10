@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,14 +8,19 @@ import { useAdminStore } from '../../store/adminStore';
 import { useChatStore } from '../../store/chatStore';
 import { api } from '../../services/api';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
+import { OoplabdhLogo } from '../../components/brand/OoplabdhLogo';
 
 export default function AdminDashboardScreen() {
+  const { width } = useWindowDimensions();
+  const isWebLarge = Platform.OS === 'web' && width > 768;
+
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { stats, escrows, transactions, isLoading, fetchStats, fetchEscrows, fetchTransactions } = useAdminStore();
   const { fetchUnreadNotificationsCount } = useChatStore();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -57,21 +62,43 @@ export default function AdminDashboardScreen() {
     router.replace('/(auth)/login' as any);
   };
 
+  const navItems = [
+    { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid-outline' },
+    { label: 'Manage Users', route: '/admin/users', icon: 'people-outline' },
+    { label: 'Manage Products', route: '/admin/products', icon: 'list-outline' },
+    { label: 'Escrow Transactions', route: '/admin/escrow', icon: 'receipt-outline' },
+    { label: 'Manage Requests', route: '/admin/requests', icon: 'mail-outline' },
+    { label: 'Notes & PyQ Requests', route: '/admin/academic-requests', icon: 'book-outline' },
+  ];
+
   return (
     <View style={styles.container}>
-      {/* Admin Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Ionicons name="shield-checkmark" size={28} color={COLORS.danger} />
-          <Text style={styles.headerTitle}>Admin Panel</Text>
+      {/* Admin Header (Only on Mobile) */}
+      {!isWebLarge ? (
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={styles.menuBtn}>
+              <Ionicons name="menu-outline" size={26} color={COLORS.text} />
+            </TouchableOpacity>
+            <OoplabdhLogo size="sm" style={styles.brandLogo} />
+            <View style={styles.adminBadge}>
+              <Ionicons name="shield-checkmark" size={12} color="#EF4444" />
+              <Text style={styles.adminBadgeText}>Admin</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+            <Ionicons name="log-out-outline" size={24} color={COLORS.text} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-          <Ionicons name="log-out-outline" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-      </View>
+      ) : null}
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+      <ScrollView 
+        contentContainerStyle={[
+          styles.scrollContent, 
+          isWebLarge && styles.scrollContentWeb
+        ]} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.welcomeBox}>
           <Text style={styles.welcomeText}>Welcome, {user?.name}</Text>
           <Text style={styles.roleText}>Super Administrator Dashboard</Text>
@@ -197,8 +224,6 @@ export default function AdminDashboardScreen() {
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Management Modules</Text>
-
         <View style={styles.pastPanel}>
           <Text style={styles.sectionTitle}>Past Transactions</Text>
           {transactions.length === 0 ? (
@@ -213,79 +238,132 @@ export default function AdminDashboardScreen() {
           )}
         </View>
 
-        {/* Action Buttons to Management Lists */}
-        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/users' as any)}>
-          <View style={[styles.iconBox, { backgroundColor: '#DBEAFE' }]}>
-            <Ionicons name="people-outline" size={24} color="#2563EB" />
-          </View>
-          <View style={styles.moduleInfo}>
-            <Text style={styles.moduleTitle}>Manage Users</Text>
-            <Text style={styles.moduleDesc}>View, block, or verify user accounts</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/products' as any)}>
-          <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
-            <Ionicons name="list-outline" size={24} color="#D97706" />
-          </View>
-          <View style={styles.moduleInfo}>
-            <Text style={styles.moduleTitle}>Manage Products</Text>
-            <Text style={styles.moduleDesc}>Review listings and remove fake items</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/escrow' as any)}>
-          <View style={[styles.iconBox, { backgroundColor: '#D1FAE5' }]}>
-            <Ionicons name="receipt-outline" size={24} color="#059669" />
-          </View>
-          <View style={styles.moduleInfo}>
-            <Text style={styles.moduleTitle}>Escrow Transactions</Text>
-            <Text style={styles.moduleDesc}>Monitor payments and resolve disputes</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/requests' as any)}>
-          <View style={[styles.iconBox, { backgroundColor: '#FCE7F6' }]}>
-            <Ionicons name="mail-outline" size={24} color="#BE185D" />
-          </View>
-          <View style={styles.moduleInfo}>
-            <Text style={styles.moduleTitle}>Manage Requests</Text>
-            <Text style={styles.moduleDesc}>View contact form submissions from users</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.moduleCard} onPress={() => router.push('/admin/academic-requests' as any)}>
-          <View style={[styles.iconBox, { backgroundColor: '#E0F2FE' }]}>
-            <Ionicons name="book-outline" size={24} color="#0284C7" />
-          </View>
-          <View style={styles.moduleInfo}>
-            <Text style={styles.moduleTitle}>Notes & PyQ Requests</Text>
-            <Text style={styles.moduleDesc}>Fulfill or manage study material requests</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-        </TouchableOpacity>
 
       </ScrollView>
+
+      {/* Mobile Drawer Overlay */}
+      {isDrawerOpen && (
+        <TouchableOpacity 
+          activeOpacity={1} 
+          style={styles.drawerOverlay} 
+          onPress={() => setIsDrawerOpen(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.drawerContent}>
+            <View style={styles.drawerHeader}>
+              <OoplabdhLogo size="sm" style={styles.brandLogo} />
+              <TouchableOpacity onPress={() => setIsDrawerOpen(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.drawerItems}>
+              {navItems.map((item) => (
+                <TouchableOpacity 
+                  key={item.route}
+                  style={styles.drawerItem}
+                  onPress={() => {
+                    setIsDrawerOpen(false);
+                    router.push(item.route as any);
+                  }}
+                >
+                  <Ionicons name={item.icon as any} size={20} color={COLORS.text} style={{ marginRight: 12 }} />
+                  <Text style={styles.drawerItemText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { height: 70, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.text },
+  header: { height: 70, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
+  brandLogo: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  adminBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.round,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
+    gap: 4,
+    marginLeft: SPACING.sm,
+  },
+  adminBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#EF4444',
+  },
   logoutBtn: { padding: SPACING.xs },
   
-  scrollContent: { padding: SPACING.lg, maxWidth: 800, width: '100%', alignSelf: 'center' },
+  mainLayout: { flex: 1, flexDirection: 'column' },
+  mainLayoutWeb: { flexDirection: 'row' },
+  
+  sidebarContainer: {
+    width: 260,
+    backgroundColor: COLORS.card,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.border,
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+  sidebarTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: SPACING.sm,
+  },
+  sidebarModuleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    padding: SPACING.md,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  sidebarIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
+  },
+  sidebarModuleInfo: {
+    flex: 1,
+  },
+  sidebarModuleTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+
+  scrollContent: { padding: SPACING.lg, paddingTop: 36, maxWidth: 800, width: '100%', alignSelf: 'center' },
+  scrollContentWeb: { padding: SPACING.lg, paddingTop: 36, maxWidth: 1000, width: '100%', alignSelf: 'stretch' },
   
   welcomeBox: { marginBottom: SPACING.xl },
   welcomeText: { fontSize: 24, fontWeight: '700', color: COLORS.text },
-  roleText: { fontSize: 14, color: COLORS.danger, fontWeight: '600', marginTop: 4 },
+  roleText: { fontSize: 14, color: COLORS.accent, fontWeight: '600', marginTop: 4 },
 
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md, marginBottom: SPACING.xl },
   statCard: { flex: 1, minWidth: 100, backgroundColor: COLORS.card, padding: SPACING.lg, borderRadius: RADIUS.lg, alignItems: 'center', borderWidth: 1, borderColor: COLORS.border },
@@ -324,5 +402,51 @@ const styles = StyleSheet.create({
   iconBox: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: SPACING.md },
   moduleInfo: { flex: 1 },
   moduleTitle: { fontSize: 16, fontWeight: '600', color: COLORS.text },
-  moduleDesc: { fontSize: 13, color: COLORS.textMuted, marginTop: 2 }
+  moduleDesc: { fontSize: 13, color: COLORS.textMuted, marginTop: 2 },
+  
+  menuBtn: {
+    marginRight: SPACING.xs,
+    padding: SPACING.xs,
+  },
+  drawerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    zIndex: 1000,
+  },
+  drawerContent: {
+    width: 280,
+    height: '100%',
+    backgroundColor: COLORS.card,
+    padding: SPACING.lg,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  drawerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.xl,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  drawerItems: {
+    gap: SPACING.md,
+  },
+  drawerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: RADIUS.md,
+  },
+  drawerItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
 });

@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { api } from '../../services/api';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 export default function AdminRequests() {
+  const router = useRouter();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,6 @@ export default function AdminRequests() {
       const res = await api.get('/requests');
       setRequests(res.data.requests || []);
     } catch (err: any) {
-      // Surface useful error info for debugging admin UI
       console.error('Failed to load requests', err);
       const msg = err?.response?.data?.message || err?.message || 'Failed to fetch';
       const status = err?.response?.status;
@@ -46,23 +46,31 @@ export default function AdminRequests() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Contact Requests</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Contact Requests</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
       {loading ? (
-        <ActivityIndicator />
+        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: SPACING.xl }} />
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
           {error ? (
-            <View style={{ padding: 12 }}>
-              <Text style={{ color: '#b91c1c', marginBottom: 8 }}>Error: {error}</Text>
-              <TouchableOpacity onPress={fetchRequests} style={{ backgroundColor: '#2563eb', padding: 8, borderRadius: 8 }}>
-                <Text style={{ color: '#fff' }}>Retry</Text>
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>Error: {error}</Text>
+              <TouchableOpacity onPress={fetchRequests} style={styles.retryBtn}>
+                <Text style={styles.retryBtnText}>Retry</Text>
               </TouchableOpacity>
             </View>
           ) : contactRequests.length === 0 ? (
             <Text style={styles.empty}>No general requests found.</Text>
           ) : contactRequests.map((r) => (
             <View key={r._id} style={styles.item}>
-              <View style={{ flex: 1 }}>
+              <View style={styles.itemInfo}>
                 <Text style={styles.name}>{r.name} · {r.email}</Text>
                 <Text style={styles.message}>{r.message}</Text>
                 <Text style={styles.meta}>{new Date(r.createdAt).toLocaleString()}</Text>
@@ -84,15 +92,22 @@ export default function AdminRequests() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: SPACING.lg, backgroundColor: COLORS.background },
-  header: { fontSize: 20, fontWeight: '700', marginBottom: SPACING.md, color: COLORS.text },
-  list: { gap: SPACING.md },
-  item: { flexDirection: 'row', gap: SPACING.md, backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
-  name: { fontWeight: '700', color: COLORS.text },
-  message: { marginTop: 6, color: COLORS.textMuted },
-  meta: { marginTop: 8, fontSize: 12, color: COLORS.textMuted },
-  actions: { alignItems: 'center', justifyContent: 'center' },
-  status: { marginBottom: 8, fontSize: 12, color: COLORS.textMuted, textTransform: 'capitalize' },
-  resolveBtn: { backgroundColor: '#059669', padding: 8, borderRadius: 8 },
-  empty: { color: COLORS.textMuted },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
+  backBtn: { padding: SPACING.xs },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text },
+  list: { padding: SPACING.md, paddingTop: SPACING.lg, gap: SPACING.md },
+  item: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md, backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', justifyContent: 'space-between' },
+  itemInfo: { flex: 1, minWidth: 220, gap: 4 },
+  name: { fontWeight: '700', color: COLORS.text, fontSize: 15 },
+  message: { marginTop: 2, color: COLORS.textMuted, fontSize: 14 },
+  meta: { marginTop: 4, fontSize: 11, color: COLORS.textMuted },
+  actions: { alignItems: 'flex-end', justifyContent: 'center', minWidth: 80, gap: 4 },
+  status: { fontSize: 12, color: COLORS.textMuted, textTransform: 'capitalize' },
+  resolveBtn: { backgroundColor: '#059669', padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  empty: { color: COLORS.textMuted, textAlign: 'center', marginTop: SPACING.xl },
+  errorBox: { padding: SPACING.lg, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.danger, alignItems: 'center' },
+  errorText: { color: COLORS.danger, fontWeight: '600', marginBottom: 12 },
+  retryBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.sm },
+  retryBtnText: { color: COLORS.background, fontWeight: '700' },
 });

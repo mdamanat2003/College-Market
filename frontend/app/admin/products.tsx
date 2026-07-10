@@ -38,7 +38,12 @@ export default function ManageProductsScreen() {
     <View style={styles.productCard}>
       <View style={styles.productInfo}>
         <Text style={styles.productTitle} numberOfLines={1}>{item.title}</Text>
-        <Text style={styles.productPrice}>₹{item.price}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={styles.productPrice}>₹{item.price}</Text>
+          {item.marketPrice ? (
+            <Text style={styles.productMarketPrice}>₹{item.marketPrice}</Text>
+          ) : null}
+        </View>
         <View style={styles.detailRow}>
           <Ionicons name="person-outline" size={14} color={COLORS.textMuted} />
           <Text style={styles.productDetail}>{item.seller?.name || 'Unknown Seller'}</Text>
@@ -104,19 +109,24 @@ export default function ManageProductsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text },
   
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, margin: SPACING.md, paddingHorizontal: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, margin: SPACING.md, paddingHorizontal: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
   searchIcon: { marginRight: SPACING.sm },
   searchInput: { flex: 1, height: 45, color: COLORS.text, fontSize: 15 },
 
-  listContainer: { padding: SPACING.md, gap: SPACING.sm },
-  productCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
-  productInfo: { flex: 1, gap: 4, paddingRight: SPACING.md },
+  listContainer: { padding: SPACING.md, paddingTop: SPACING.lg, gap: SPACING.sm },
+  productCard: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', gap: SPACING.sm },
+  productInfo: { flex: 1, minWidth: 200, gap: 4, paddingRight: SPACING.md },
   productTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text },
   productPrice: { fontSize: 15, fontWeight: '600', color: COLORS.success },
+  productMarketPrice: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textDecorationLine: 'line-through',
+  },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   productDetail: { fontSize: 13, color: COLORS.textMuted },
   

@@ -88,17 +88,17 @@ export default function ManageUsersScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text },
   
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, margin: SPACING.md, paddingHorizontal: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, margin: SPACING.md, paddingHorizontal: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' },
   searchIcon: { marginRight: SPACING.sm },
   searchInput: { flex: 1, height: 45, color: COLORS.text, fontSize: 15 },
 
-  listContainer: { padding: SPACING.md, gap: SPACING.sm },
-  userCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border },
-  userInfo: { flex: 1, gap: 4 },
+  listContainer: { padding: SPACING.md, paddingTop: SPACING.lg, gap: SPACING.sm },
+  userCard: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', gap: SPACING.sm },
+  userInfo: { flex: 1, minWidth: 200, gap: 4 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   userName: { fontSize: 16, fontWeight: '700', color: COLORS.text },
   userDetail: { fontSize: 13, color: COLORS.textMuted },

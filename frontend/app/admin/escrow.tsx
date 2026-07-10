@@ -122,14 +122,14 @@ export default function EscrowTransactionsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  header: { height: 60, backgroundColor: COLORS.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
   backBtn: { padding: SPACING.xs },
   headerTitle: { fontSize: 18, fontWeight: '600', color: COLORS.text },
   
-  listContainer: { padding: SPACING.md, gap: SPACING.md },
-  card: { backgroundColor: COLORS.card, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.border, overflow: 'hidden' },
+  listContainer: { padding: SPACING.md, paddingTop: SPACING.lg, gap: SPACING.md },
+  card: { backgroundColor: COLORS.card, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' },
   
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border, backgroundColor: COLORS.surface },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: SPACING.md, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)', backgroundColor: COLORS.surface },
   orderId: { fontSize: 13, fontWeight: '700', color: COLORS.textMuted },
   amountBadge: { backgroundColor: '#D1FAE5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: RADIUS.lg },
   amountText: { color: '#059669', fontWeight: 'bold', fontSize: 14 },
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
   alertGreenTitle: { color: '#059669', fontWeight: 'bold', fontSize: 14 },
   alertGreenText: { color: '#047857', fontSize: 12, marginTop: 2 },
   
-  actionsContainer: { flexDirection: 'row', padding: SPACING.md, gap: SPACING.md, borderTopWidth: 1, borderTopColor: COLORS.border },
-  btn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: RADIUS.sm, gap: 6, borderWidth: 1 },
+  actionsContainer: { flexDirection: 'row', flexWrap: 'wrap', padding: SPACING.md, gap: SPACING.md, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.1)' },
+  btn: { flex: 1, minWidth: 130, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: RADIUS.sm, gap: 6, borderWidth: 1 },
   refundBtn: { backgroundColor: '#FEE2E2', borderColor: '#FCA5A5' },
   refundBtnText: { color: '#DC2626', fontWeight: '600', fontSize: 14 },
   releaseBtn: { backgroundColor: '#D1FAE5', borderColor: '#6EE7B7' },

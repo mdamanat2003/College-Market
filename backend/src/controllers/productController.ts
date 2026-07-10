@@ -142,7 +142,7 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     console.log("Body Data:", req.body);
     console.log("Files Data:", req.files);
 
-    const { title, description, price, category, condition, college, imageLinks } = req.body;
+     const { title, description, price, marketPrice, category, condition, college, imageLinks } = req.body;
 
     let finalImagesArray: string[] = [];
 
@@ -180,6 +180,7 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
             finalImagesArray.push(result.secure_url);
           }
         });
+
       } else {
         const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
 
@@ -215,6 +216,7 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
       title,
       description,
       price: Number(price),
+      marketPrice: marketPrice ? Number(marketPrice) : undefined,
       category,
       condition,
       images: finalImagesArray,

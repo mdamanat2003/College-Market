@@ -192,7 +192,12 @@ export default function ProductDetailsScreen() {
 
           <View style={[styles.detailsSection, isWebLarge && { flex: 1, paddingLeft: SPACING.xl }]}>
             <Text style={styles.title}>{product.title}</Text>
-            <Text style={styles.price}>₹{product.price}</Text>
+            <View style={styles.priceRow}>
+              <Text style={styles.price}>₹{product.price}</Text>
+              {product.marketPrice ? (
+                <Text style={styles.marketPrice}>₹{product.marketPrice}</Text>
+              ) : null}
+            </View>
 
             <View style={styles.badgesRow}>
               <View style={styles.badge}><Text style={styles.badgeText}>{product.category}</Text></View>
@@ -265,7 +270,19 @@ const styles = StyleSheet.create({
 
   detailsSection: { width: '100%', marginTop: SPACING.lg },
   title: { fontSize: 24, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.xs },
-  price: { fontSize: 32, fontWeight: '800', color: COLORS.accent, marginBottom: SPACING.md },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 12,
+    marginBottom: SPACING.md,
+  },
+  price: { fontSize: 32, fontWeight: '800', color: COLORS.accent },
+  marketPrice: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    textDecorationLine: 'line-through',
+  },
   badgesRow: { flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.lg },
   badge: { backgroundColor: COLORS.primaryLight, paddingHorizontal: 12, paddingVertical: 6, borderRadius: RADIUS.round },
   badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },

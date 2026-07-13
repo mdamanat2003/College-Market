@@ -126,12 +126,12 @@ export default function NotificationsScreen() {
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       ) : notifications.length === 0 ? (
-        <View style={styles.center}>
-          <Ionicons name="notifications-off-outline" size={60} color={COLORS.border} />
-          <Text style={styles.emptyText}>No notifications yet.</Text>
-          <View style={styles.footerWrapper}>
-            <Footer onBackToTop={handleBackToTop} />
+        <View style={{ flex: 1 }}>
+          <View style={styles.center}>
+            <Ionicons name="notifications-off-outline" size={60} color={COLORS.border} />
+            <Text style={styles.emptyText}>No notifications yet.</Text>
           </View>
+          <Footer onBackToTop={handleBackToTop} />
         </View>
       ) : (
         <FlatList

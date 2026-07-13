@@ -182,7 +182,8 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} ref={scrollRef}>
+      <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef}>
+        <View style={styles.scrollContent}>
         
         {/* Profile Card */}
         <View style={styles.profileCard}>
@@ -293,9 +294,8 @@ export default function ProfileScreen() {
             );
           })
         )}
-        <View style={styles.footerWrapper}>
-          <Footer onBackToTop={handleBackToTop} />
         </View>
+        <Footer onBackToTop={handleBackToTop} />
       </ScrollView>
 
       {/* Edit Profile Modal */}

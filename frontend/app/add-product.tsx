@@ -205,7 +205,8 @@ export default function AddItemScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.scrollContainer}>
           
           <Text style={styles.mainTitle}>Sell an Item</Text>
 
@@ -361,11 +362,9 @@ export default function AddItemScreen() {
             {isSubmitting ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.submitButtonText}>Add Now</Text>}
           </TouchableOpacity>
 
-          <View style={styles.footerWrapper}>
-            <Footer />
           </View>
-
-          </ScrollView>
+          <Footer />
+        </ScrollView>
           </KeyboardAvoidingView>
           </SafeAreaView>
           );

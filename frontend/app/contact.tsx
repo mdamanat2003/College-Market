@@ -16,69 +16,71 @@ export default function Contact() {
   const isTiny = width < 390;
 
   return (
-    <ScrollView ref={scrollRef} style={styles.page} contentContainerStyle={[styles.content, isTiny && styles.contentTiny]}>
+    <ScrollView ref={scrollRef} style={styles.page} showsVerticalScrollIndicator={false}>
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />
 
-      <PublicNavbar activeRoute="contact" />
+      <View style={[styles.content, isTiny && styles.contentTiny]}>
+        <PublicNavbar activeRoute="contact" />
 
-      <View style={[styles.hero, isCompact && styles.heroCompact]}>
-        <View style={styles.heroTextBlock}>
-          <Text style={styles.kicker}>Contact</Text>
-          <Text style={[styles.title, isCompact && styles.titleCompact, isTiny && styles.titleTiny]}>
-            Get in touch with Ooplabdh.
-          </Text>
-          <Text style={styles.body}>
-            Have a question, feedback, or partnership idea? Send us a message and we will get back to you.
-          </Text>
-        </View>
-
-        <View style={[styles.formCard, isTiny && styles.formCardTiny]}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Name</Text>
-            <TextInput style={styles.input} placeholder="Your name" placeholderTextColor={COLORS.textMuted} value={name} onChangeText={setName} />
+        <View style={[styles.hero, isCompact && styles.heroCompact]}>
+          <View style={styles.heroTextBlock}>
+            <Text style={styles.kicker}>Contact</Text>
+            <Text style={[styles.title, isCompact && styles.titleCompact, isTiny && styles.titleTiny]}>
+              Get in touch with Ooplabdh.
+            </Text>
+            <Text style={styles.body}>
+              Have a question, feedback, or partnership idea? Send us a message and we will get back to you.
+            </Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="you@college.edu"
-              placeholderTextColor={COLORS.textMuted}
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </View>
+          <View style={[styles.formCard, isTiny && styles.formCardTiny]}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Name</Text>
+              <TextInput style={styles.input} placeholder="Your name" placeholderTextColor={COLORS.textMuted} value={name} onChangeText={setName} />
+            </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Message</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="How can we help?"
-              placeholderTextColor={COLORS.textMuted}
-              multiline
-              numberOfLines={5}
-              textAlignVertical="top"
-              value={message}
-              onChangeText={setMessage}
-            />
-          </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="you@college.edu"
+                placeholderTextColor={COLORS.textMuted}
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
 
-          <TouchableOpacity style={styles.primaryButton} onPress={async () => {
-            try {
-              const { api } = await import('../services/api');
-              await api.post('/requests', { name, email, message });
-              setName(''); setEmail(''); setMessage('');
-              alert('Message sent — admin will review it soon.');
-            } catch (err) {
-              console.error('Send message failed', err);
-              alert('Failed to send message');
-            }
-          }}>
-            <Text style={styles.primaryButtonText}>Send Message</Text>
-            <Ionicons name="send-outline" size={16} color={COLORS.background} />
-          </TouchableOpacity>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Message</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="How can we help?"
+                placeholderTextColor={COLORS.textMuted}
+                multiline
+                numberOfLines={5}
+                textAlignVertical="top"
+                value={message}
+                onChangeText={setMessage}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.primaryButton} onPress={async () => {
+              try {
+                const { api } = await import('../services/api');
+                await api.post('/requests', { name, email, message });
+                setName(''); setEmail(''); setMessage('');
+                alert('Message sent — admin will review it soon.');
+              } catch (err) {
+                console.error('Send message failed', err);
+                alert('Failed to send message');
+              }
+            }}>
+              <Text style={styles.primaryButtonText}>Send Message</Text>
+              <Ionicons name="send-outline" size={16} color={COLORS.background} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

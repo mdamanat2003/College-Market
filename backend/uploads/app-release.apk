@@ -1,0 +1,5 @@
+This is a placeholder for the College Market Android application APK.
+To build the real APK:
+1. Set up your Android build tools.
+2. Run 'eas build -p android' or build a local release using Expo's CLI.
+3. Once you obtain the release APK file (e.g. app-release.apk), replace this placeholder file with your actual APK file.

@@ -8,7 +8,7 @@ import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
-type ActiveRoute = 'home' | 'about' | 'contact';
+type ActiveRoute = 'home' | 'about' | 'contact' | 'faq';
 
 type PublicNavbarProps = {
   activeRoute: ActiveRoute;
@@ -26,6 +26,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
   const navItems = [
     { label: 'Home', href: '/home', key: 'home' as const },
     { label: 'About', href: '/about', key: 'about' as const },
+    { label: 'FAQ', href: '/faq', key: 'faq' as const },
     { label: 'Contact', href: '/contact', key: 'contact' as const },
   ];
 

@@ -9,10 +9,12 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore'; // <-- Chat Store import
 import { COLORS } from '../theme/colors';
+import { InstallAppBanner } from '../components/layout/InstallAppBanner';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
+
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -70,7 +72,7 @@ export default function RootLayout() {
     const inAuthGroup = currentSegment === '(auth)';
     const inAdminRoute = currentSegment === 'admin';
     const inTabsGroup = currentSegment === '(tabs)';
-    const isPublicRoute = (pathname === '/home' || pathname === '/about' || pathname === '/contact') && !inTabsGroup;
+    const isPublicRoute = (pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
 
     if (inAdminRoute && (!user || user.role !== 'admin')) {
       router.replace('/(auth)/login');
@@ -107,7 +109,10 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <View style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false }} />
+        <InstallAppBanner />
+      </View>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

@@ -99,13 +99,13 @@ export default function MessagesInboxScreen() {
             <ActivityIndicator size="large" color={COLORS.primary} />
           </View>
         ) : conversations.length === 0 ? (
-          <View style={styles.center}>
-            <Ionicons name="chatbubbles-outline" size={60} color={COLORS.border} />
-            <Text style={styles.emptyText}>No messages yet.</Text>
-            <Text style={styles.emptySubtext}>When you contact sellers or buyers contact you, chats will appear here.</Text>
-            <View style={styles.footerWrapper}>
-              <Footer onBackToTop={handleBackToTop} />
+          <View style={{ flex: 1 }}>
+            <View style={styles.center}>
+              <Ionicons name="chatbubbles-outline" size={60} color={COLORS.border} />
+              <Text style={styles.emptyText}>No messages yet.</Text>
+              <Text style={styles.emptySubtext}>When you contact sellers or buyers contact you, chats will appear here.</Text>
             </View>
+            <Footer onBackToTop={handleBackToTop} />
           </View>
         ) : (
           <FlatList
@@ -146,9 +146,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   content: {
     flex: 1,
-    maxWidth: 800, // Good for web readability
     width: '100%',
-    alignSelf: 'center',
   },
   listContent: {
     flexGrow: 1, // 👈 Added to push footer down
@@ -182,6 +180,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
+    width: '100%',
+    maxWidth: 800,
+    alignSelf: 'center',
   },
   avatarContainer: {
     width: 50,

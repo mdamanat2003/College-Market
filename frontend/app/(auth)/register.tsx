@@ -13,12 +13,14 @@ import {
   Alert,
   useWindowDimensions,
   DimensionValue,
+  Image,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as ImagePicker from 'expo-image-picker';
 import { COLLEGES } from '../../constants/colleges';
 import { useAuthStore } from '../../store/authStore';
 
@@ -106,6 +108,7 @@ export default function Register() {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [emailOtp, setEmailOtp] = useState('');
+  const [collegeIdProofUri, setCollegeIdProofUri] = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<RegisterFieldName | 'emailOtp' | null>(null);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const { width } = useWindowDimensions();
@@ -153,6 +156,26 @@ export default function Register() {
     focusedField === field && styles.inputFocused,
     hasError && styles.inputError,
   ];
+
+  const pickIdProof = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return Alert.alert('Permission Denied!', 'Gallery access is required.');
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > 1 * 1024 * 1024) {
+        Alert.alert('File Too Large', 'Bhai, ID proof image 1MB se kam size ki honi chahiye.');
+        return;
+      }
+      setCollegeIdProofUri(asset.uri);
+    }
+  };
 
   const handleSendOtp = async () => {
     setServerError('');
@@ -209,6 +232,11 @@ export default function Register() {
       return;
     }
 
+    if (!collegeIdProofUri) {
+      Alert.alert('ID Proof Required', 'Please upload a photo of your College ID proof.');
+      return;
+    }
+
     try {
       if (values.college === 'Other') {
         if (!values.otherCollege || !values.otherCollege.trim() || values.otherCollege.trim().length < 3) {
@@ -221,14 +249,34 @@ export default function Register() {
       const emailLocalPart = values.email.split('@')[0].replace(/[^A-Za-z0-9_]/g, '_').slice(0, 15) || 'campus_user';
       const generatedUsername = `${emailLocalPart}_${values.phone.slice(-4)}`;
 
-      const ok = await registerStore({
-        name: values.name.trim(),
-        username: generatedUsername,
-        email: values.email.trim().toLowerCase(),
-        phone: values.phone.trim(),
-        password: values.password.trim(),
-        college: selectedCollege,
-      });
+      const formData = new FormData();
+      formData.append('name', values.name.trim());
+      formData.append('username', generatedUsername);
+      formData.append('email', values.email.trim().toLowerCase());
+      formData.append('phone', values.phone.trim());
+      formData.append('password', values.password.trim());
+      formData.append('college', selectedCollege);
+
+      let filename = collegeIdProofUri.split('/').pop() || 'id_proof.jpg';
+      if (!filename.includes('.')) {
+        filename = 'id_proof.jpg';
+      }
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+      if (Platform.OS === 'web') {
+        const response = await fetch(collegeIdProofUri);
+        const blob = await response.blob();
+        formData.append('collegeIdProof', blob, filename);
+      } else {
+        formData.append('collegeIdProof', {
+          uri: Platform.OS === 'ios' ? collegeIdProofUri.replace('file://', '') : collegeIdProofUri,
+          name: filename,
+          type,
+        } as any);
+      }
+
+      const ok = await registerStore(formData);
 
       if (ok) {
         Alert.alert('Success!', 'Your account has been created.');
@@ -268,7 +316,7 @@ export default function Register() {
             <View style={styles.card}>
               <View style={styles.form}>
                 <View style={styles.inputGroupFull}>
-                  <Text style={styles.label}>Full Name</Text>
+                  <Text style={styles.label}>Full Name *</Text>
                   <Controller
                     control={control}
                     name="name"
@@ -297,7 +345,7 @@ export default function Register() {
 
                 <View style={[styles.row, isDesktop && styles.rowDesktop]}>
                   <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
-                    <Text style={styles.label}>Email Address</Text>
+                    <Text style={styles.label}>Email Address *</Text>
                     <Controller
                       control={control}
                       name="email"
@@ -328,7 +376,7 @@ export default function Register() {
                   </View>
 
                   <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
-                    <Text style={styles.label}>Phone Number</Text>
+                    <Text style={styles.label}>Phone Number *</Text>
                     <Controller
                       control={control}
                       name="phone"
@@ -404,7 +452,7 @@ export default function Register() {
 
                 <View style={[styles.row, isDesktop && styles.rowDesktop]}>
                   <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
-                    <Text style={styles.label}>College</Text>
+                    <Text style={styles.label}>College *</Text>
                     <Controller
                       control={control}
                       name="college"
@@ -520,7 +568,7 @@ export default function Register() {
 
                 {watchedCollege === 'Other' ? (
                   <View style={styles.inputGroupFull}>
-                    <Text style={styles.label}>Enter your college name</Text>
+                    <Text style={styles.label}>Enter your college name *</Text>
                     <Controller
                       control={control}
                       name="otherCollege"
@@ -541,9 +589,38 @@ export default function Register() {
                   </View>
                 ) : null}
 
+                {/* College ID Proof Section */}
+                <View style={styles.inputGroupFull}>
+                  <Text style={styles.label}>College ID Proof * (Anything that proves you're a student)</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.idProofPicker,
+                      collegeIdProofUri ? styles.idProofPickerSelected : null,
+                    ]}
+                    onPress={pickIdProof}
+                    activeOpacity={0.8}
+                  >
+                    {collegeIdProofUri ? (
+                      <View style={styles.idProofPreviewContainer}>
+                        <Image source={{ uri: collegeIdProofUri }} style={styles.idProofPreview} resizeMode="contain" />
+                        <View style={styles.changeIdProofBadge}>
+                          <Ionicons name="camera-outline" size={16} color="#fff" />
+                          <Text style={styles.changeIdProofText}>Change ID Proof</Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.idProofPlaceholder}>
+                        <Ionicons name="card-outline" size={36} color={COLORS.helper} />
+                        <Text style={styles.idProofPlaceholderText}>Upload student ID card photo</Text>
+                        <Text style={styles.idProofHelperText}>Ensure your name & college name are clearly visible</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
                 <View style={[styles.row, isDesktop && styles.rowDesktop]}>
                   <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
-                    <Text style={styles.label}>Create Password</Text>
+                    <Text style={styles.label}>Create Password *</Text>
                     <View style={styles.passwordInputWrap}>
                       <Controller
                         control={control}
@@ -587,7 +664,7 @@ export default function Register() {
                   </View>
 
                   <View style={[styles.inputGroup, isDesktop && styles.halfField]}>
-                    <Text style={styles.label}>Confirm Password</Text>
+                    <Text style={styles.label}>Confirm Password *</Text>
                     <View style={styles.passwordInputWrap}>
                       <Controller
                         control={control}
@@ -954,5 +1031,67 @@ const styles = StyleSheet.create({
     color: COLORS.success,
     fontWeight: '700',
     fontSize: 14,
+  },
+  idProofPicker: {
+    minHeight: 120,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginTop: 6,
+    padding: 12,
+  },
+  idProofPickerSelected: {
+    borderStyle: 'solid',
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    backgroundColor: 'rgba(56, 189, 248, 0.02)',
+  },
+  idProofPlaceholder: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  idProofPlaceholderText: {
+    color: COLORS.label,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  idProofHelperText: {
+    color: COLORS.helper,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  idProofPreviewContainer: {
+    width: '100%',
+    height: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  idProofPreview: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  changeIdProofBadge: {
+    position: 'absolute',
+    bottom: 8,
+    backgroundColor: 'rgba(9, 9, 11, 0.85)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  changeIdProofText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

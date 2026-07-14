@@ -53,6 +53,15 @@ export default function MarketplaceHome() {
       <Navbar />
 
       <View style={styles.mainContent}>
+        {user && !user.isVerified && (
+          <View style={styles.verificationBanner}>
+            <Ionicons name="information-circle" size={18} color="#F59E0B" />
+            <Text style={styles.verificationBannerText}>
+              Your account verification is pending. An admin is reviewing your College ID.
+            </Text>
+          </View>
+        )}
+
         {/* --- College Filter Bar --- */}
         <View style={styles.filterSection}>
           <TouchableOpacity 
@@ -240,5 +249,21 @@ const styles = StyleSheet.create({
   },
   footerWrapper: {
     marginHorizontal: -SPACING.md,
+  },
+  verificationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(245, 158, 11, 0.2)',
+    gap: SPACING.sm,
+  },
+  verificationBannerText: {
+    color: '#F59E0B',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
 });

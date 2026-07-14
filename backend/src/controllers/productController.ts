@@ -169,37 +169,20 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
       const isCloudinaryConfigured = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 
-      if (isCloudinaryConfigured) {
-        // Upload to Cloudinary concurrently
-        const uploadPromises = req.files.map((file: any) => 
-          uploadBufferToCloudinary(file.buffer, 'ooplabdh_products')
-        );
-        const uploadResults = await Promise.all(uploadPromises);
-        uploadResults.forEach((result: any) => {
-          if (result && result.secure_url) {
-            finalImagesArray.push(result.secure_url);
-          }
-        });
-
-      } else {
-        const uploadDir = path.resolve(__dirname, '..', '..', 'uploads');
-
-        // ensure directory exists
-        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-        req.files.forEach((file: any, idx: number) => {
-          try {
-            const ext = file.originalname && file.originalname.includes('.') ? '' : `.${file.mimetype.split('/')[1]}`;
-            const safeName = `${Date.now()}_${idx}_${file.originalname || 'upload'}${ext}`.replace(/\s+/g, '_');
-            const outPath = path.join(uploadDir, safeName);
-            fs.writeFileSync(outPath, file.buffer);
-            const publicUrl = `${uploadsBase}/${safeName}`;
-            finalImagesArray.push(publicUrl);
-          } catch (err) {
-            console.error('File write error:', err);
-          }
-        });
+      if (!isCloudinaryConfigured) {
+        return res.status(500).json({ message: 'Cloudinary configuration missing. Cannot upload files.' });
       }
+
+      // Upload to Cloudinary concurrently
+      const uploadPromises = req.files.map((file: any) => 
+        uploadBufferToCloudinary(file.buffer, 'ooplabdh_products')
+      );
+      const uploadResults = await Promise.all(uploadPromises);
+      uploadResults.forEach((result: any) => {
+        if (result && result.secure_url) {
+          finalImagesArray.push(result.secure_url);
+        }
+      });
     }
 
     if (finalImagesArray.length === 0) {

@@ -14,6 +14,8 @@ interface User {
   ratingCount?: number;
   isDemo?: boolean;
   avatar?: string;
+  isVerified?: boolean;
+  collegeIdProof?: string;
 }
 
 interface AuthState {
@@ -90,7 +92,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   register: async (userData) => {
     set({ isLoading: true, error: null });
     try {
-      await api.post('/auth/register', userData);
+      const isFormData = userData instanceof FormData;
+      await api.post('/auth/register', userData, {
+        headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+      });
       await AsyncStorage.removeItem('userAccessToken');
       await AsyncStorage.removeItem('userRefreshToken');
       set({ user: null, accessToken: null, refreshToken: null, isLoading: false });

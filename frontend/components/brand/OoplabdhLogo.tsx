@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Platform, StyleProp, StyleSheet, Text, View, ViewStyle, Image } from 'react-native';
 
 type OoplabdhLogoProps = {
   compact?: boolean;
@@ -34,10 +34,23 @@ export function OoplabdhLogo({ compact = false, markOnly = false, size = 'md', s
       accessibilityRole="image"
       accessibilityLabel="Ooplabdh logo"
     >
-      <View style={[styles.mark, { width: markSize, height: markSize, borderRadius: markSize / 2 }]}>
-        <View style={[styles.orbit, { borderRadius: markSize / 2 }]} />
-        <View style={[styles.boltTop, { borderLeftWidth: markSize * 0.22, borderRightWidth: markSize * 0.09, borderBottomWidth: markSize * 0.48 }]} />
-        <View style={[styles.boltBottom, { borderLeftWidth: markSize * 0.09, borderRightWidth: markSize * 0.22, borderTopWidth: markSize * 0.48 }]} />
+      <View style={[styles.mark, { width: markSize, height: markSize, borderRadius: markSize * 0.28 }]}>
+        <View
+          style={{
+            width: markSize * 0.72,
+            height: markSize * 0.72,
+            borderRadius: (markSize * 0.72) / 2,
+            borderWidth: markSize * 0.18,
+            borderLeftColor: '#F59E0B', // Golden
+            borderTopColor: '#1E3A8A',  // Dark Blue
+            borderRightColor: '#38BDF8', // Light Blue (Image 2 color)
+            borderBottomColor: '#000000', // Black
+            transform: [{ rotate: '-30deg' }],
+            position: 'absolute',
+            left: markSize * 0.14,
+            top: markSize * 0.14,
+          }}
+        />
       </View>
 
       {!markOnly && (
@@ -69,7 +82,7 @@ const nativeShadow = Platform.select({
 });
 
 const markGlow = Platform.select({
-  web: { boxShadow: '0 0 18px rgba(245, 158, 11, 0.38)' } as ViewStyle,
+  web: { boxShadow: '0 0 12px rgba(255, 255, 255, 0.15)' } as ViewStyle,
   default: {},
 });
 
@@ -104,49 +117,13 @@ const styles = StyleSheet.create({
     }),
   },
   mark: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    borderWidth: 4,
-    borderColor: '#1E293B',
-    backgroundColor: '#0B0F19',
+    position: 'relative',
     ...markGlow,
   },
-  orbit: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    bottom: 2,
-    left: 2,
-    borderWidth: 2,
-    borderTopColor: '#FDE047',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#F59E0B',
-    borderLeftColor: 'transparent',
-    transform: [{ rotate: '-24deg' }],
-  },
-  boltTop: {
-    position: 'absolute',
-    top: '19%',
-    left: '31%',
-    width: 0,
-    height: 0,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#FDE047',
-    transform: [{ skewX: '-18deg' }],
-  },
-  boltBottom: {
-    position: 'absolute',
-    bottom: '15%',
-    right: '25%',
-    width: 0,
-    height: 0,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#F59E0B',
-    transform: [{ skewX: '-18deg' }],
-  },
+  crescentLeft: {},
+  crescentRight: {},
   wordmark: {
     flexShrink: 1,
     color: '#FFFFFF',

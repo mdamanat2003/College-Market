@@ -11,6 +11,7 @@ interface AdminState {
   fetchStats: () => Promise<void>;
   fetchUsers: (search?: string) => Promise<void>;
   toggleBlockUser: (userId: string) => Promise<void>;
+  toggleVerifyUser: (userId: string) => Promise<void>;
   fetchProducts: (search?: string) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   fetchEscrows: () => Promise<void>; // Naya function
@@ -46,6 +47,14 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       const response = await api.put(`/admin/users/${userId}/block`);
       const updatedUsers = get().users.map(user => user._id === userId ? { ...user, isBlocked: response.data.isBlocked } : user);
+      set({ users: updatedUsers });
+    } catch (error) { console.error(error); }
+  },
+
+  toggleVerifyUser: async (userId) => {
+    try {
+      const response = await api.put(`/admin/users/${userId}/verify`);
+      const updatedUsers = get().users.map(user => user._id === userId ? { ...user, isVerified: response.data.isVerified } : user);
       set({ users: updatedUsers });
     } catch (error) { console.error(error); }
   },

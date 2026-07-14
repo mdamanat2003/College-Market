@@ -42,7 +42,12 @@ export default function CreateEvent() {
     });
 
     if (!result.canceled) {
-      const compressedUri = await compressImage(result.assets[0].uri);
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > 1 * 1024 * 1024) {
+        Alert.alert('File Too Large', 'Bhai, event image 1MB se kam size ki honi chahiye.');
+        return;
+      }
+      const compressedUri = await compressImage(asset.uri);
       setImage(compressedUri);
     }
   };

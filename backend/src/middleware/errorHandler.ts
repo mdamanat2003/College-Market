@@ -12,6 +12,11 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     message = 'Resource not found';
   }
 
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    statusCode = 400;
+    message = 'File size 1MB se jyada nahi honi chahiye!';
+  }
+
   res.status(statusCode).json({
     success: false,
     message,

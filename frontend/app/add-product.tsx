@@ -14,7 +14,7 @@ import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
 export default function AddItemScreen() {
   const router = useRouter();
-  const { accessToken } = useAuthStore(); 
+  const { accessToken, user } = useAuthStore(); 
   const { checkRestriction } = useDemoRestriction();
 
   // Form Fields States
@@ -54,7 +54,12 @@ export default function AddItemScreen() {
     });
 
     if (!result.canceled) {
-      const compressedUri = await compressImage(result.assets[0].uri);
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > 1 * 1024 * 1024) {
+        Alert.alert('File Too Large', 'Bhai, product image 1MB se kam size ki honi chahiye.');
+        return;
+      }
+      const compressedUri = await compressImage(asset.uri);
       addImageToArray(compressedUri);
     }
   };
@@ -70,7 +75,12 @@ export default function AddItemScreen() {
     });
 
     if (!result.canceled) {
-      const compressedUri = await compressImage(result.assets[0].uri);
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > 1 * 1024 * 1024) {
+        Alert.alert('File Too Large', 'Bhai, product image 1MB se kam size ki honi chahiye.');
+        return;
+      }
+      const compressedUri = await compressImage(asset.uri);
       addImageToArray(compressedUri);
     }
   };
@@ -92,6 +102,11 @@ export default function AddItemScreen() {
   // 👇 VALIDATION LOGIC INCLUDED 👇
   // 👇 API CALL TO SERVER 👇
   const handleSubmit = async () => {
+    if (user && !user.isVerified) {
+      Alert.alert('Verification Required', 'Your student account is not verified yet. Please wait for an admin to verify your College ID card.');
+      return;
+    }
+
     if (!checkRestriction('product add')) return;
     
     const newErrors: { [key: string]: string } = {};

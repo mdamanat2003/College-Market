@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdminStore } from '../../store/adminStore';
@@ -7,8 +7,9 @@ import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 export default function ManageUsersScreen() {
   const router = useRouter();
-  const { users, fetchUsers, toggleBlockUser, isLoading } = useAdminStore();
+  const { users, fetchUsers, toggleBlockUser, toggleVerifyUser, isLoading } = useAdminStore();
   const [search, setSearch] = useState('');
+  const [selectedIdProofUrl, setSelectedIdProofUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -26,20 +27,52 @@ export default function ManageUsersScreen() {
           {item.isBlocked && (
             <View style={styles.blockedBadge}><Text style={styles.badgeText}>Blocked</Text></View>
           )}
+          {item.isVerified ? (
+            <View style={styles.verifiedBadge}><Text style={styles.verifiedBadgeText}>Verified</Text></View>
+          ) : (
+            <View style={styles.pendingBadge}><Text style={styles.pendingBadgeText}>Pending</Text></View>
+          )}
         </View>
         <Text style={styles.userDetail}><Ionicons name="mail-outline" /> {item.email}</Text>
         <Text style={styles.userDetail}><Ionicons name="school-outline" /> {item.college || 'N/A'}</Text>
         <Text style={styles.userDetail}><Ionicons name="call-outline" /> {item.phone || 'N/A'}</Text>
+        
+        {/* ID Proof Display */}
+        <View style={styles.idProofRow}>
+          {item.collegeIdProof ? (
+            <TouchableOpacity 
+              style={styles.viewProofBtn}
+              onPress={() => setSelectedIdProofUrl(item.collegeIdProof)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="image-outline" size={14} color={COLORS.primary} />
+              <Text style={styles.viewProofText}>View ID Proof</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.noProofText}>No ID Proof Uploaded</Text>
+          )}
+        </View>
       </View>
 
-      <TouchableOpacity 
-        style={[styles.actionBtn, item.isBlocked ? styles.unblockBtn : styles.blockBtn]}
-        onPress={() => toggleBlockUser(item._id)}
-      >
-        <Text style={[styles.actionBtnText, item.isBlocked ? styles.unblockBtnText : styles.blockBtnText]}>
-          {item.isBlocked ? 'Unblock' : 'Block'}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.actionsColumn}>
+        <TouchableOpacity 
+          style={[styles.actionBtn, item.isBlocked ? styles.unblockBtn : styles.blockBtn]}
+          onPress={() => toggleBlockUser(item._id)}
+        >
+          <Text style={[styles.actionBtnText, item.isBlocked ? styles.unblockBtnText : styles.blockBtnText]}>
+            {item.isBlocked ? 'Unblock' : 'Block'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionBtn, item.isVerified ? styles.unverifyBtn : styles.verifyBtn]}
+          onPress={() => toggleVerifyUser(item._id)}
+        >
+          <Text style={[styles.actionBtnText, item.isVerified ? styles.unverifyBtnText : styles.verifyBtnText]}>
+            {item.isVerified ? 'Revoke' : 'Verify'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -82,6 +115,28 @@ export default function ManageUsersScreen() {
           }
         />
       )}
+
+      {/* ID Proof Modal */}
+      <Modal
+        visible={Boolean(selectedIdProofUrl)}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedIdProofUrl(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>College ID Proof</Text>
+              <TouchableOpacity onPress={() => setSelectedIdProofUrl(null)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+            {selectedIdProofUrl ? (
+              <Image source={{ uri: selectedIdProofUrl }} style={styles.modalImage} resizeMode="contain" />
+            ) : null}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -105,12 +160,36 @@ const styles = StyleSheet.create({
   
   blockedBadge: { backgroundColor: '#FEE2E2', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#FCA5A5' },
   badgeText: { color: '#DC2626', fontSize: 11, fontWeight: '600' },
+  
+  verifiedBadge: { backgroundColor: 'rgba(16, 185, 129, 0.1)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.3)' },
+  verifiedBadgeText: { color: '#10B981', fontSize: 11, fontWeight: '600' },
 
+  pendingBadge: { backgroundColor: 'rgba(245, 158, 11, 0.1)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.3)' },
+  pendingBadgeText: { color: '#F59E0B', fontSize: 11, fontWeight: '600' },
+
+  idProofRow: { marginTop: 6, flexDirection: 'row', alignItems: 'center' },
+  viewProofBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(56, 189, 248, 0.08)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(56, 189, 248, 0.2)' },
+  viewProofText: { color: COLORS.primary, fontSize: 12, fontWeight: '700' },
+  noProofText: { fontSize: 12, fontStyle: 'italic', color: COLORS.textMuted },
+
+  actionsColumn: { flexDirection: 'column', alignItems: 'flex-end', gap: 6 },
   actionBtn: { paddingHorizontal: SPACING.md, paddingVertical: 8, justifyContent: 'center', alignItems: 'center', minWidth: 80 },
   blockBtn: { backgroundColor: 'transparent' },
   unblockBtn: { backgroundColor: 'transparent' },
+  verifyBtn: { backgroundColor: 'transparent' },
+  unverifyBtn: { backgroundColor: 'transparent' },
   actionBtnText: { fontSize: 14, fontWeight: '600' },
   blockBtnText: { color: '#EF4444' },
   unblockBtnText: { color: '#10B981' },
-  emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.xl, fontSize: 15 }
+  verifyBtnText: { color: '#38BDF8' },
+  unverifyBtnText: { color: '#E2E8F0' },
+  emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.xl, fontSize: 15 },
+
+  // Modal styling
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'center', alignItems: 'center', padding: SPACING.lg },
+  modalContent: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, width: '100%', maxWidth: 500, padding: SPACING.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', gap: SPACING.md },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)', paddingBottom: SPACING.sm },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  modalCloseBtn: { padding: SPACING.xs },
+  modalImage: { width: '100%', height: 350, borderRadius: RADIUS.md },
 });

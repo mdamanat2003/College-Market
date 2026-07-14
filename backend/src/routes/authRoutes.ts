@@ -47,14 +47,27 @@ const cloudinaryStorage = new CloudinaryStorage({
   } as any,
 });
 
-const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
 const upload = multer({ 
-  storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage 
+  storage: cloudinaryStorage,
+  limits: { fileSize: 1 * 1024 * 1024 }
+});
+
+const collegeIdStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ooplabdh_id_proofs',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+  } as any,
+});
+
+const collegeIdUpload = multer({ 
+  storage: collegeIdStorage,
+  limits: { fileSize: 1 * 1024 * 1024 }
 });
 
 const router = Router();
 
-router.post('/register', registerUser);
+router.post('/register', collegeIdUpload.single('collegeIdProof'), registerUser);
 router.post('/login', loginUser);
 router.post('/refresh', refreshAccessToken);
 router.get('/me', protect, getMe);

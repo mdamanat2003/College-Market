@@ -178,6 +178,28 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     throw new Error('Please add all required fields');
   }
 
+  const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
+  let collegeIdProofUrl = '';
+  if (req.file) {
+    if (isCloudinaryConfigured) {
+      collegeIdProofUrl = req.file.path;
+    } else {
+      const forwardedProtoHeader = req.headers['x-forwarded-proto'];
+      const forwardedProto = Array.isArray(forwardedProtoHeader) ? forwardedProtoHeader[0] : forwardedProtoHeader;
+      const publicProtocol = process.env.PUBLIC_BASE_URL?.startsWith('https://') || forwardedProto === 'https' || process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+      const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${publicProtocol}://${req.get('host')}/uploads`;
+
+      collegeIdProofUrl = `${uploadsBase}/${req.file.filename}`;
+    }
+  } else if (req.body.collegeIdProof) {
+    collegeIdProofUrl = req.body.collegeIdProof;
+  }
+
+  if (!collegeIdProofUrl) {
+    res.status(400);
+    throw new Error('College ID proof is required for registration');
+  }
+
   if (!/^[A-Za-z0-9_]+$/.test(trimmedUsername)) {
     res.status(400);
     throw new Error('Username can only contain letters, numbers, and underscores');
@@ -227,6 +249,8 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     password: trimmedPassword,
     phone: trimmedPhone,
     college: trimmedCollege,
+    collegeIdProof: collegeIdProofUrl,
+    isVerified: false,
   });
 
   if (user) {
@@ -242,6 +266,8 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
       role: user.role,
       phone: user.phone,
       college: user.college,
+      isVerified: (user as any).isVerified,
+      collegeIdProof: (user as any).collegeIdProof,
       rating: (user as any).rating,
       ratingCount: (user as any).ratingCount,
       accessToken: generateAccessToken(user.id),
@@ -283,6 +309,8 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
       role: user.role,
       phone: user.phone,
       college: user.college,
+      isVerified: (user as any).isVerified,
+      collegeIdProof: (user as any).collegeIdProof,
       rating: (user as any).rating,
       ratingCount: (user as any).ratingCount,
       accessToken: generateAccessToken(user.id),

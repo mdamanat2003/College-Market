@@ -44,7 +44,6 @@ export default function Login() {
   const [footerHovered, setFooterHovered] = useState(false);
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
-  const loginAsDemo = useAuthStore((s) => s.loginAsDemo);
 
   const inputStyle = (field: LoginFieldName, hasError: boolean) => [
     styles.input,
@@ -105,11 +104,7 @@ export default function Login() {
     }
   };
 
-  const handleDemoLogin = () => {
-    loginAsDemo();
-    Alert.alert('Demo Mode', 'You are logged in as a guest. Real actions will require a real login.');
-    router.replace('/(tabs)');
-  };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -211,13 +206,7 @@ export default function Login() {
                   <Text style={styles.buttonText}>Sign In</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: COLORS.border, marginTop: 8, ...Platform.select({ web: { boxShadow: 'none' } as any, default: {} }), elevation: 0 }]}
-                  onPress={handleDemoLogin}
-                  activeOpacity={0.86}
-                >
-                  <Text style={[styles.buttonText, { color: COLORS.label }]}>Explore Demo</Text>
-                </TouchableOpacity>
+
 
                 <View style={styles.footer}>
                   <Text style={styles.footerText}>Don't have an account? </Text>

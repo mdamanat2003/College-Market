@@ -65,6 +65,7 @@ function FeatureCardItem({ item, isTablet, isDesktop }: { item: any, isTablet: b
 export default function LandingPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const loginAsDemo = useAuthStore((s) => s.loginAsDemo);
   const scrollRef = useRef<ScrollView>(null);
   const reviewsScrollRef = useRef<ScrollView>(null); 
   const scrollOffset = useRef(0); 
@@ -290,7 +291,11 @@ export default function LandingPage() {
                   <Text style={styles.primaryButtonText}>Get Started</Text>
                   <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/marketplace')}>
+                <TouchableOpacity style={styles.secondaryButton} onPress={() => {
+                  loginAsDemo();
+                  Alert.alert('Demo Mode', 'You are logged in as a guest. Real actions will require a real login.');
+                  router.push('/(tabs)/marketplace');
+                }}>
                   <Ionicons name="phone-portrait-outline" size={16} color="#e5e7eb" />
                   <Text style={styles.secondaryButtonText}>View Demo</Text>
                 </TouchableOpacity>

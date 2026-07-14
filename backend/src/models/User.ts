@@ -9,6 +9,8 @@ export interface IUser extends Document {
   phone: string;
   college?: string;
   avatar?: string;
+  collegeIdProof?: string;
+  isVerified?: boolean;
   role: "student" | "admin";
   rating?: number;
   ratingCount?: number;
@@ -29,6 +31,8 @@ const userSchema: Schema = new Schema(
     phone: { type: String, required: true },
     college: { type: String, default: "" },
     avatar: { type: String, default: "" },
+    collegeIdProof: { type: String, default: "" },
+    isVerified: { type: Boolean, default: false },
     role: { type: String, enum: ["student", "admin"], default: "student" },
     rating: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },

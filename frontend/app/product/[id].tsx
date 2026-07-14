@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   View, Text, StyleSheet, ScrollView, 
-  TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform 
+  TouchableOpacity, ActivityIndicator, useWindowDimensions, Platform, Alert
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -108,6 +108,10 @@ export default function ProductDetailsScreen() {
   };
 
   const handleChat = async () => {
+    if (user && !user.isVerified) {
+      Alert.alert('Verification Required', 'Your student account is not verified yet. Please wait for an admin to verify your College ID card.');
+      return;
+    }
     if (!checkRestriction('chat')) return;
     if (!user) {
       router.push('/(auth)/login');
@@ -127,6 +131,10 @@ export default function ProductDetailsScreen() {
   };
 
   const handleBuyNow = () => {
+    if (user && !user.isVerified) {
+      Alert.alert('Verification Required', 'Your student account is not verified yet. Please wait for an admin to verify your College ID card.');
+      return;
+    }
     if (!checkRestriction('buy now')) return;
     if (!user) {
       router.push('/(auth)/login');

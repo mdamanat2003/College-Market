@@ -43,7 +43,12 @@ export default function UploadAcademic() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setFile(result.assets[0]);
+        const selectedFile = result.assets[0];
+        if (selectedFile.size && selectedFile.size > 1 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Bhai, document file size 1MB se kam honi chahiye.');
+          return;
+        }
+        setFile(selectedFile);
       }
     } catch (err) {
       console.error('Document picker error:', err);

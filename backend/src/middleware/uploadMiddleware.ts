@@ -21,5 +21,5 @@ const fileFilter = (req: any, file: any, cb: any) => {
 export const uploadProductImages = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB per file
+  limits: { fileSize: 1 * 1024 * 1024 }, // Max 1MB per file
 }).array('productImages', 3); // 👈 Frontend wale name 'productImages' se match karega (Max 3)

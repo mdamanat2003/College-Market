@@ -73,6 +73,31 @@ export const toggleBlockUser = asyncHandler(async (req: Request, res: Response) 
   });
 });
 
+// Toggle User Verification Status
+export const toggleVerifyUser = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await User.findById(id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  if ((user as any).role === 'admin') {
+    res.status(400);
+    throw new Error("You cannot verify/unverify an Admin account");
+  }
+
+  (user as any).isVerified = !(user as any).isVerified;
+  await user.save();
+
+  res.json({ 
+    success: true, 
+    message: `User verification status updated to ${(user as any).isVerified ? 'Verified' : 'Unverified'}`,
+    isVerified: (user as any).isVerified 
+  });
+});
+
 // 4. Get All Products with Search (Admin)
 export const getAllProductsAdmin = asyncHandler(async (req: Request, res: Response) => {
   const { search } = req.query;

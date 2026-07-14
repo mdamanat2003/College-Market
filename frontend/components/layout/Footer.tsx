@@ -75,6 +75,7 @@ const INFO_CONTENT = {
 export default function Footer({ onBackToTop }: FooterProps) {
   const router = useRouter();
   const { width } = useWindowDimensions();
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [isReviewVisible, setIsReviewVisible] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewName, setReviewName] = useState('');
@@ -153,17 +154,45 @@ export default function Footer({ onBackToTop }: FooterProps) {
               The ultimate peer-to-peer campus marketplace & academic resource hub. Buy, sell, share notes, find lost items, and catch up on campus events.
             </Text>
             <View style={styles.socialRow}>
-              <TouchableOpacity style={styles.socialIcon} activeOpacity={0.7}>
-                <Ionicons name="logo-facebook" size={20} color={COLORS.textMuted} />
+              <TouchableOpacity 
+                style={[styles.socialIcon, hoveredLink === 'fb' && styles.socialIconHovered]} 
+                activeOpacity={0.7}
+                {...{
+                  onMouseEnter: () => setHoveredLink('fb'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="logo-facebook" size={20} color={hoveredLink === 'fb' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.socialIcon} activeOpacity={0.7}>
-                <Ionicons name="logo-instagram" size={20} color={COLORS.textMuted} />
+              <TouchableOpacity 
+                style={[styles.socialIcon, hoveredLink === 'ig' && styles.socialIconHovered]} 
+                activeOpacity={0.7}
+                {...{
+                  onMouseEnter: () => setHoveredLink('ig'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="logo-instagram" size={20} color={hoveredLink === 'ig' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.socialIcon} activeOpacity={0.7}>
-                <Ionicons name="logo-twitter" size={20} color={COLORS.textMuted} />
+              <TouchableOpacity 
+                style={[styles.socialIcon, hoveredLink === 'tw' && styles.socialIconHovered]} 
+                activeOpacity={0.7}
+                {...{
+                  onMouseEnter: () => setHoveredLink('tw'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="logo-twitter" size={20} color={hoveredLink === 'tw' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.socialIcon} activeOpacity={0.7}>
-                <Ionicons name="logo-github" size={20} color={COLORS.textMuted} />
+              <TouchableOpacity 
+                style={[styles.socialIcon, hoveredLink === 'git' && styles.socialIconHovered]} 
+                activeOpacity={0.7}
+                {...{
+                  onMouseEnter: () => setHoveredLink('git'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="logo-github" size={20} color={hoveredLink === 'git' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
             </View>
           </View>
@@ -171,34 +200,98 @@ export default function Footer({ onBackToTop }: FooterProps) {
           {/* Column 2: Quick Links */}
           <View style={styles.column}>
             <Text style={styles.columnTitle}>Quick Links</Text>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/about')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>About Us</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/about')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('about'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'about' && styles.linkTextHovered]}>About Us</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/home')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>Features</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/home')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('features'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'features' && styles.linkTextHovered]}>Features</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/contact')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>Contact Us</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/contact')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('contact'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'contact' && styles.linkTextHovered]}>Contact Us</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkItem} onPress={() => setIsReviewVisible(true)} activeOpacity={0.7}>
-              <Text style={styles.linkText}>Submit Review</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => setIsReviewVisible(true)} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('review'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'review' && styles.linkTextHovered]}>Submit Review</Text>
             </TouchableOpacity>
           </View>
 
           {/* Column 3: Legal & Support */}
           <View style={styles.column}>
             <Text style={styles.columnTitle}>Legal & Support</Text>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/faq')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>FAQ</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/faq')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('faq'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'faq' && styles.linkTextHovered]}>FAQ</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/privacy')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>Privacy Policy</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/privacy')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('privacy'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'privacy' && styles.linkTextHovered]}>Privacy Policy</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/terms')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>Terms of Service</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/terms')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('terms'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'terms' && styles.linkTextHovered]}>Terms of Service</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/safety')} activeOpacity={0.7}>
-              <Text style={styles.linkText}>Safety Tips</Text>
+            <TouchableOpacity 
+              style={styles.linkItem} 
+              onPress={() => router.push('/safety')} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('safety'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.linkText, hoveredLink === 'safety' && styles.linkTextHovered]}>Safety Tips</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -215,9 +308,17 @@ export default function Footer({ onBackToTop }: FooterProps) {
           </Text>
           
           <View style={isTabletOrDesktop ? { flex: 1, alignItems: 'flex-end', width: '100%' } : { width: '100%', alignItems: 'center' }}>
-            <TouchableOpacity style={styles.backToTopButton} onPress={scrollToTop} activeOpacity={0.7}>
-              <Text style={styles.backToTopText}>Back to Top</Text>
-              <Ionicons name="arrow-up" size={14} color={COLORS.accent} style={{ marginLeft: 4 }} />
+            <TouchableOpacity 
+              style={[styles.backToTopButton, hoveredLink === 'backtotop' && styles.backToTopButtonHovered]} 
+              onPress={scrollToTop} 
+              activeOpacity={0.7}
+              {...{
+                onMouseEnter: () => setHoveredLink('backtotop'),
+                onMouseLeave: () => setHoveredLink(null)
+              } as any}
+            >
+              <Text style={[styles.backToTopText, hoveredLink === 'backtotop' && styles.backToTopTextHovered]}>Back to Top</Text>
+              <Ionicons name="arrow-up" size={14} color={hoveredLink === 'backtotop' ? COLORS.primary : COLORS.accent} style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
         </View>
@@ -374,6 +475,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  socialIconHovered: {
+    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(56, 189, 248, 0.05)',
+  },
   columnTitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -387,6 +492,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#CBD5E1',
     fontWeight: '500',
+  },
+  linkTextHovered: {
+    color: COLORS.primary,
   },
   divider: {
     height: 1,
@@ -428,10 +536,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  backToTopButtonHovered: {
+    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(56, 189, 248, 0.05)',
+  },
   backToTopText: {
     fontSize: 13,
     color: COLORS.text,
     fontWeight: '600',
+  },
+  backToTopTextHovered: {
+    color: COLORS.primary,
   },
   // Modal Common Styles
   modalOverlay: {

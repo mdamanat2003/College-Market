@@ -40,9 +40,10 @@ const cloudinaryStorage = new CloudinaryStorage({
   } as any,
 });
 
-const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
+// Use Cloudinary for lost & found storage with a 1MB limit
 const upload = multer({ 
-  storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage 
+  storage: cloudinaryStorage,
+  limits: { fileSize: 1 * 1024 * 1024 }
 });
 
 // Routes

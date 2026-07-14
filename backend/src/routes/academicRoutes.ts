@@ -41,9 +41,15 @@ const cloudinaryStorage = new CloudinaryStorage({
   } as any, 
 });
 
-// Use Cloudinary for notes storage with a 1MB limit
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+// Use Cloudinary for notes storage if configured, otherwise fallback to local storage
 const upload = multer({ 
-  storage: cloudinaryStorage,
+  storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage,
   limits: { fileSize: 1 * 1024 * 1024 }
 });
 

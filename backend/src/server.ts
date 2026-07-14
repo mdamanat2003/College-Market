@@ -94,6 +94,21 @@ const startServer = async () => {
     if (!fs.existsSync(academicUploadsDir)) fs.mkdirSync(academicUploadsDir, { recursive: true });
     if (!fs.existsSync(lostFoundUploadsDir)) fs.mkdirSync(lostFoundUploadsDir, { recursive: true });
     
+    // Serve APK file with correct headers to prevent parsing error on Android devices
+    app.get("/uploads/app-release.apk", (req, res) => {
+      const apkPath = path.join(uploadsDir, "app-release.apk");
+      if (fs.existsSync(apkPath)) {
+        res.setHeader("Content-Type", "application/vnd.android.package-archive");
+        res.download(apkPath, "app-release.apk", (err) => {
+          if (err) {
+            console.error("Error during APK download:", err);
+          }
+        });
+      } else {
+        res.status(404).json({ success: false, message: "APK file not found" });
+      }
+    });
+
     app.use("/uploads", express.static(uploadsDir));
 
     // 2. Socket.io ko globally share karein

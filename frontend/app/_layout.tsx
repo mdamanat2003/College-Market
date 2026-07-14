@@ -72,7 +72,7 @@ export default function RootLayout() {
     const inAuthGroup = currentSegment === '(auth)';
     const inAdminRoute = currentSegment === 'admin';
     const inTabsGroup = currentSegment === '(tabs)';
-    const isPublicRoute = (pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
+    const isPublicRoute = (pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
 
     if (inAdminRoute && (!user || user.role !== 'admin')) {
       router.replace('/(auth)/login');

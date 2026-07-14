@@ -13,11 +13,12 @@ import {
   useWindowDimensions,
   View,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
-import { api } from '../../services/api';
+import { api, SOCKET_URL } from '../../services/api';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
 type FooterProps = {
@@ -97,6 +98,14 @@ export default function Footer({ onBackToTop }: FooterProps) {
       document.documentElement.scrollTo?.({ top: 0, behavior: 'smooth' });
       document.body.scrollTo?.({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  const handleInstallApp = () => {
+    const apkUrl = `${SOCKET_URL}/uploads/app-release.apk`;
+    Linking.openURL(apkUrl).catch((err) => {
+      console.error('[Footer] Failed to open APK download link', err);
+      Alert.alert('Download Error', 'Could not open the download link. Please try again.');
+    });
   };
 
   const submitReview = async () => {
@@ -244,6 +253,19 @@ export default function Footer({ onBackToTop }: FooterProps) {
             >
               <Text style={[styles.linkText, hoveredLink === 'review' && styles.linkTextHovered]}>Submit Review</Text>
             </TouchableOpacity>
+            {Platform.OS === 'web' && (
+              <TouchableOpacity 
+                style={styles.linkItem} 
+                onPress={handleInstallApp} 
+                activeOpacity={0.7}
+                {...{
+                  onMouseEnter: () => setHoveredLink('install-app'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Text style={[styles.linkText, hoveredLink === 'install-app' && styles.linkTextHovered]}>Install App</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Column 3: Legal & Support */}

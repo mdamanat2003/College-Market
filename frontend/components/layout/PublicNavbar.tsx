@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Image } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Image, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
@@ -50,8 +50,8 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
       )}
     </TouchableOpacity>
   ) : (
-    <TouchableOpacity style={styles.loginButton} onPress={() => navigateTo('/(auth)/login')}>
-      <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
+    <TouchableOpacity testID="login-btn" style={styles.loginButton} onPress={() => navigateTo('/(auth)/login')}>
+      <Ionicons name="log-in-outline" size={16} color="#09090b" />
       <Text style={styles.loginButtonText}>Login</Text>
     </TouchableOpacity>
   );
@@ -68,20 +68,30 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
       <Text style={styles.loginButtonText}>Profile</Text>
     </TouchableOpacity>
   ) : (
-    <TouchableOpacity style={styles.mobileLoginButton} onPress={() => navigateTo('/(auth)/login')}>
-      <Ionicons name="log-in-outline" size={16} color={COLORS.primary} />
+    <TouchableOpacity testID="login-btn" style={styles.mobileLoginButton} onPress={() => navigateTo('/(auth)/login')}>
+      <Ionicons name="log-in-outline" size={16} color="#09090b" />
       <Text style={styles.loginButtonText}>Login</Text>
     </TouchableOpacity>
   );
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/home');
+    }
+  };
+
   if (isCompact) {
     return (
-      <View style={{ paddingTop: insets.top }}>
+      <View style={{ paddingTop: insets.top, width: '100%', alignItems: 'center', paddingHorizontal: SPACING.md }}>
         <View style={[styles.navbar, styles.navbarMobile]}>
         <View style={styles.mobileTopRow}>
-          <TouchableOpacity style={styles.brandRow} onPress={() => navigateTo('/home')}>
-            <OoplabdhLogo size="sm" compact={isTiny} markOnly={isTiny} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity testID="logo-btn" style={styles.brandRow} onPress={() => navigateTo('/home')}>
+              <OoplabdhLogo size="sm" compact={isTiny} markOnly={isTiny} />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={styles.menuButton}
@@ -101,6 +111,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
               return (
                 <TouchableOpacity
                   key={item.key}
+                  testID="nav-item"
                   style={[styles.mobileMenuItem, isActive && styles.mobileMenuItemActive]}
                   onPress={() => navigateTo(item.href)}
                 >
@@ -118,11 +129,13 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
   }
 
   return (
-    <View style={{ paddingTop: insets.top }}>
+    <View style={{ paddingTop: insets.top, width: '100%', alignItems: 'center', paddingHorizontal: SPACING.md }}>
       <View style={[styles.navbar, isCompact && styles.navbarCompact]}>
-      <TouchableOpacity style={styles.brandRow} onPress={() => navigateTo('/home')}>
-        <OoplabdhLogo size="sm" />
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <TouchableOpacity testID="logo-btn" style={styles.brandRow} onPress={() => navigateTo('/home')}>
+          <OoplabdhLogo size="sm" />
+        </TouchableOpacity>
+      </View>
 
       <View style={[styles.navActions, isCompact && styles.navActionsCompact]}>
         {navItems.map((item) => {
@@ -131,6 +144,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
           return (
             <TouchableOpacity
               key={item.key}
+              testID="nav-item"
               style={[styles.navLink, isCompact && styles.navItemCompact, isActive && styles.navLinkActive]}
               onPress={() => navigateTo(item.href)}
             >
@@ -153,8 +167,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: SPACING.md,
     width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
+    paddingVertical: 10,
     borderRadius: 28,
     backgroundColor: 'rgba(18, 18, 20, 0.85)',
     borderWidth: 1,
@@ -163,14 +179,14 @@ const styles = StyleSheet.create({
   navbarCompact: {
     alignItems: 'stretch',
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderRadius: 22,
   },
   navbarMobile: {
     flexDirection: 'column',
     alignItems: 'stretch',
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderRadius: 24,
     gap: 12,
   },
@@ -214,6 +230,18 @@ const styles = StyleSheet.create({
   },
   navLinkActive: {
     backgroundColor: COLORS.primary,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 14px rgba(255, 255, 255, 0.08)',
+      } as any,
+      default: {
+        shadowColor: '#F8FAFC',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
+      },
+    }),
   },
   navLinkText: {
     color: COLORS.text,
@@ -227,12 +255,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: RADIUS.round,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.accent,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.accent,
   },
   profileButton: {
     width: 42,
@@ -253,7 +281,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   loginButtonText: {
-    color: COLORS.primary,
+    color: '#09090b',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -289,15 +317,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   mobileLoginButton: {
-    minHeight: 44,
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     borderRadius: 16,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.accent,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.accent,
   },
   mobileProfileButton: {
     minHeight: 44,
@@ -322,5 +350,10 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
+  },
+  backButton: {
+    padding: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

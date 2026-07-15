@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
@@ -82,15 +83,16 @@ export default function MessagesInboxScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Messages</Text>
-        <View style={{ width: 24 }} /> {/* Balance for centering */}
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top', 'left', 'right']}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Messages</Text>
+          <View style={{ width: 24 }} /> {/* Balance for centering */}
+        </View>
 
       {/* List */}
       <View style={styles.content}>
@@ -123,7 +125,8 @@ export default function MessagesInboxScreen() {
           />
         )}
       </View>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 

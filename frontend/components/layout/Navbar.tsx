@@ -52,7 +52,7 @@ export const Navbar = () => {
     <View style={[styles.wrapper, { paddingTop: insets.top }]}>
       {/* --- UPPER BAR --- */}
       <View style={[styles.header, isPhone && styles.phoneHeader]}>
-        <TouchableOpacity style={styles.brandContainer} onPress={() => router.push('/home')}>
+        <TouchableOpacity testID="logo-btn" style={styles.brandContainer} onPress={() => router.push('/home')}>
           <OoplabdhLogo size="sm" markOnly={isTiny} compact={isPhone} />
         </TouchableOpacity>
 
@@ -73,6 +73,7 @@ export const Navbar = () => {
 
         <View style={[styles.rightIcons, isPhone && styles.phoneRightIcons]}>
           <TouchableOpacity
+            testID="sell-btn"
             style={[styles.sellBtn, isPhone && styles.phoneSellBtn]}
             onPress={() => router.push('/add-product')}
           >
@@ -116,6 +117,7 @@ export const Navbar = () => {
             return (
               <TouchableOpacity
                 key={item.id}
+                testID="nav-item"
                 style={[styles.navItem, isActive && styles.activeNavItem]}
                 onPress={() => router.push(item.path as any)}
                 activeOpacity={0.7}
@@ -150,14 +152,17 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   header: {
-    height: 70,
+    height: 58,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
   },
   phoneHeader: {
-    height: 63,
+    height: 52,
     paddingHorizontal: 18,
   },
   brandContainer: {
@@ -276,7 +281,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   subHeader: {
-    height: 48,
+    height: 42,
     borderTopWidth: 1,
     borderTopColor: COLORS.surface,
   },
@@ -286,6 +291,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 18,
+    maxWidth: 1200,
+    width: '100%',
+    alignSelf: 'center',
   },
   phoneNavScrollContent: {
     paddingHorizontal: 18,
@@ -301,6 +309,18 @@ const styles = StyleSheet.create({
   },
   activeNavItem: {
     backgroundColor: COLORS.surface,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 2,
+      },
+    }),
   },
   navText: {
     fontSize: 14,

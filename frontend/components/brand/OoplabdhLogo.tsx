@@ -9,9 +9,9 @@ type OoplabdhLogoProps = {
 };
 
 const sizes = {
-  sm: { mark: 34, text: 20, gap: 10, paddingH: 12, paddingV: 8 },
-  md: { mark: 42, text: 24, gap: 12, paddingH: 16, paddingV: 10 },
-  lg: { mark: 64, text: 48, gap: 20, paddingH: 48, paddingV: 24 },
+  sm: { mark: 30, text: 18, gap: 8, paddingH: 10, paddingV: 6 },
+  md: { mark: 36, text: 21, gap: 10, paddingH: 14, paddingV: 8 },
+  lg: { mark: 54, text: 40, gap: 16, paddingH: 40, paddingV: 20 },
 };
 
 export function OoplabdhLogo({ compact = false, markOnly = false, size = 'md', style }: OoplabdhLogoProps) {

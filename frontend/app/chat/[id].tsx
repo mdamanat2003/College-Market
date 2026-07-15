@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
@@ -73,12 +74,13 @@ export default function ChatRoomScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // Keyboard ke upar input box rakhne ke liye
-    >
-      {/* Header */}
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // Keyboard ke upar input box rakhne ke liye
+      >
+        {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
@@ -122,7 +124,8 @@ export default function ChatRoomScreen() {
           <Ionicons name="send" size={20} color={COLORS.background} />
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

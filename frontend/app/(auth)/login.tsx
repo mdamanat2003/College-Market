@@ -117,6 +117,19 @@ export default function Login() {
             </View>
 
             <View style={styles.card}>
+              <TouchableOpacity 
+                onPress={() => {
+                  if (router.canGoBack()) {
+                    router.back();
+                  } else {
+                    router.replace('/home');
+                  }
+                }} 
+                style={styles.backToHomeBtn}
+              >
+                <Ionicons name="arrow-back" size={16} color={COLORS.link} />
+                <Text style={styles.backToHomeText}>Back to Home</Text>
+              </TouchableOpacity>
               <View style={styles.form}>
                 <View style={styles.userTypeRow}>
                   <TouchableOpacity
@@ -241,7 +254,7 @@ const styles = StyleSheet.create({
   },
   pageShell: {
     width: '100%',
-    maxWidth: 460,
+    maxWidth: 500,
   },
   hero: {
     alignItems: 'center',
@@ -266,12 +279,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 24,
-    padding: 24,
-    shadowColor: '#38bdf8',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.04,
-    shadowRadius: 35,
-    elevation: 3,
+    padding: 28,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.04)',
+      } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.4,
+        shadowRadius: 30,
+        elevation: 8,
+      },
+    }),
   },
   form: { gap: 16 },
   userTypeRow: {
@@ -294,8 +314,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   userTypePillActive: {
+    backgroundColor: COLORS.signIn,
     borderColor: COLORS.signIn,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
   },
   userTypeText: {
     color: COLORS.label,
@@ -303,7 +323,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   userTypeTextActive: {
-    color: COLORS.signIn,
+    color: '#09090b',
+    fontWeight: '800',
   },
   inputGroup: { gap: 8 },
   label: {
@@ -324,16 +345,20 @@ const styles = StyleSheet.create({
     color: COLORS.heading,
     ...Platform.select({
       web: {
-        transitionProperty: 'border-color, box-shadow, background-color',
-        transitionDuration: '180ms',
+        transitionProperty: 'all',
+        transitionDuration: '200ms',
       } as any,
       default: {},
     }),
   },
   inputFocused: {
-    borderColor: COLORS.focus,
+    borderColor: '#38BDF8',
+    backgroundColor: '#09090b',
     ...Platform.select({
-      web: { boxShadow: '0 0 0 3px rgba(124, 157, 240, 0.14)' } as any,
+      web: { 
+        boxShadow: '0 0 0 4px rgba(56, 189, 248, 0.2)',
+        outline: 'none',
+      } as any,
       default: {},
     }),
   },
@@ -385,21 +410,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 4,
     shadowColor: 'rgba(56, 189, 248, 0.24)',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 1,
-    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
     elevation: 4,
     ...Platform.select({
       web: {
-        transitionProperty: 'box-shadow, opacity, transform',
-        transitionDuration: '180ms',
+        transitionProperty: 'all',
+        transitionDuration: '200ms',
+        boxShadow: '0 8px 16px rgba(56, 189, 248, 0.15)',
       } as any,
       default: {},
     }),
   },
   buttonHovered: {
+    transform: [{ translateY: -2 }, { scale: 1.01 }],
     ...Platform.select({
-      web: { boxShadow: '0 14px 28px rgba(56, 189, 248, 0.28)' } as any,
+      web: { 
+        boxShadow: '0 14px 28px rgba(56, 189, 248, 0.32)',
+        filter: 'brightness(1.05)',
+      } as any,
       default: {},
     }),
   },
@@ -422,5 +452,17 @@ const styles = StyleSheet.create({
     color: COLORS.link,
     fontSize: 15,
     fontWeight: '800',
+  },
+  backToHomeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 18,
+    alignSelf: 'flex-start',
+  },
+  backToHomeText: {
+    color: COLORS.link,
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

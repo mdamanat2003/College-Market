@@ -51,6 +51,71 @@ export default function RootLayout() {
         overflow-x: hidden;
         background: ${COLORS.background};
       }
+
+      /* Web Hover Animations */
+      [data-testid="nav-item"] {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="nav-item"]:hover {
+        transform: translateY(-2px) !important;
+        opacity: 0.85 !important;
+      }
+      [data-testid="logo-btn"] {
+        transition: all 0.25s ease !important;
+      }
+      [data-testid="logo-btn"]:hover {
+        transform: scale(1.03) !important;
+        opacity: 0.95 !important;
+      }
+      [data-testid="login-btn"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="login-btn"]:hover {
+        transform: translateY(-1px) scale(1.02) !important;
+        box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4) !important;
+        filter: brightness(1.1) !important;
+      }
+      [data-testid="sell-btn"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="sell-btn"]:hover {
+        transform: translateY(-1px) scale(1.02) !important;
+        box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35) !important;
+        filter: brightness(1.1) !important;
+      }
+
+      /* Landing Page Primary Buttons Hover */
+      [data-testid="hero-primary"],
+      [data-testid="btn-primary"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="hero-primary"]:hover,
+      [data-testid="btn-primary"]:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15) !important;
+        filter: brightness(1.05) !important;
+      }
+
+      /* Landing Page Secondary Buttons Hover */
+      [data-testid="hero-secondary"],
+      [data-testid="btn-secondary"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="hero-secondary"]:hover,
+      [data-testid="btn-secondary"]:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        background-color: rgba(255, 255, 255, 0.14) !important;
+      }
+
+      /* Review & Rating Button Hover */
+      [data-testid="btn-review"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="btn-review"]:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 20px rgba(251, 191, 36, 0.35) !important;
+        filter: brightness(1.05) !important;
+      }
     `;
     document.head.appendChild(style);
   }, []);

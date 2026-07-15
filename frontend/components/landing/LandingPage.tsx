@@ -67,15 +67,15 @@ export default function LandingPage() {
   const user = useAuthStore((s) => s.user);
   const loginAsDemo = useAuthStore((s) => s.loginAsDemo);
   const scrollRef = useRef<ScrollView>(null);
-  const reviewsScrollRef = useRef<ScrollView>(null); 
-  const scrollOffset = useRef(0); 
+  const reviewsScrollRef = useRef<ScrollView>(null);
+  const scrollOffset = useRef(0);
   const reviewsLoopWidth = useRef(0);
   const reviewSocketRef = useRef<Socket | null>(null);
-  
+
   // Nayi States Form ke liye
   const [reviewsList, setReviewsList] = useState(initialReviews);
   const extendedReviews = [...reviewsList, ...reviewsList];
-  
+
   const [isReviewModalVisible, setReviewModalVisible] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newName, setNewName] = useState('');
@@ -83,7 +83,7 @@ export default function LandingPage() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const welcomeGradient = useRef(new Animated.Value(0)).current;
-  const textColorAnim = useRef(new Animated.Value(0)).current; 
+  const textColorAnim = useRef(new Animated.Value(0)).current;
 
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
@@ -165,7 +165,7 @@ export default function LandingPage() {
     gradientAnimation.start();
     colorAnimation.start();
 
-    const scrollSpeed = 1.5; 
+    const scrollSpeed = 1.5;
     const intervalId = setInterval(() => {
       if (reviewsScrollRef.current && !isReviewModalVisible) { // Modal open hone par scroll rok do
         scrollOffset.current += scrollSpeed;
@@ -175,12 +175,12 @@ export default function LandingPage() {
           reviewsScrollRef.current.scrollTo({ x: 0, animated: false });
         }
       }
-    }, 20); 
+    }, 20);
 
     return () => {
       gradientAnimation.stop();
       colorAnimation.stop();
-      clearInterval(intervalId); 
+      clearInterval(intervalId);
     };
   }, [welcomeGradient, textColorAnim, isReviewModalVisible]);
 
@@ -268,14 +268,41 @@ export default function LandingPage() {
               <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerTwo, { opacity: gradientLayerTwoOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.08 }] }]} />
               <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerThree, { opacity: gradientLayerThreeOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.12 }] }]} />
               <View style={styles.welcomeSheen} />
-              <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
-                {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
-              </Animated.Text>
+
+              <View style={styles.heroContentInside}>
+                <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
+                  {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
+                </Animated.Text>
+
+                <Text style={[styles.welcomeSubtitle, isMobile && styles.welcomeSubtitleMobile]}>
+                  Your secure college marketplace. Buy, sell, and request notes with confidence.
+                </Text>
+
+                <View style={[styles.welcomeButtons, isMobile && styles.welcomeButtonsMobile]}>
+                  <TouchableOpacity
+                    testID="hero-primary"
+                    style={styles.heroPrimaryBtn}
+                    onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}
+                  >
+                    <Text style={styles.heroPrimaryText}>Explore Market</Text>
+                    <Ionicons name="cart-outline" size={16} color="#09090b" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    testID="hero-secondary"
+                    style={styles.heroSecondaryBtn}
+                    onPress={() => router.push('/academic')}
+                  >
+                    <Text style={styles.heroSecondaryText}>PyQ & Notes</Text>
+                    <Ionicons name="book-outline" size={16} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
 
           <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
-            <View style={styles.heroCopy}>
+            <View style={[styles.heroCopy, isDesktop && styles.heroCopyDesktop]}>
               <View style={styles.pill}>
                 <Ionicons name="sparkles-outline" size={14} color="#7dd3fc" />
                 <Text style={styles.pillText}>Trusted campus trading for students</Text>
@@ -287,11 +314,11 @@ export default function LandingPage() {
                 Ooplabdh is the premium marketplace for college communities, combining escrow-backed safety, verified profiles, and instant messaging in one polished experience.
               </Text>
               <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
-                <TouchableOpacity style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
+                <TouchableOpacity testID="btn-primary" style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
                   <Text style={styles.primaryButtonText}>Get Started</Text>
                   <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.secondaryButton} onPress={() => {
+                <TouchableOpacity testID="btn-secondary" style={styles.secondaryButton} onPress={() => {
                   loginAsDemo();
                   Alert.alert('Demo Mode', 'You are logged in as a guest. Real actions will require a real login.');
                   router.push('/(tabs)/marketplace');
@@ -310,9 +337,9 @@ export default function LandingPage() {
               </View>
             </View>
 
-            <View style={[styles.mockupWrap, isMobile && styles.mockupWrapMobile]}>
-              <View style={styles.mockupGlow} />
-              <View style={styles.mockupCard}>
+            <View style={[styles.mockupWrap, isDesktop && styles.mockupWrapDesktop, isMobile && styles.mockupWrapMobile]}>
+              {!isMobile && <View style={styles.mockupGlow} />}
+              <View style={[styles.mockupCard, isMobile && styles.mockupCardMobile]}>
                 <View style={[styles.mockupTopBar, isMockupCompact && styles.mockupTopBarCompact]}>
                   <View style={styles.mockupHeaderCopy}>
                     <Text style={styles.mockupKicker}>Ooplabdh Dashboard</Text>
@@ -400,22 +427,22 @@ export default function LandingPage() {
               </View>
               <Text style={styles.ratingNumber}>4.9 REVIEW SCORE</Text>
               <Text style={styles.ratingSubtitle}>BASED ON {reviewsList.length} CAMPUS REVIEWS & RATINGS</Text>
-              
+
               {/* 👇 Naya "Write a Review & Rating" Button 👇 */}
-              <TouchableOpacity style={styles.writeReviewButton} onPress={() => setReviewModalVisible(true)}>
+              <TouchableOpacity testID="btn-review" style={styles.writeReviewButton} onPress={() => setReviewModalVisible(true)}>
                 <Ionicons name="pencil" size={14} color="#000" />
                 <Text style={styles.writeReviewText}>Write a Review & Rating</Text>
               </TouchableOpacity>
-              
+
               <View style={styles.ratingDivider} />
             </View>
 
-            <ScrollView 
-              ref={reviewsScrollRef} 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
+            <ScrollView
+              ref={reviewsScrollRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
               scrollEventThrottle={16}
-              scrollEnabled={Platform.OS !== 'web'} 
+              scrollEnabled={Platform.OS !== 'web'}
               contentContainerStyle={styles.reviewsScrollContent}
               onContentSizeChange={(width) => {
                 reviewsLoopWidth.current = width;
@@ -447,7 +474,7 @@ export default function LandingPage() {
               <Text style={styles.sectionLabelLeft}>Ready to launch</Text>
               <Text style={styles.ctaTitle}>A premium campus marketplace that feels safe, fast, and built just for you.</Text>
             </View>
-            <TouchableOpacity style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
+            <TouchableOpacity testID="btn-primary" style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
               <Text style={styles.primaryButtonText}>Sign Up Now</Text>
               <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
             </TouchableOpacity>
@@ -467,7 +494,7 @@ export default function LandingPage() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Write a Review & Rating</Text>
-            
+
             {/* Interactive Stars */}
             <View style={styles.modalStarsContainer}>
               {[1, 2, 3, 4, 5].map((star) => (
@@ -484,7 +511,7 @@ export default function LandingPage() {
               value={newName}
               onChangeText={setNewName}
             />
-            
+
             <TextInput
               style={[styles.modalInput, styles.modalInputArea]}
               placeholder="Share your thoughts about Ooplabdh..."
@@ -512,25 +539,158 @@ export default function LandingPage() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: '#0A0A0A' },
-  content: { paddingBottom: 0, paddingTop: 14,maxWidth: 1400, width: '100%', alignSelf: 'center', paddingHorizontal: 12 },
-  glowBlue: { position: 'absolute', top: 80, right: -90, width: 240, height: 240, borderRadius: 240, backgroundColor: 'rgba(59,130,246,0.18)' },
-  glowPurple: { position: 'absolute', top: 320, left: -120, width: 280, height: 280, borderRadius: 280, backgroundColor: 'rgba(124,58,237,0.14)' },
+  content: { paddingBottom: 0, paddingTop: 14, maxWidth: 1400, width: '100%', alignSelf: 'center', paddingHorizontal: 12 },
+  glowBlue: {
+    position: 'absolute',
+    top: 80,
+    right: -90,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(59,130,246,0.12)',
+    ...Platform.select({
+      web: {
+        filter: 'blur(90px)',
+      } as any,
+      default: {},
+    }),
+  },
+  glowPurple: {
+    position: 'absolute',
+    top: 320,
+    left: -120,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(124,58,237,0.1)',
+    ...Platform.select({
+      web: {
+        filter: 'blur(100px)',
+      } as any,
+      default: {},
+    }),
+  },
   navWrap: { paddingHorizontal: SPACING.md, marginBottom: SPACING.lg },
   welcomeBand: { width: '100%', paddingHorizontal: SPACING.md, paddingTop: 6, paddingBottom: 28, backgroundColor: 'transparent' },
   welcomeBandMobile: { paddingHorizontal: 10, paddingBottom: 22 },
-  welcomeCard: { width: '100%', minHeight: 190, borderRadius: 30, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', shadowColor: '#8b5cf6', shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.16, shadowRadius: 32, elevation: 8 },
-  welcomeCardMobile: { minHeight: 188, paddingHorizontal: 14, borderRadius: 24 },
+  welcomeCard: {
+    width: '100%',
+    paddingVertical: 44,
+    borderRadius: 30,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+      } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 18 },
+        shadowOpacity: 0.25,
+        shadowRadius: 32,
+        elevation: 8,
+      },
+    }),
+  },
+  welcomeCardMobile: {
+    paddingHorizontal: 14,
+    borderRadius: 24,
+    paddingVertical: 36,
+    shadowColor: 'transparent',
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+    ...Platform.select({
+      web: {
+        boxShadow: 'none',
+      } as any,
+      default: {},
+    }),
+  },
   welcomeGradientLayer: { position: 'absolute', top: -28, right: -40, bottom: -28, left: -40 },
   welcomeGradientBase: { backgroundColor: '#09090b', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(120deg, #09090b 0%, #1e1b4b 50%, #020617 100%)', backgroundSize: '200% 200%' } as any : null) },
   welcomeGradientLayerTwo: { backgroundColor: '#1e1e24', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #0f172a 0%, #311042 50%, #09090b 100%)', backgroundSize: '200% 200%' } as any : null) },
   welcomeGradientLayerThree: { backgroundColor: '#09090b', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(145deg, #09090b 0%, #172554 50%, #2e1065 100%)', backgroundSize: '220% 220%' } as any : null) },
   welcomeSheen: { position: 'absolute', top: 1, right: 1, bottom: 1, left: 1, borderRadius: 29, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  welcomeTitle: { fontSize: 82, lineHeight: 88, fontWeight: '900', textAlign: 'center', letterSpacing: -2, textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8, zIndex: 10 },
-  welcomeTitleMobile: { width: '100%', fontSize: 42, lineHeight: 48, letterSpacing: 0, paddingHorizontal: 4 },
-  welcomeTitleCompact: { fontSize: 37, lineHeight: 43 },
+  welcomeTitle: { fontSize: 62, lineHeight: 70, fontWeight: '900', textAlign: 'center', letterSpacing: -1.5, textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8, zIndex: 10 },
+  welcomeTitleMobile: { width: '100%', fontSize: 34, lineHeight: 40, letterSpacing: -0.5, paddingHorizontal: 4 },
+  welcomeTitleCompact: { fontSize: 28, lineHeight: 34 },
+  heroContentInside: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    zIndex: 10,
+  },
+  welcomeSubtitle: {
+    color: 'rgba(255, 255, 255, 0.72)',
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    marginTop: 14,
+    maxWidth: 600,
+    fontWeight: '500',
+    zIndex: 10,
+  },
+  welcomeSubtitleMobile: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 10,
+    paddingHorizontal: 12,
+  },
+  welcomeButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 24,
+    zIndex: 10,
+  },
+  welcomeButtonsMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    width: '100%',
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  heroPrimaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    borderRadius: 999,
+  },
+  heroPrimaryText: {
+    color: '#09090b',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  heroSecondaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    borderRadius: 999,
+  },
+  heroSecondaryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   hero: { paddingHorizontal: SPACING.md, paddingTop: 28, gap: 24 },
   heroDesktop: { flexDirection: 'row', alignItems: 'center', gap: 28 },
-  heroCopy: { flex: 1, minWidth: 0 },
+  heroCopy: { minWidth: 0 },
+  heroCopyDesktop: { flex: 1 },
   pill: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 18 },
   pillText: { color: 'rgba(255,255,255,0.82)', fontSize: 13, fontWeight: '700' },
   headline: { color: '#fff', fontSize: 52, lineHeight: 58, fontWeight: '900', maxWidth: 640 },
@@ -549,10 +709,23 @@ const styles = StyleSheet.create({
   statCardMobile: { minWidth: 0, flexBasis: '48%', flexGrow: 1 },
   statValue: { color: '#fff', fontSize: 24, fontWeight: '800' },
   statLabel: { marginTop: 4, color: 'rgba(255,255,255,0.6)', fontSize: 12 },
-  mockupWrap: { flex: 1, minWidth: 0, width: '100%', minHeight: 460, justifyContent: 'center' },
+  mockupWrap: { minWidth: 0, width: '100%', minHeight: 460, justifyContent: 'center' },
+  mockupWrapDesktop: { flex: 1 },
   mockupWrapMobile: { minHeight: 0 },
   mockupGlow: { position: 'absolute', left: 20, right: 20, top: 20, bottom: 20, borderRadius: 36, backgroundColor: 'rgba(59,130,246,0.16)' },
-  mockupCard: { width: '100%', borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', padding: 16, shadowColor: '#8b5cf6', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 12 },
+  mockupCard: { width: '100%', borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', padding: 16, shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 12 },
+  mockupCardMobile: {
+    shadowColor: 'transparent',
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+    ...Platform.select({
+      web: {
+        boxShadow: 'none',
+      } as any,
+      default: {},
+    }),
+  },
   mockupTopBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, minHeight: 84, padding: 14, borderRadius: 26, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(0,0,0,0.38)' },
   mockupTopBarCompact: { flexDirection: 'column', alignItems: 'flex-start', gap: 12 },
   mockupKicker: { color: 'rgba(255,255,255,0.45)', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' },
@@ -605,11 +778,11 @@ const styles = StyleSheet.create({
   gridTablet: {},
   gridDesktop: { gap: 20 },
   gridFeatureCard: { backgroundColor: '#121214', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 28, padding: 24, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%', minHeight: 220, overflow: 'hidden', ...Platform.select({ web: { transitionProperty: 'all', transitionDuration: '300ms' } as any, default: {} }) },
-  gridFeatureCardHovered: { borderColor: 'rgba(56, 189, 248, 0.4)', backgroundColor: '#18181b', transform: [{ translateY: -4 }], shadowColor: '#3b82f6', shadowOpacity: 0.1, shadowRadius: 20, elevation: 8 },
+  gridFeatureCardHovered: { borderColor: 'rgba(56, 189, 248, 0.4)', backgroundColor: '#18181b', transform: [{ translateY: -4 }], shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 20, elevation: 8 },
   cardTablet: { width: `${100 / 2}%`, flexGrow: 1, flexBasis: '47%' },
   cardDesktop: { width: `${100 / 4}%`, flexGrow: 1, flexBasis: '23%' },
   watermarkGlow: { position: 'absolute', right: -40, bottom: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(37,99,235,0.0)', opacity: 0, ...Platform.select({ web: { transitionProperty: 'opacity', transitionDuration: '300ms' } as any, default: {} }) },
-  watermarkGlowActive: { backgroundColor: 'rgba(37,99,235,0.12)', opacity: 1, shadowColor: '#3b82f6', shadowOpacity: 1, shadowRadius: 30 },
+  watermarkGlowActive: { backgroundColor: 'rgba(37,99,235,0.12)', opacity: 1, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 30 },
   featureHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 20, zIndex: 2 },
   featureIconWrap: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#18181b', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', ...Platform.select({ web: { transitionProperty: 'all', transitionDuration: '300ms' } as any, default: {} }) },
   featureIconWrapActive: { borderColor: 'rgba(56, 189, 248, 0.3)', backgroundColor: '#1e1e24' },
@@ -624,11 +797,11 @@ const styles = StyleSheet.create({
   ratingStarsRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
   ratingNumber: { color: '#fff', fontSize: 34, fontWeight: '900', letterSpacing: -1 },
   ratingSubtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700', letterSpacing: 2, marginTop: 6 },
-  
+
   // Write Review Button
   writeReviewButton: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fbbf24', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, marginTop: 16 },
   writeReviewText: { color: '#000', fontSize: 13, fontWeight: '800' },
-  
+
   ratingDivider: { width: 60, height: 2, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 24, borderRadius: 2 },
   reviewsScrollContent: { paddingHorizontal: SPACING.md, gap: 16, paddingBottom: 20 },
   reviewCard: { width: 320, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 24, padding: 24 },

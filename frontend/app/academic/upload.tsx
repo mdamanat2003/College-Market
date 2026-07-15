@@ -14,6 +14,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store/authStore';
 import { useAcademicStore } from '../../store/academicStore';
 import { useDemoRestriction } from '../../hooks/use-demo-restriction';
@@ -100,14 +101,15 @@ export default function UploadAcademic() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.heading} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Upload Materials</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.heading} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Upload Materials</Text>
+          <View style={{ width: 24 }} />
+        </View>
 
       <View style={styles.formCard}>
         <TouchableOpacity style={styles.filePickerBtn} onPress={pickDocument}>
@@ -194,6 +196,7 @@ export default function UploadAcademic() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

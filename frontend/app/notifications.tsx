@@ -2,6 +2,7 @@ import React, { useCallback, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { api } from '../services/api';
 import Footer from '../components/layout/Footer';
@@ -112,14 +113,15 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top', 'left', 'right']}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Notifications</Text>
+          <View style={{ width: 24 }} />
+        </View>
 
       {isLoading ? (
         <View style={styles.center}>
@@ -148,7 +150,8 @@ export default function NotificationsScreen() {
           }
         />
       )}
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 

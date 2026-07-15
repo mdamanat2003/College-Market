@@ -314,6 +314,19 @@ export default function Register() {
             ) : null}
 
             <View style={styles.card}>
+              <TouchableOpacity 
+                onPress={() => {
+                  if (router.canGoBack()) {
+                    router.back();
+                  } else {
+                    router.replace('/home');
+                  }
+                }} 
+                style={styles.backToHomeBtn}
+              >
+                <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
+                <Text style={styles.backToHomeText}>Back to Home</Text>
+              </TouchableOpacity>
               <View style={styles.form}>
                 <View style={styles.inputGroupFull}>
                   <Text style={styles.label}>Full Name *</Text>
@@ -773,12 +786,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 24,
-    padding: 24,
-    shadowColor: '#38bdf8',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.04,
-    shadowRadius: 35,
-    elevation: 3,
+    padding: 28,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.04)',
+      } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.4,
+        shadowRadius: 30,
+        elevation: 8,
+      },
+    }),
   },
   errorBox: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -814,9 +834,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: COLORS.heading,
+    ...Platform.select({
+      web: {
+        transitionProperty: 'all',
+        transitionDuration: '200ms',
+      } as any,
+      default: {},
+    }),
   },
   inputFocused: {
-    borderColor: COLORS.primary,
+    borderColor: '#38BDF8',
+    backgroundColor: '#09090b',
+    ...Platform.select({
+      web: { 
+        boxShadow: '0 0 0 4px rgba(56, 189, 248, 0.2)',
+        outline: 'none',
+      } as any,
+      default: {},
+    }),
   },
   inputError: {
     borderColor: COLORS.error,
@@ -957,13 +992,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 4,
     shadowColor: 'rgba(56, 189, 248, 0.26)',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 1,
-    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
     elevation: 4,
+    ...Platform.select({
+      web: {
+        transitionProperty: 'all',
+        transitionDuration: '200ms',
+        boxShadow: '0 8px 16px rgba(56, 189, 248, 0.15)',
+      } as any,
+      default: {},
+    }),
   },
   buttonHover: {
     backgroundColor: COLORS.primaryHover,
+    transform: [{ translateY: -2 }, { scale: 1.01 }],
+    ...Platform.select({
+      web: { 
+        boxShadow: '0 14px 28px rgba(56, 189, 248, 0.32)',
+        filter: 'brightness(1.05)',
+      } as any,
+      default: {},
+    }),
   },
   buttonDisabled: {
     opacity: 0.58,
@@ -1092,6 +1143,18 @@ const styles = StyleSheet.create({
   changeIdProofText: {
     color: '#fff',
     fontSize: 12,
+    fontWeight: '700',
+  },
+  backToHomeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 18,
+    alignSelf: 'flex-start',
+  },
+  backToHomeText: {
+    color: COLORS.primary,
+    fontSize: 14,
     fontWeight: '700',
   },
 });

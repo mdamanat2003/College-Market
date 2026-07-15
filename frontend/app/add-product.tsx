@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/authStore'; 
 import { useDemoRestriction } from '../hooks/use-demo-restriction';
 import { API_URL } from '../services/api';
@@ -220,10 +221,16 @@ export default function AddItemScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Sell an Item</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.scrollContainer}>
-          
-          <Text style={styles.mainTitle}>Sell an Item</Text>
 
           {/* Title Field */}
           <View style={styles.formGroup}>
@@ -590,5 +597,23 @@ export default function AddItemScreen() {
   footerWrapper: {
     marginHorizontal: -24,
     marginTop: 40,
+  },
+  header: {
+    height: 60,
+    backgroundColor: COLORS.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  backBtn: {
+    padding: SPACING.xs,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
   },
 });

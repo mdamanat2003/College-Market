@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { api } from '../../services/api';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
@@ -63,17 +64,18 @@ export default function AdminAcademicRequests() {
   const academicRequests = requests.filter(r => r.message && r.message.includes('[Academic Request]'));
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notes & PyQ Requests</Text>
-        <TouchableOpacity onPress={fetchRequests} style={styles.backBtn}>
-          <Ionicons name="refresh" size={22} color={COLORS.text} />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top', 'left', 'right']}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Notes & PyQ Requests</Text>
+          <TouchableOpacity onPress={fetchRequests} style={styles.backBtn}>
+            <Ionicons name="refresh" size={22} color={COLORS.text} />
+          </TouchableOpacity>
+        </View>
 
       {loading ? (
         <View style={styles.center}>
@@ -169,6 +171,7 @@ export default function AdminAcademicRequests() {
         </ScrollView>
       )}
     </View>
+    </SafeAreaView>
   );
 }
 

@@ -352,7 +352,7 @@ export default function LandingPage() {
                 </View>
                 <View style={[styles.mockupGrid, isMobile && styles.mockupGridMobile]}>
                   {/* ... (Mockup cards remain same) ... */}
-                  <View style={[styles.mockupLargeCard, styles.borderCard]}>
+                  <View style={[styles.mockupLargeCard, styles.borderCard, isMobile && styles.mockupLargeCardMobile]}>
                     <View style={styles.cardHeaderRow}>
                       <View>
                         <Text style={styles.cardLabel}>Featured listing</Text>
@@ -377,20 +377,10 @@ export default function LandingPage() {
                     </View>
                   </View>
                   <View style={[styles.sideStack, isMobile && styles.sideStackMobile]}>
-                    <View style={[styles.smallCard, styles.borderCard]}>
+                    <View style={[styles.smallCard, styles.borderCard, isMobile && styles.smallCardMobile]}>
                       <Text style={styles.cardLabel}>Live chat</Text>
                       <View style={styles.chatBubbleRight}><Text style={styles.chatTextDark}>Is this still available?</Text></View>
                       <View style={styles.chatBubbleLeft}><Text style={styles.chatTextLight}>Yes, can meet near the library at 5 PM.</Text></View>
-                    </View>
-                    <View style={[styles.smallCard, styles.borderCard]}>
-                      <Text style={styles.cardLabel}>Verified seller</Text>
-                      <View style={styles.sellerRow}>
-                        <View style={styles.avatar}><Text style={styles.avatarText}>A</Text></View>
-                        <View style={styles.sellerTextBlock}>
-                          <Text style={styles.sellerName}>Aarav, Computer Science</Text>
-                          <Text style={styles.sellerMeta}>4.9 rating · 31 sales</Text>
-                        </View>
-                      </View>
                     </View>
                   </View>
                 </View>
@@ -715,6 +705,7 @@ const styles = StyleSheet.create({
   mockupGlow: { position: 'absolute', left: 20, right: 20, top: 20, bottom: 20, borderRadius: 36, backgroundColor: 'rgba(59,130,246,0.16)' },
   mockupCard: { width: '100%', borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', padding: 16, shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 12 },
   mockupCardMobile: {
+    padding: 12,
     shadowColor: 'transparent',
     shadowOpacity: 0,
     shadowRadius: 0,
@@ -736,11 +727,13 @@ const styles = StyleSheet.create({
   onlinePillCompact: { alignSelf: 'flex-start' },
   onlineText: { color: '#d1fae5', fontSize: 12, fontWeight: '700' },
   mockupGrid: { marginTop: 16, flexDirection: 'row', gap: 16 },
-  mockupGridMobile: { flexDirection: 'column' },
+  mockupGridMobile: { flexDirection: 'column', gap: 12 },
   mockupLargeCard: { flex: 1.2, minHeight: 260, padding: 16, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.04)' },
+  mockupLargeCardMobile: { flex: undefined, minHeight: 220 },
   sideStack: { flex: 0.8, gap: 16 },
-  sideStackMobile: { flex: undefined },
+  sideStackMobile: { flex: undefined, gap: 12 },
   smallCard: { padding: 16, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.04)' },
+  smallCardMobile: { padding: 12, borderRadius: 20 },
   borderCard: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' },
   cardLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase' },

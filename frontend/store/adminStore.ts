@@ -12,6 +12,7 @@ interface AdminState {
   fetchUsers: (search?: string) => Promise<void>;
   toggleBlockUser: (userId: string) => Promise<void>;
   toggleVerifyUser: (userId: string) => Promise<void>;
+  updateUserPassword: (userId: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
   fetchProducts: (search?: string) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   fetchEscrows: () => Promise<void>; // Naya function
@@ -57,6 +58,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       const updatedUsers = get().users.map(user => user._id === userId ? { ...user, isVerified: response.data.isVerified } : user);
       set({ users: updatedUsers });
     } catch (error) { console.error(error); }
+  },
+
+  updateUserPassword: async (userId, newPassword) => {
+    try {
+      const response = await api.put(`/admin/users/${userId}/password`, { newPassword });
+      return { success: true, message: response.data.message || 'Password updated successfully' };
+    } catch (error: any) {
+      console.error(error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to update user password'
+      };
+    }
   },
 
   fetchProducts: async (search = '') => { /* ... purana code ... */

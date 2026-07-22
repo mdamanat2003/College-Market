@@ -64,20 +64,34 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
 export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Response) => {
   const { email, phone } = req.body;
 
-  if (!email) {
+  const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const trimmedPhone = typeof phone === 'string' ? phone.trim() : '';
+
+  if (!trimmedEmail) {
     res.status(400);
     throw new Error('Please provide email');
   }
 
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(trimmedEmail) || trimmedEmail.length < 5 || trimmedEmail.length > 50) {
+    res.status(400);
+    throw new Error('Please enter a valid email address (5-50 characters)');
+  }
+
+  if (trimmedPhone && !/^[6-9]\d{9}$/.test(trimmedPhone)) {
+    res.status(400);
+    throw new Error('Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9');
+  }
+
   // 1. Check if user already exists
-  const emailExists = await User.findOne({ email });
+  const emailExists = await User.findOne({ email: trimmedEmail });
   if (emailExists) {
     res.status(400);
     throw new Error('Email already registered');
   }
 
-  if (phone) {
-    const phoneExists = await User.findOne({ phone });
+  if (trimmedPhone) {
+    const phoneExists = await User.findOne({ phone: trimmedPhone });
     if (phoneExists) {
       res.status(400);
       throw new Error('Phone number already registered');
@@ -85,7 +99,7 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
   }
 
   // 2. Prevent OTP Spam (Cooldown Check)
-  const existingOtpRecord = await RegistrationOtp.findOne({ email });
+  const existingOtpRecord = await RegistrationOtp.findOne({ email: trimmedEmail });
   if (existingOtpRecord) {
     const timeDiff = new Date().getTime() - new Date((existingOtpRecord as any).updatedAt || (existingOtpRecord as any).createdAt).getTime();
     if (timeDiff < 60000) { // 60 seconds cooldown
@@ -100,8 +114,8 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
 
   // 4. Save to Database
   await RegistrationOtp.findOneAndUpdate(
-    { email },
-    { emailOtp, phone, expiresAt, updatedAt: new Date() },
+    { email: trimmedEmail },
+    { emailOtp, phone: trimmedPhone, expiresAt, updatedAt: new Date() },
     { upsert: true, returnDocument: 'after' }
   );
 
@@ -111,7 +125,7 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
     try {
       // 5. Send Email via Resend HTTP API
       await sendEmail({
-        to: email,
+        to: trimmedEmail,
         subject: 'Ooplabdh - Registration OTP',
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #f4f7fe; border-radius: 10px;">
@@ -232,9 +246,20 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     throw new Error('Full name must be between 3 and 50 characters');
   }
 
-  if (!/^\d{10}$/.test(trimmedPhone)) {
+  if (!/^[a-zA-Z\s.-]+$/.test(trimmedName)) {
     res.status(400);
-    throw new Error('Phone number must be exactly 10 digits');
+    throw new Error('Full name can only contain letters, spaces, dots, and hyphens');
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(trimmedEmail) || trimmedEmail.length < 5 || trimmedEmail.length > 50) {
+    res.status(400);
+    throw new Error('Please enter a valid email address (5-50 characters)');
+  }
+
+  if (!/^[6-9]\d{9}$/.test(trimmedPhone)) {
+    res.status(400);
+    throw new Error('Phone number must be a valid 10-digit mobile number starting with 6, 7, 8, or 9');
   }
 
   if (trimmedPassword.length < 8 || trimmedPassword.length > 12) {

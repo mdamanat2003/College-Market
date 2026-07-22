@@ -55,9 +55,19 @@ const registerSchema = z
       .string()
       .trim()
       .min(3, 'Full name must be at least 3 characters.')
-      .max(50, 'Full name must be at most 50 characters.'),
-    email: z.string().trim().email('Enter a valid email address.').transform((value) => value.toLowerCase()),
-    phone: z.string().trim().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits.'),
+      .max(50, 'Full name must be at most 50 characters.')
+      .regex(/^[a-zA-Z\s.-]+$/, 'Full name can only contain letters, spaces, dots, and hyphens.'),
+    email: z
+      .string()
+      .trim()
+      .min(5, 'Email address must be at least 5 characters.')
+      .max(50, 'Email address must be at most 50 characters.')
+      .email('Enter a valid email address.')
+      .transform((value) => value.toLowerCase()),
+    phone: z
+      .string()
+      .trim()
+      .regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.'),
     college: z.string().optional(),
     confirmEmail: z.string().trim().min(1, 'Confirm your email or enter an alternate contact.'),
     otherCollege: z.string().optional(),
@@ -76,8 +86,8 @@ const registerSchema = z
     message: 'Passwords do not match.',
     path: ['confirmPassword'],
   })
-  .refine((data) => data.confirmEmail.toLowerCase() === data.email || /^\d{10}$/.test(data.confirmEmail), {
-    message: 'Enter matching email or a 10 digit alternate contact.',
+  .refine((data) => data.confirmEmail.toLowerCase() === data.email || /^[6-9]\d{9}$/.test(data.confirmEmail), {
+    message: 'Enter matching email or a valid 10-digit alternate mobile number.',
     path: ['confirmEmail'],
   });
 
@@ -380,7 +390,7 @@ export default function Register() {
                             onChange(text);
                             if (serverError) setServerError('');
                           }}
-                          maxLength={254}
+                          maxLength={50}
                         />
                       )}
                     />
@@ -408,7 +418,8 @@ export default function Register() {
                             onBlur();
                           }}
                           onChangeText={(text) => {
-                            onChange(text);
+                            const cleaned = text.replace(/[^0-9]/g, '');
+                            onChange(cleaned);
                             if (serverError) setServerError('');
                           }}
                           maxLength={10}

@@ -7,9 +7,16 @@ import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 export default function ManageUsersScreen() {
   const router = useRouter();
-  const { users, fetchUsers, toggleBlockUser, toggleVerifyUser, isLoading } = useAdminStore();
+  const { users, fetchUsers, toggleBlockUser, toggleVerifyUser, updateUserPassword, isLoading } = useAdminStore();
   const [search, setSearch] = useState('');
   const [selectedIdProofUrl, setSelectedIdProofUrl] = useState<string | null>(null);
+  
+  // State for Password Reset
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<any | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordStatusMsg, setPasswordStatusMsg] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -70,6 +77,20 @@ export default function ManageUsersScreen() {
         >
           <Text style={[styles.actionBtnText, item.isVerified ? styles.unverifyBtnText : styles.verifyBtnText]}>
             {item.isVerified ? 'Revoke' : 'Verify'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionBtn, styles.passwordBtn]}
+          onPress={() => {
+            setSelectedUserForPassword(item);
+            setNewPassword('');
+            setShowPassword(false);
+            setPasswordStatusMsg(null);
+          }}
+        >
+          <Text style={[styles.actionBtnText, styles.passwordBtnText]}>
+            Reset Pass
           </Text>
         </TouchableOpacity>
       </View>
@@ -137,6 +158,103 @@ export default function ManageUsersScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Password Reset Modal */}
+      <Modal
+        visible={Boolean(selectedUserForPassword)}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedUserForPassword(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Reset User Password</Text>
+              <TouchableOpacity onPress={() => setSelectedUserForPassword(null)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={{ color: COLORS.textMuted, fontSize: 13 }}>
+              Target User: <Text style={{ color: COLORS.text, fontWeight: '600' }}>{selectedUserForPassword?.name}</Text> ({selectedUserForPassword?.email})
+            </Text>
+
+            {passwordStatusMsg && (
+              <View style={[styles.statusBox, passwordStatusMsg.isError ? styles.errorBox : styles.successBox]}>
+                <Text style={passwordStatusMsg.isError ? styles.errorBoxText : styles.successBoxText}>
+                  {passwordStatusMsg.text}
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.passwordInputWrapper}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Enter new password (min 6 chars)"
+                placeholderTextColor={COLORS.textMuted}
+                secureTextEntry={!showPassword}
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.randomPassBtn}
+              onPress={() => {
+                const rand = Math.random().toString(36).slice(-8) + 'A1!';
+                setNewPassword(rand);
+                setShowPassword(true);
+              }}
+            >
+              <Ionicons name="key-outline" size={14} color={COLORS.primary} />
+              <Text style={styles.randomPassText}>Generate Random Password</Text>
+            </TouchableOpacity>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.modalBtn, styles.cancelModalBtn]} 
+                onPress={() => setSelectedUserForPassword(null)}
+              >
+                <Text style={styles.cancelModalBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.modalBtn, styles.saveModalBtn]}
+                disabled={isSubmittingPassword}
+                onPress={async () => {
+                  if (!selectedUserForPassword) return;
+                  if (newPassword.trim().length < 6) {
+                    setPasswordStatusMsg({ text: 'Password must be at least 6 characters', isError: true });
+                    return;
+                  }
+                  setIsSubmittingPassword(true);
+                  setPasswordStatusMsg(null);
+                  const res = await updateUserPassword(selectedUserForPassword._id, newPassword);
+                  setIsSubmittingPassword(false);
+                  if (res.success) {
+                    setPasswordStatusMsg({ text: res.message, isError: false });
+                    setTimeout(() => {
+                      setSelectedUserForPassword(null);
+                      setPasswordStatusMsg(null);
+                    }, 1500);
+                  } else {
+                    setPasswordStatusMsg({ text: res.message, isError: true });
+                  }
+                }}
+              >
+                {isSubmittingPassword ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.saveModalBtnText}>Update Password</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -178,11 +296,13 @@ const styles = StyleSheet.create({
   unblockBtn: { backgroundColor: 'transparent' },
   verifyBtn: { backgroundColor: 'transparent' },
   unverifyBtn: { backgroundColor: 'transparent' },
+  passwordBtn: { backgroundColor: 'transparent' },
   actionBtnText: { fontSize: 14, fontWeight: '600' },
   blockBtnText: { color: '#EF4444' },
   unblockBtnText: { color: '#10B981' },
   verifyBtnText: { color: '#38BDF8' },
   unverifyBtnText: { color: '#E2E8F0' },
+  passwordBtnText: { color: '#F59E0B' },
   emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.xl, fontSize: 15 },
 
   // Modal styling
@@ -192,4 +312,24 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text },
   modalCloseBtn: { padding: SPACING.xs },
   modalImage: { width: '100%', height: 350, borderRadius: RADIUS.md },
-});
+
+  passwordInputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background, borderRadius: RADIUS.md, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', paddingHorizontal: SPACING.md },
+  passwordInput: { flex: 1, height: 45, color: COLORS.text, fontSize: 14 },
+  eyeIcon: { padding: SPACING.xs },
+
+  randomPassBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 4 },
+  randomPassText: { color: COLORS.primary, fontSize: 12, fontWeight: '600' },
+
+  statusBox: { padding: SPACING.sm, borderRadius: RADIUS.sm },
+  errorBox: { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.4)' },
+  errorBoxText: { color: '#EF4444', fontSize: 13, textAlign: 'center' },
+  successBox: { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.4)' },
+  successBoxText: { color: '#10B981', fontSize: 13, textAlign: 'center' },
+
+  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: SPACING.sm, marginTop: SPACING.xs },
+  modalBtn: { paddingHorizontal: SPACING.md, paddingVertical: 10, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center' },
+  cancelModalBtn: { backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)' },
+  cancelModalBtnText: { color: COLORS.text, fontSize: 14, fontWeight: '600' },
+  saveModalBtn: { backgroundColor: COLORS.primary, minWidth: 120 },
+  saveModalBtnText: { color: '#000', fontSize: 14, fontWeight: '700' },
+});

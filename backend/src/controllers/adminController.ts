@@ -244,3 +244,34 @@ export const resolveEscrow = asyncHandler(async (req: Request, res: Response) =>
 
   res.json({ success: true, message: `Payment ${action}ed successfully`, order });
 });
+
+// 8. Reset/Update User Password (Admin)
+export const updateUserPasswordAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword || newPassword.trim().length < 6) {
+    res.status(400);
+    throw new Error("Password must be at least 6 characters long");
+  }
+
+  const user = await User.findById(id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  if ((user as any).role === 'admin') {
+    res.status(400);
+    throw new Error("Cannot change password of another Admin user from here");
+  }
+
+  user.password = newPassword;
+  await user.save(); // User pre-save hook will hash the password via bcrypt
+
+  res.json({
+    success: true,
+    message: `Password for ${user.name} has been updated successfully`,
+  });
+});
+

@@ -119,6 +119,7 @@ export default function Register() {
   const [isVerified, setIsVerified] = useState(false);
   const [emailOtp, setEmailOtp] = useState('');
   const [collegeIdProofUri, setCollegeIdProofUri] = useState<string | null>(null);
+  const [idProofError, setIdProofError] = useState('');
   const [focusedField, setFocusedField] = useState<RegisterFieldName | 'emailOtp' | null>(null);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const { width } = useWindowDimensions();
@@ -168,6 +169,7 @@ export default function Register() {
   ];
 
   const pickIdProof = async () => {
+    setIdProofError('');
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return Alert.alert('Permission Denied!', 'Gallery access is required.');
 
@@ -179,10 +181,24 @@ export default function Register() {
 
     if (!result.canceled) {
       const asset = result.assets[0];
-      if (asset.fileSize && asset.fileSize > 1 * 1024 * 1024) {
-        Alert.alert('File Too Large', 'Bhai, ID proof image 1MB se kam size ki honi chahiye.');
+      let fileSize = asset.fileSize;
+
+      if (!fileSize && asset.uri) {
+        try {
+          const resp = await fetch(asset.uri);
+          const blob = await resp.blob();
+          fileSize = blob.size;
+        } catch (e) {
+          console.warn('Could not determine blob size:', e);
+        }
+      }
+
+      if (fileSize && fileSize > 1 * 1024 * 1024) {
+        setIdProofError('ID proof image 1MB se badi hai! Kripya 1MB se kam size ki image upload karein.');
+        setCollegeIdProofUri(null);
         return;
       }
+      setIdProofError('');
       setCollegeIdProofUri(asset.uri);
     }
   };
@@ -243,7 +259,7 @@ export default function Register() {
     }
 
     if (!collegeIdProofUri) {
-      Alert.alert('ID Proof Required', 'Please upload a photo of your College ID proof.');
+      setIdProofError('College ID proof photo upload karna compulsory hai.');
       return;
     }
 
@@ -620,6 +636,7 @@ export default function Register() {
                     style={[
                       styles.idProofPicker,
                       collegeIdProofUri ? styles.idProofPickerSelected : null,
+                      idProofError ? styles.idProofPickerError : null,
                     ]}
                     onPress={pickIdProof}
                     activeOpacity={0.8}
@@ -634,12 +651,18 @@ export default function Register() {
                       </View>
                     ) : (
                       <View style={styles.idProofPlaceholder}>
-                        <Ionicons name="card-outline" size={36} color={COLORS.helper} />
+                        <Ionicons name="card-outline" size={36} color={idProofError ? COLORS.error : COLORS.helper} />
                         <Text style={styles.idProofPlaceholderText}>Upload student ID card photo</Text>
-                        <Text style={styles.idProofHelperText}>Ensure your name & college name are clearly visible</Text>
+                        <Text style={styles.idProofHelperText}>Ensure your name & college name are clearly visible (Max 1MB)</Text>
                       </View>
                     )}
                   </TouchableOpacity>
+                  {idProofError ? (
+                    <View style={styles.idProofErrorBadge}>
+                      <Ionicons name="alert-circle" size={16} color={COLORS.error} />
+                      <Text style={styles.idProofErrorText}>{idProofError}</Text>
+                    </View>
+                  ) : null}
                 </View>
 
                 <View style={[styles.row, isDesktop && styles.rowDesktop]}>
@@ -1111,6 +1134,23 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: 'rgba(56, 189, 248, 0.3)',
     backgroundColor: 'rgba(56, 189, 248, 0.02)',
+  },
+  idProofPickerError: {
+    borderColor: COLORS.error,
+    backgroundColor: 'rgba(239, 68, 68, 0.06)',
+  },
+  idProofErrorBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  idProofErrorText: {
+    color: COLORS.error,
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
   idProofPlaceholder: {
     alignItems: 'center',

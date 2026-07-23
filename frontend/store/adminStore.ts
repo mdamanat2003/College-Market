@@ -13,6 +13,7 @@ interface AdminState {
   toggleBlockUser: (userId: string) => Promise<void>;
   toggleVerifyUser: (userId: string) => Promise<void>;
   updateUserPassword: (userId: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+  deleteUser: (userId: string) => Promise<{ success: boolean; message: string }>;
   fetchProducts: (search?: string) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   fetchEscrows: () => Promise<void>; // Naya function
@@ -44,20 +45,48 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } catch (error) { set({ isLoading: false }); }
   },
 
-  toggleBlockUser: async (userId) => { /* ... purana code ... */
+  toggleBlockUser: async (userId) => {
+    const previousUsers = get().users;
+    const target = previousUsers.find(u => u._id === userId);
+    if (!target) return;
+
+    // Optimistically update UI immediately (0ms latency)
+    set({
+      users: previousUsers.map(u => u._id === userId ? { ...u, isBlocked: !u.isBlocked } : u)
+    });
+
     try {
       const response = await api.put(`/admin/users/${userId}/block`);
-      const updatedUsers = get().users.map(user => user._id === userId ? { ...user, isBlocked: response.data.isBlocked } : user);
-      set({ users: updatedUsers });
-    } catch (error) { console.error(error); }
+      set({
+        users: get().users.map(u => u._id === userId ? { ...u, isBlocked: response.data.isBlocked } : u)
+      });
+    } catch (error) {
+      console.error(error);
+      // Revert if request failed
+      set({ users: previousUsers });
+    }
   },
 
   toggleVerifyUser: async (userId) => {
+    const previousUsers = get().users;
+    const target = previousUsers.find(u => u._id === userId);
+    if (!target) return;
+
+    // Optimistically update UI immediately (0ms latency)
+    set({
+      users: previousUsers.map(u => u._id === userId ? { ...u, isVerified: !u.isVerified } : u)
+    });
+
     try {
       const response = await api.put(`/admin/users/${userId}/verify`);
-      const updatedUsers = get().users.map(user => user._id === userId ? { ...user, isVerified: response.data.isVerified } : user);
-      set({ users: updatedUsers });
-    } catch (error) { console.error(error); }
+      set({
+        users: get().users.map(u => u._id === userId ? { ...u, isVerified: response.data.isVerified } : u)
+      });
+    } catch (error) {
+      console.error(error);
+      // Revert if request failed
+      set({ users: previousUsers });
+    }
   },
 
   updateUserPassword: async (userId, newPassword) => {
@@ -73,6 +102,26 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     }
   },
 
+  deleteUser: async (userId) => {
+    const previousUsers = get().users;
+    // Optimistically remove user from list immediately
+    set({ users: previousUsers.filter(u => u._id !== userId) });
+
+    try {
+      const response = await api.delete(`/admin/users/${userId}`);
+      get().fetchStats();
+      return { success: true, message: response.data.message || 'User deleted successfully' };
+    } catch (error: any) {
+      console.error(error);
+      // Revert if request failed
+      set({ users: previousUsers });
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to delete user'
+      };
+    }
+  },
+
   fetchProducts: async (search = '') => { /* ... purana code ... */
     set({ isLoading: true });
     try {
@@ -81,11 +130,19 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } catch (error) { set({ isLoading: false }); }
   },
 
-  deleteProduct: async (productId) => { /* ... purana code ... */
+  deleteProduct: async (productId) => {
+    const previousProducts = get().products;
+    // Optimistically remove product immediately
+    set({ products: previousProducts.filter(p => p._id !== productId) });
+
     try {
       await api.delete(`/admin/products/${productId}`);
-      set({ products: get().products.filter(p => p._id !== productId) });
-    } catch (error) { console.error(error); }
+      get().fetchStats();
+    } catch (error) {
+      console.error(error);
+      // Revert if request failed
+      set({ products: previousProducts });
+    }
   },
 
   // 👇 NAYE ESCROW FUNCTIONS

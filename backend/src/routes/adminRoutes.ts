@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAdminStats, getAllUsers, toggleBlockUser, toggleVerifyUser, getAllProductsAdmin, deleteProductAdmin, getEscrowOrders, getPastTransactions, resolveEscrow, updateUserPasswordAdmin } from '../controllers/adminController';
+import { getAdminStats, getAllUsers, toggleBlockUser, toggleVerifyUser, getAllProductsAdmin, deleteProductAdmin, getEscrowOrders, getPastTransactions, resolveEscrow, updateUserPasswordAdmin, deleteUserAdmin } from '../controllers/adminController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -21,6 +21,7 @@ router.get('/users', getAllUsers);
 router.put('/users/:id/block', toggleBlockUser);
 router.put('/users/:id/verify', toggleVerifyUser);
 router.put('/users/:id/password', updateUserPasswordAdmin);
+router.delete('/users/:id', deleteUserAdmin);
 router.get('/products', getAllProductsAdmin);
 router.delete('/products/:id', deleteProductAdmin);
 router.get('/escrow', getEscrowOrders);

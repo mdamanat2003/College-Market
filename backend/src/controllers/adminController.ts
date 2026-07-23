@@ -50,26 +50,27 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
 export const toggleBlockUser = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select('role isBlocked');
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
 
-  // Type assertion ka error fix karne ke liye 'any' use karenge
-  if ((user as any).role === 'admin') {
+  if (user.role === 'admin') {
     res.status(400);
     throw new Error("You cannot block an Admin account");
   }
 
-  // ✅ FIX: TypeScript ko bypass karne ke liye (user as any) ka use
-  (user as any).isBlocked = !(user as any).isBlocked;
-  await user.save();
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    { $set: { isBlocked: !user.isBlocked } },
+    { new: true, runValidators: false }
+  ).select('isBlocked');
 
   res.json({ 
     success: true, 
-    message: `User has been ${(user as any).isBlocked ? 'Blocked' : 'Unblocked'} successfully`,
-    isBlocked: (user as any).isBlocked 
+    message: `User has been ${updatedUser?.isBlocked ? 'Blocked' : 'Unblocked'} successfully`,
+    isBlocked: updatedUser?.isBlocked 
   });
 });
 
@@ -77,24 +78,27 @@ export const toggleBlockUser = asyncHandler(async (req: Request, res: Response) 
 export const toggleVerifyUser = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).select('role isVerified');
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
 
-  if ((user as any).role === 'admin') {
+  if (user.role === 'admin') {
     res.status(400);
     throw new Error("You cannot verify/unverify an Admin account");
   }
 
-  (user as any).isVerified = !(user as any).isVerified;
-  await user.save();
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    { $set: { isVerified: !user.isVerified } },
+    { new: true, runValidators: false }
+  ).select('isVerified');
 
   res.json({ 
     success: true, 
-    message: `User verification status updated to ${(user as any).isVerified ? 'Verified' : 'Unverified'}`,
-    isVerified: (user as any).isVerified 
+    message: `User verification status updated to ${updatedUser?.isVerified ? 'Verified' : 'Unverified'}`,
+    isVerified: updatedUser?.isVerified 
   });
 });
 
@@ -274,4 +278,32 @@ export const updateUserPasswordAdmin = asyncHandler(async (req: Request, res: Re
     message: `Password for ${user.name} has been updated successfully`,
   });
 });
+
+// 9. Delete User (Admin)
+export const deleteUserAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await User.findById(id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  if ((user as any).role === 'admin') {
+    res.status(400);
+    throw new Error("You cannot delete an Admin account");
+  }
+
+  // Delete products associated with this user
+  await Product.deleteMany({ seller: id });
+
+  // Delete user account
+  await user.deleteOne();
+
+  res.json({
+    success: true,
+    message: `User "${user.name}" has been deleted successfully`,
+  });
+});
+
 

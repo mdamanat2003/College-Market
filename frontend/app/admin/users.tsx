@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image, Modal, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdminStore } from '../../store/adminStore';
@@ -7,7 +7,7 @@ import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 export default function ManageUsersScreen() {
   const router = useRouter();
-  const { users, fetchUsers, toggleBlockUser, toggleVerifyUser, updateUserPassword, isLoading } = useAdminStore();
+  const { users, fetchUsers, toggleBlockUser, toggleVerifyUser, updateUserPassword, deleteUser, isLoading } = useAdminStore();
   const [search, setSearch] = useState('');
   const [selectedIdProofUrl, setSelectedIdProofUrl] = useState<string | null>(null);
   
@@ -24,6 +24,29 @@ export default function ManageUsersScreen() {
 
   const handleSearch = () => {
     fetchUsers(search); 
+  };
+
+  const handleDeleteUser = (id: string, name: string) => {
+    const performDelete = async () => {
+      const res = await deleteUser(id);
+      if (!res.success && Platform.OS === 'web') {
+        alert(res.message);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmDelete = window.confirm(`Are you sure you want to delete user "${name}"? This action cannot be undone.`);
+      if (confirmDelete) performDelete();
+    } else {
+      Alert.alert(
+        "Delete User",
+        `Are you sure you want to delete user "${name}"? This action cannot be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: performDelete }
+        ]
+      );
+    }
   };
 
   const renderUserItem = ({ item }: { item: any }) => (
@@ -91,6 +114,15 @@ export default function ManageUsersScreen() {
         >
           <Text style={[styles.actionBtnText, styles.passwordBtnText]}>
             Reset Pass
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionBtn, styles.deleteUserBtn]}
+          onPress={() => handleDeleteUser(item._id, item.name)}
+        >
+          <Text style={[styles.actionBtnText, styles.deleteUserBtnText]}>
+            Delete
           </Text>
         </TouchableOpacity>
       </View>
@@ -297,12 +329,14 @@ const styles = StyleSheet.create({
   verifyBtn: { backgroundColor: 'transparent' },
   unverifyBtn: { backgroundColor: 'transparent' },
   passwordBtn: { backgroundColor: 'transparent' },
+  deleteUserBtn: { backgroundColor: 'transparent' },
   actionBtnText: { fontSize: 14, fontWeight: '600' },
   blockBtnText: { color: '#EF4444' },
   unblockBtnText: { color: '#10B981' },
   verifyBtnText: { color: '#38BDF8' },
   unverifyBtnText: { color: '#E2E8F0' },
   passwordBtnText: { color: '#F59E0B' },
+  deleteUserBtnText: { color: '#DC2626' },
   emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.xl, fontSize: 15 },
 
   // Modal styling

@@ -14,23 +14,33 @@ export default function AdminLayout() {
   const { width } = useWindowDimensions();
   const isWebLarge = Platform.OS === 'web' && width > 768;
 
+  const isLoginPage = pathname === '/admin/login';
   const inAdminRoute = segments[0] === 'admin';
   const isAdmin = user?.role === 'admin';
-  const canAccessAdmin = !inAdminRoute || isAdmin;
 
   useEffect(() => {
-    if (inAdminRoute && !isAdmin) {
-      router.replace('/(auth)/login');
+    if (inAdminRoute) {
+      if (isLoginPage) {
+        if (isAdmin) {
+          router.replace('/admin/dashboard');
+        }
+      } else if (!isAdmin) {
+        if (user && user.role !== 'admin') {
+          router.replace('/(tabs)');
+        } else {
+          router.replace('/admin/login');
+        }
+      }
     }
-  }, [inAdminRoute, isAdmin, router]);
+  }, [inAdminRoute, isLoginPage, isAdmin, user, router]);
 
-  if (!canAccessAdmin) {
+  if (!isLoginPage && !isAdmin) {
     return null;
   }
 
   const handleLogout = () => {
     logout();
-    router.replace('/(auth)/login' as any);
+    router.replace('/admin/login' as any);
   };
 
   const navItems = [
@@ -41,6 +51,10 @@ export default function AdminLayout() {
     { label: 'Manage Requests', route: '/admin/requests', icon: 'mail-outline' },
     { label: 'Notes & PyQ Requests', route: '/admin/academic-requests', icon: 'book-outline' },
   ];
+
+  if (isLoginPage) {
+    return <Stack screenOptions={{ headerShown: false }} />;
+  }
 
   if (isWebLarge) {
     return (

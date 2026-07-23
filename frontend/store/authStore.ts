@@ -50,6 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       await AsyncStorage.setItem('userAccessToken', accessToken);
       await AsyncStorage.setItem('userRefreshToken', refreshToken);
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
       set({ user: userData, accessToken, refreshToken, isLoading: false });
       return true;
     } catch (error: any) {
@@ -72,6 +73,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       college: 'Demo College',
       isDemo: true,
     };
+    AsyncStorage.setItem('userData', JSON.stringify(demoUser)).catch(() => {});
     set({ 
       user: demoUser, 
       accessToken: 'demo_token', 
@@ -98,6 +100,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       await AsyncStorage.removeItem('userAccessToken');
       await AsyncStorage.removeItem('userRefreshToken');
+      await AsyncStorage.removeItem('userData');
       set({ user: null, accessToken: null, refreshToken: null, isLoading: false });
       return true;
     } catch (error: any) {
@@ -144,6 +147,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
       });
       if (response.data.success) {
+        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
         set({ user: response.data.user, isLoading: false });
         return true;
       }
@@ -161,23 +165,40 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     await AsyncStorage.removeItem('userAccessToken');
     await AsyncStorage.removeItem('userRefreshToken');
+    await AsyncStorage.removeItem('userData');
     set({ user: null, accessToken: null, refreshToken: null });
   },
 
-  // App start hone par call karenge taaki user logged in rahe
+  // App start/reopen hone par local cache se instant user hydrate karo, phir background me revalidate karo
   checkAuth: async () => {
     const accessToken = await AsyncStorage.getItem('userAccessToken');
     const refreshToken = await AsyncStorage.getItem('userRefreshToken');
+    const cachedUserData = await AsyncStorage.getItem('userData');
+
+    // 1. Instant 0ms hydration from local AsyncStorage cache
+    if (cachedUserData) {
+      try {
+        const parsedUser = JSON.parse(cachedUserData);
+        set({ user: parsedUser, accessToken, refreshToken });
+      } catch (e) {
+        console.error('Error parsing cached user:', e);
+      }
+    }
+
     if (!accessToken) return;
 
+    // 2. Background Revalidation (doesn't block UI render)
     try {
       const response = await api.get('/auth/me');
-      set({ user: response.data.user, accessToken, refreshToken });
+      if (response.data?.user) {
+        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        set({ user: response.data.user, accessToken, refreshToken });
+      }
     } catch {
-      // checkAuth me refresh token logic automatic handle hoga interceptor se
-      // Agar wo fail hota hai toh logout
       if (!refreshToken) {
         await AsyncStorage.removeItem('userAccessToken');
+        await AsyncStorage.removeItem('userRefreshToken');
+        await AsyncStorage.removeItem('userData');
         set({ user: null, accessToken: null, refreshToken: null });
       }
     }

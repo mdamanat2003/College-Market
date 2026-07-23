@@ -19,10 +19,10 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const { checkAuth, user } = useAuthStore();
-  
+
   // ✅ FIX: Hooks hamesha component ke andar hote hain
-  const { connectSocket, disconnectSocket } = useChatStore(); 
-  
+  const { connectSocket, disconnectSocket } = useChatStore();
+
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
@@ -140,7 +140,11 @@ export default function RootLayout() {
     const isPublicRoute = (pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
 
     if (inAdminRoute && (!user || user.role !== 'admin')) {
-      router.replace('/(auth)/login');
+      if (user && user.role !== 'admin') {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/(auth)/login');
+      }
       return;
     }
 

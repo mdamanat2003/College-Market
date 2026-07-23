@@ -6,10 +6,10 @@ const router = express.Router();
 
 // Middleware to check if user is admin
 const adminCheck = (req: any, res: any, next: any) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && req.user.role === 'admin' && !req.user.isBlocked) {
     next();
   } else {
-    res.status(403).json({ message: "Not authorized as an Admin" });
+    res.status(403).json({ success: false, message: "Access denied. Admin authorization required." });
   }
 };
 

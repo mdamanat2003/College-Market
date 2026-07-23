@@ -37,7 +37,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
-  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [focusedField, setFocusedField] = useState<LoginFieldName | null>(null);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const [forgotHovered, setForgotHovered] = useState(false);
@@ -85,11 +84,6 @@ export default function Login() {
         Alert.alert('Welcome back!', `Hi ${normalizedEmail}`);
         const currentUser = useAuthStore.getState().user;
 
-        if (isAdminLogin && currentUser?.role !== 'admin') {
-          setFieldError('password', 'This account is not an admin. Please login with an admin account.');
-          return;
-        }
-
         if (currentUser?.role === 'admin') {
           router.replace('/admin/dashboard');
         } else {
@@ -131,28 +125,11 @@ export default function Login() {
                 <Text style={styles.backToHomeText}>Back to Home</Text>
               </TouchableOpacity>
               <View style={styles.form}>
-                <View style={styles.userTypeRow}>
-                  <TouchableOpacity
-                    onPress={() => setIsAdminLogin(false)}
-                    style={[styles.userTypePill, !isAdminLogin && styles.userTypePillActive]}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={[styles.userTypeText, !isAdminLogin && styles.userTypeTextActive]}>User Login</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setIsAdminLogin(true)}
-                    style={[styles.userTypePill, isAdminLogin && styles.userTypePillActive]}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={[styles.userTypeText, isAdminLogin && styles.userTypeTextActive]}>Admin Login</Text>
-                  </TouchableOpacity>
-                </View>
-
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Email Address</Text>
                   <TextInput
                     style={inputStyle('email', Boolean(fieldErrors.email))}
-                    placeholder={isAdminLogin ? 'admin@campus.edu' : 'you@college.edu'}
+                    placeholder="you@college.edu"
                     placeholderTextColor={COLORS.placeholder}
                     keyboardType="email-address"
                     autoCapitalize="none"

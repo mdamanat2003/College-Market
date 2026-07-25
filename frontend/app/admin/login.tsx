@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     flexDirection: 'row',
     alignItems: 'center',
-    justify: 'center',
+    justifyContent: 'center',
     marginTop: SPACING.sm,
   },
   submitBtnText: { color: '#000', fontSize: 15, fontWeight: '700' },

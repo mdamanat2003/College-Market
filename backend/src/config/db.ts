@@ -55,16 +55,16 @@ const connectDB = async () => {
       /authentication failed|bad auth/i.test(String(errAny?.message || errAny))
     );
 
-    if (!isProduction && isAuthError && uri && !isLocalMongoUri(uri)) {
-      console.warn('Authentication to configured MongoDB failed. Falling back to local MongoDB.');
+    if (!isProduction && uri && !isLocalMongoUri(uri)) {
+      console.warn('⚠️ MongoDB Atlas connection failed (possibly due to IP Whitelist or network issue). Attempting fallback to local MongoDB...');
       try {
         const localConn = await mongoose.connect(localUri, {
           serverSelectionTimeoutMS: 5000,
         });
-        console.log(`MongoDB Connected (local fallback): ${localConn.connection.host}`);
+        console.log(`✅ MongoDB Connected (local fallback): ${localConn.connection.host}`);
         return;
       } catch (localError) {
-        console.error("Local MongoDB fallback failed:");
+        console.error("❌ Local MongoDB fallback also failed:");
         console.error(localError);
       }
     }

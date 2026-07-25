@@ -81,7 +81,7 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
           }
         ]}
       >
-        <SafeImage uri={imageUrl} style={[styles.image, isPhone && styles.phoneImage]} resizeMode="cover" />
+        <SafeImage uri={imageUrl} style={[styles.image, isPhone && styles.phoneImage]} resizeMode="contain" />
 
         <View style={[styles.content, isPhone && styles.phoneContent]}>
           <View style={styles.titleRow}>

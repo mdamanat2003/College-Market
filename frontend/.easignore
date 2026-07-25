@@ -1,0 +1,11 @@
+# EAS Ignore Rules
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+*.tmp
+.git/
+.vscode/
+ios/
+android/

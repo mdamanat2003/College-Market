@@ -49,8 +49,7 @@ export default function AddItemScreen() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false,
       quality: 1, // Start with high quality, then compress
     });
 
@@ -70,8 +69,7 @@ export default function AddItemScreen() {
     if (status !== 'granted') return Alert.alert('Permission Denied!', 'Camera access is required.');
 
     const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false,
       quality: 1, // Start with high quality, then compress
     });
 

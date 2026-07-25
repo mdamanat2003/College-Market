@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "ooplabdh",
-    "slug": "frontend",
+    "name": "Ooplabdh",
+    "slug": "ooplabdh",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
+    "scheme": "ooplabdh",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -50,8 +50,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "7f5abe77-de83-44c4-b1e5-7dbb55b4cb0f"
+        "projectId": "2d5578ff-cabf-4b88-b93a-498d48c70545"
       }
-    }
+    },
+    "owner": "mdamanatullah"
   }
 }

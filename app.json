@@ -1,5 +1,7 @@
 {
   "expo": {
+    "name": "Ooplabdh",
+    "slug": "ooplabdh",
     "extra": {
       "eas": {
         "projectId": "2d5578ff-cabf-4b88-b93a-498d48c70545"

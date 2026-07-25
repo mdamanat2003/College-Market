@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { getProducts, getProductById, createProduct, toggleWishlist } from '../controllers/productController';
+import { getProducts, getProductById, createProduct, updateProduct, deleteProduct, toggleWishlist } from '../controllers/productController';
 import { protect } from '../middleware/authMiddleware';
-import { uploadProductImages } from '../middleware/uploadMiddleware'; // 👈 Naya middleware import kiya
+import { uploadProductImages } from '../middleware/uploadMiddleware';
 
 const router = Router();
 
@@ -13,7 +13,9 @@ router.post('/:id/wishlist', protect, toggleWishlist);
 
 router.get('/:id', getProductById);
 
-// Protected routes (Ab ye multi-image upload aur links dono support karega)
-router.post('/', protect, uploadProductImages, createProduct); // 👈 Yahan middleware fit kar diya
+// Protected routes
+router.post('/', protect, uploadProductImages, createProduct);
+router.put('/:id', protect, uploadProductImages, updateProduct);
+router.delete('/:id', protect, deleteProduct);
 
-export default router;
+export default router;

@@ -165,24 +165,34 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
       }
     }
 
-    // 2. Local Files check - save uploaded files to backend /uploads and return accessible URLs
+    // 2. Local Files check - save uploaded files to Cloudinary or local disk
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
       const isCloudinaryConfigured = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 
-      if (!isCloudinaryConfigured) {
-        return res.status(500).json({ message: 'Cloudinary configuration missing. Cannot upload files.' });
-      }
-
-      // Upload to Cloudinary concurrently
-      const uploadPromises = req.files.map((file: any) => 
-        uploadBufferToCloudinary(file.buffer, 'ooplabdh_products')
-      );
-      const uploadResults = await Promise.all(uploadPromises);
-      uploadResults.forEach((result: any) => {
-        if (result && result.secure_url) {
-          finalImagesArray.push(result.secure_url);
+      if (isCloudinaryConfigured) {
+        const uploadPromises = req.files.map((file: any) => 
+          uploadBufferToCloudinary(file.buffer, 'ooplabdh_products')
+        );
+        const uploadResults = await Promise.all(uploadPromises);
+        uploadResults.forEach((result: any) => {
+          if (result && result.secure_url) {
+            finalImagesArray.push(result.secure_url);
+          }
+        });
+      } else {
+        const productsUploadDir = path.resolve(__dirname, '..', '..', 'uploads', 'products');
+        if (!fs.existsSync(productsUploadDir)) {
+          fs.mkdirSync(productsUploadDir, { recursive: true });
         }
-      });
+
+        req.files.forEach((file: any) => {
+          const filename = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname) || '.jpg'}`;
+          const filePath = path.join(productsUploadDir, filename);
+          fs.writeFileSync(filePath, file.buffer);
+          const fileUrl = `${uploadsBase}/products/${filename}`;
+          finalImagesArray.push(fileUrl);
+        });
+      }
     }
 
     if (finalImagesArray.length === 0) {
@@ -203,16 +213,144 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
       category,
       condition,
       images: finalImagesArray,
-      college: college || req.user.college || 'N/A', // 👈 'N/A' add kiya taaki empty na jaye
+      college: college || req.user.college || 'N/A',
     });
 
     console.log("🎉 SUCCESS: Product Save Ho Gaya!");
     res.status(201).json({ success: true, product });
 
   } catch (error) {
-    // 👇 YEH LINE HUME ASLI GUNEHGAAR BATAYEGI 👇
     console.error("🔥🔥🔥 BACKEND CRASH DETAILS 🔥🔥🔥");
     console.error(error);
     res.status(500).json({ success: false, message: "Server crash details printed in backend terminal", error });
   }
 });
+
+// @desc    Update existing product listing (Protected - Owner or Admin)
+// @route   PUT /api/products/:id
+export const updateProduct = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const productId = req.params.id;
+  const product = await Product.findById(productId);
+
+  if (!product) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+
+  // Verify ownership or admin privileges
+  const isOwner = product.seller.toString() === req.user._id.toString();
+  const isAdmin = req.user.role === 'admin';
+
+  if (!isOwner && !isAdmin) {
+    res.status(403);
+    throw new Error('Not authorized to update this product listing');
+  }
+
+  const { title, description, price, marketPrice, category, condition, status, existingImages, imageLinks } = req.body;
+
+  if (title) product.title = title;
+  if (description) product.description = description;
+  if (price !== undefined && price !== '') product.price = Number(price);
+  if (marketPrice !== undefined) product.marketPrice = marketPrice !== '' && marketPrice !== null ? Number(marketPrice) : undefined;
+  if (category) product.category = category;
+  if (condition) product.condition = condition;
+  if (status) product.status = status;
+
+  let updatedImages: string[] = [];
+
+  // Check existing images passed back
+  if (existingImages) {
+    if (Array.isArray(existingImages)) {
+      updatedImages.push(...existingImages);
+    } else {
+      try {
+        const parsed = JSON.parse(existingImages);
+        if (Array.isArray(parsed)) updatedImages.push(...parsed);
+        else updatedImages.push(existingImages);
+      } catch {
+        updatedImages.push(existingImages);
+      }
+    }
+  }
+
+  // Check new image links
+  if (imageLinks) {
+    if (Array.isArray(imageLinks)) {
+      updatedImages.push(...imageLinks);
+    } else {
+      updatedImages.push(imageLinks);
+    }
+  }
+
+  // Check uploaded files
+  if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+    const isCloudinaryConfigured = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+
+    if (isCloudinaryConfigured) {
+      const uploadPromises = req.files.map((file: any) =>
+        uploadBufferToCloudinary(file.buffer, 'ooplabdh_products')
+      );
+      const uploadResults = await Promise.all(uploadPromises);
+      uploadResults.forEach((result: any) => {
+        if (result && result.secure_url) {
+          updatedImages.push(result.secure_url);
+        }
+      });
+    } else {
+      const forwardedProtoHeader = req.headers['x-forwarded-proto'];
+      const forwardedProto = Array.isArray(forwardedProtoHeader) ? forwardedProtoHeader[0] : forwardedProtoHeader;
+      const publicProtocol = process.env.PUBLIC_BASE_URL?.startsWith('https://') || forwardedProto === 'https' || process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+      const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${publicProtocol}://${req.get('host')}/uploads`;
+
+      const productsUploadDir = path.resolve(__dirname, '..', '..', 'uploads', 'products');
+      if (!fs.existsSync(productsUploadDir)) {
+        fs.mkdirSync(productsUploadDir, { recursive: true });
+      }
+
+      req.files.forEach((file: any) => {
+        const filename = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname) || '.jpg'}`;
+        const filePath = path.join(productsUploadDir, filename);
+        fs.writeFileSync(filePath, file.buffer);
+        const fileUrl = `${uploadsBase}/products/${filename}`;
+        updatedImages.push(fileUrl);
+      });
+    }
+  }
+
+  // Only replace images if new/retained images are explicitly provided
+  if (updatedImages.length > 0) {
+    product.images = updatedImages;
+  }
+
+  await product.save();
+
+  const updatedProduct = await Product.findById(product._id).populate('seller', 'name avatar college phone rating ratingCount');
+
+  res.json({ success: true, product: updatedProduct });
+});
+
+// @desc    Delete product listing (Protected - Owner or Admin)
+// @route   DELETE /api/products/:id
+export const deleteProduct = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const productId = req.params.id;
+  const product = await Product.findById(productId);
+
+  if (!product) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+
+  // Verify ownership or admin privileges
+  const isOwner = product.seller.toString() === req.user._id.toString();
+  const isAdmin = req.user.role === 'admin';
+
+  if (!isOwner && !isAdmin) {
+    res.status(403);
+    throw new Error('Not authorized to delete this product listing');
+  }
+
+  await Product.findByIdAndDelete(productId);
+
+  res.json({ success: true, message: 'Product listing deleted successfully' });
+});
+

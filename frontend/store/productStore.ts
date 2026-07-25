@@ -13,6 +13,8 @@ interface ProductState {
   fetchProducts: (category?: string, search?: string, college?: string) => Promise<void>;
   fetchProductById: (productId: string) => Promise<any | null>;
   addProduct: (productData: any) => Promise<boolean>;
+  updateProduct: (productId: string, productData: any) => Promise<boolean>;
+  deleteProduct: (productId: string) => Promise<boolean>;
   toggleWishlist: (productId: string) => Promise<boolean | null>;
 }
 
@@ -72,6 +74,39 @@ export const useProductStore = create<ProductState>()(
         }
       },
 
+      updateProduct: async (productId, productData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await api.put(`/products/${productId}`, productData);
+          const updated = response.data.product;
+          set((state) => ({
+            products: state.products.map((p) => (p._id === productId ? updated : p)),
+            isLoading: false,
+          }));
+          return true;
+        } catch (error: any) {
+          const errorMsg = error.response?.data?.message || error.message || 'Failed to update product';
+          console.error("❌ Update product store error:", error.response?.data || error.message);
+          set({ error: errorMsg, isLoading: false });
+          return false;
+        }
+      },
+
+      deleteProduct: async (productId) => {
+        set({ isLoading: true, error: null });
+        try {
+          await api.delete(`/products/${productId}`);
+          set((state) => ({
+            products: state.products.filter((p) => p._id !== productId),
+            isLoading: false,
+          }));
+          return true;
+        } catch (error: any) {
+          set({ error: error.response?.data?.message || 'Failed to delete product', isLoading: false });
+          return false;
+        }
+      },
+
       toggleWishlist: async (productId) => {
         const user = useAuthStore.getState().user;
         if (!user) return null;
@@ -110,4 +145,4 @@ export const useProductStore = create<ProductState>()(
       partialize: (state) => ({ products: state.products }), // Only persist the products list
     }
   )
-);
+);

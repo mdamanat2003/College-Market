@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useAuthStore } from '../../store/authStore';
+import { useChatStore } from '../../store/chatStore';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
 type ActiveRoute = 'home' | 'about' | 'contact' | 'faq';
@@ -34,6 +35,24 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
     setIsMenuOpen(false);
     router.push(href as never);
   };
+
+  const unreadNotifications = useChatStore((state) => state.unreadNotifications);
+
+  const notificationAction = user ? (
+    <TouchableOpacity
+      style={styles.notificationBtn}
+      onPress={() => navigateTo('/notifications')}
+      accessibilityRole="button"
+      accessibilityLabel="Notifications"
+    >
+      <Ionicons name="notifications-outline" size={20} color={COLORS.text} />
+      {unreadNotifications > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  ) : null;
 
   const profileInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
   const authAction = user ? (
@@ -153,6 +172,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
           );
         })}
 
+        {notificationAction}
         {authAction}
       </View>
     </View>
@@ -355,5 +375,31 @@ const styles = StyleSheet.create({
     padding: 6,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  notificationBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    minWidth: 16,
+    height: 16,
+    backgroundColor: COLORS.danger,
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
   },
 });

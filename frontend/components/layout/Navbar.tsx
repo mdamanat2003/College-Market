@@ -22,6 +22,7 @@ import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 const NAV_ITEMS = [
   { id: 'home', name: 'Home', path: '/home', icon: 'home-outline', activeIcon: 'home' },
   { id: 'market', name: 'Marketplace', path: '/marketplace', icon: 'cart-outline', activeIcon: 'cart' },
+  { id: 'notifications', name: 'Notifications', path: '/notifications', icon: 'notifications-outline', activeIcon: 'notifications' },
   { id: 'academic', name: 'PyQ & Notes', path: '/academic', icon: 'book-outline', activeIcon: 'book' },
   { id: 'lostfound', name: 'Lost & Found', path: '/lost-found', icon: 'search-outline', activeIcon: 'search' },
   { id: 'events', name: 'Campus Fests', path: '/events', icon: 'calendar-outline', activeIcon: 'calendar' },
@@ -92,6 +93,10 @@ export const Navbar = () => {
                 <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
               </View>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.iconButton, isPhone && styles.phoneIconButton]} onPress={() => router.push('/settings' as any)}>
+            <Ionicons name="settings-outline" size={24} color={COLORS.text} />
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.profileBtn, isPhone && styles.phoneProfileBtn]} onPress={() => router.push('/profile')}>

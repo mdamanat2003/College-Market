@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
+import { router } from 'expo-router';
 import { api, SOCKET_URL } from '../services/api';
+import { useToastStore } from './toastStore';
 
 interface Message {
   _id: string;
@@ -72,13 +74,61 @@ export const useChatStore = create<ChatState>((set, get) => ({
           conversations: updateConversationPreview(state.conversations, newMessage),
         };
       });
+
+      // Pop-up Toast Alert for incoming message
+      const senderObj = typeof newMessage.sender === 'object' ? newMessage.sender : null;
+      const senderName = senderObj?.name || 'User';
+      const text = newMessage.text || 'Sent an attachment';
+
+      useToastStore.getState().showToast({
+        title: `💬 New message from ${senderName}`,
+        message: text,
+        type: 'info',
+        icon: 'chatbubbles-outline',
+        onPress: () => {
+          router.push('/messages' as any);
+        },
+      });
+
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        if (document.hidden) {
+          try {
+            new Notification(`Message from ${senderName}`, { body: text });
+          } catch (e) {
+            console.error('Web notification error:', e);
+          }
+        }
+      }
     });
 
     // Typing indicators
     socket.on('typing', () => set({ isTyping: true }));
     socket.on('stop_typing', () => set({ isTyping: false }));
-    socket.on('new_notification', () => {
+    socket.on('new_notification', (data?: any) => {
       set((state) => ({ unreadNotifications: state.unreadNotifications + 1 }));
+
+      const title = data?.title || '🔔 New Notification';
+      const message = data?.message || 'You have received a new update';
+
+      useToastStore.getState().showToast({
+        title,
+        message,
+        type: data?.type || 'info',
+        icon: 'notifications-outline',
+        onPress: () => {
+          router.push('/notifications' as any);
+        },
+      });
+
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        if (document.hidden) {
+          try {
+            new Notification(title, { body: message });
+          } catch (e) {
+            console.error('Web notification error:', e);
+          }
+        }
+      }
     });
 
     set({ socket });

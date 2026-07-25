@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore'; // <-- Chat Store import
 import { COLORS } from '../theme/colors';
 import { InstallAppBanner } from '../components/layout/InstallAppBanner';
+import { NotificationToast } from '../components/ui/NotificationToast';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -163,6 +164,13 @@ export default function RootLayout() {
     if (user && user._id) {
       connectSocket(user._id); // User login hote hi online mark ho jayega
       useChatStore.getState().fetchUnreadNotificationsCount();
+
+      // Web Browser Notification Permission Request
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && 'Notification' in window) {
+        if (Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => {});
+        }
+      }
     } else {
       disconnectSocket(); // Logout par connection cut
     }
@@ -181,6 +189,7 @@ export default function RootLayout() {
       <View style={{ flex: 1 }}>
         <Stack screenOptions={{ headerShown: false }} />
         <InstallAppBanner />
+        <NotificationToast />
       </View>
       <StatusBar style="auto" />
     </ThemeProvider>

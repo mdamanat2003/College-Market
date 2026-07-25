@@ -177,14 +177,9 @@ export default function ProfileScreen() {
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Dashboard</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <TouchableOpacity onPress={() => router.push('/settings' as any)} style={styles.backBtn}>
-            <Ionicons name="settings-outline" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout} style={styles.backBtn}>
-            <Ionicons name="log-out-outline" size={24} color={COLORS.danger} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={handleLogout} style={styles.backBtn}>
+          <Ionicons name="log-out-outline" size={24} color={COLORS.danger} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef}>
@@ -203,7 +198,10 @@ export default function ProfileScreen() {
             <View style={styles.nameRow}>
               <Text style={styles.name}>{user?.name}</Text>
               <TouchableOpacity onPress={handleOpenEditModal} style={styles.editIconBtn}>
-                <Ionicons name="create-outline" size={20} color={COLORS.primary} />
+                <Ionicons name="create-outline" size={18} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/settings' as any)} style={[styles.editIconBtn, { marginLeft: 2 }]}>
+                <Ionicons name="settings-outline" size={20} color={COLORS.text} />
               </TouchableOpacity>
             </View>
             <Text style={styles.email}>{user?.email}</Text>

@@ -95,10 +95,6 @@ export const Navbar = () => {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.iconButton, isPhone && styles.phoneIconButton]} onPress={() => router.push('/settings' as any)}>
-            <Ionicons name="settings-outline" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-
           <TouchableOpacity style={[styles.profileBtn, isPhone && styles.phoneProfileBtn]} onPress={() => router.push('/profile')}>
             {user?.avatar ? (
               <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />

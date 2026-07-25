@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { router } from 'expo-router';
 import { api, SOCKET_URL } from '../services/api';
 import { useToastStore } from './toastStore';
+import { useAuthStore } from './authStore';
 
 interface Message {
   _id: string;
@@ -75,8 +76,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       });
 
-      // Pop-up Toast Alert for incoming message
+      // ✅ FIX: Sender ko apna hi notification pop-up nahi aana chahiye
       const senderObj = typeof newMessage.sender === 'object' ? newMessage.sender : null;
+      const senderId = senderObj ? senderObj._id : newMessage.sender;
+      const currentUserId = userId || useAuthStore.getState().user?._id;
+
+      // Agar khud hi sender hain, toh pop-up alert trigger mat karo
+      if (senderId && currentUserId && String(senderId) === String(currentUserId)) {
+        return;
+      }
+
       const senderName = senderObj?.name || 'User';
       const text = newMessage.text || 'Sent an attachment';
 

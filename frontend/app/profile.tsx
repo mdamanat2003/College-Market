@@ -74,8 +74,13 @@ export default function ProfileScreen() {
       quality: 0.8,
     });
 
-    if (!result.canceled) {
-      setEditAvatarUri(result.assets[0].uri);
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > 1024 * 1024) {
+        Alert.alert('File Too Large', 'Bhai, profile photo 1MB se kam size ki honi chahiye.');
+        return;
+      }
+      setEditAvatarUri(asset.uri);
     }
   };
 
@@ -101,6 +106,11 @@ export default function ProfileScreen() {
         if (Platform.OS === 'web') {
           const response = await fetch(editAvatarUri);
           const blob = await response.blob();
+          if (blob.size > 1024 * 1024) {
+            setIsUpdating(false);
+            Alert.alert('File Too Large', 'Bhai, profile photo 1MB se kam size ki honi chahiye.');
+            return;
+          }
           formData.append('avatar', blob, filename);
         } else {
           formData.append('avatar', {

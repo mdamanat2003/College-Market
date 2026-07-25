@@ -11,6 +11,7 @@ import { useChatStore } from '../store/chatStore'; // <-- Chat Store import
 import { COLORS } from '../theme/colors';
 import { InstallAppBanner } from '../components/layout/InstallAppBanner';
 import { NotificationToast } from '../components/ui/NotificationToast';
+import { OfflineBanner } from '../components/ui/OfflineBanner';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -190,6 +191,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }} />
         <InstallAppBanner />
         <NotificationToast />
+        <OfflineBanner />
       </View>
       <StatusBar style="auto" />
     </ThemeProvider>

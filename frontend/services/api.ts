@@ -86,10 +86,13 @@ if (Platform.OS !== 'web' && /localhost|127\.0\.0\.1/.test(API_URL)) {
 
 export const api = axios.create({
   baseURL: API_URL,
-  // Removed default Content-Type to allow axios to handle it automatically
+  timeout: 15000, // 15 seconds timeout for slow 2G/3G connections
 });
 
-// Request Interceptor: Automatically attach token if exists
+// Helper for caching GET requests to AsyncStorage
+const getCacheKey = (url?: string) => (url ? `@cache_${url.replace(/[^a-zA-Z0-9_]/g, '_')}` : null);
+
+// Request Interceptor: Automatically attach token & check offline cache
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('userAccessToken');
@@ -103,12 +106,33 @@ api.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle global errors (like token expiry)
+// Response Interceptor: Auto-Retry + Stale-While-Revalidate Caching for slow internet
 api.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    // Cache GET response asynchronously for offline/slow internet fallback
+    if (response.config.method?.toLowerCase() === 'get' && response.config.url) {
+      const cacheKey = getCacheKey(response.config.url);
+      if (cacheKey && response.data) {
+        AsyncStorage.setItem(cacheKey, JSON.stringify(response.data)).catch(() => {});
+      }
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
+    if (!originalRequest) return Promise.reject(error);
 
+    // 1. Automatic Retry logic for network timeouts or network failures (up to 2 retries)
+    const isNetworkOrTimeoutError = error.code === 'ECONNABORTED' || !error.response;
+    if (isNetworkOrTimeoutError && (!originalRequest._retryCount || originalRequest._retryCount < 2)) {
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      // Wait 1 second before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000 * originalRequest._retryCount));
+      console.log(`[api] Slow Network: Retrying request (${originalRequest._retryCount}/2): ${originalRequest.url}`);
+      return api(originalRequest);
+    }
+
+    // 2. Token refresh handling (401 Unauthorized)
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = await AsyncStorage.getItem('userRefreshToken');
@@ -124,14 +148,35 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
-          // Refresh token fail ho gaya (expired or invalid)
           await AsyncStorage.removeItem('userAccessToken');
           await AsyncStorage.removeItem('userRefreshToken');
-          // Yahan hum event emit kar sakte hain ya store ko clear kar sakte hain
           return Promise.reject(refreshError);
         }
       }
     }
+
+    // 3. Offline / Slow Internet Cache Fallback for GET requests
+    if (originalRequest.method?.toLowerCase() === 'get' && originalRequest.url) {
+      const cacheKey = getCacheKey(originalRequest.url);
+      if (cacheKey) {
+        try {
+          const cachedData = await AsyncStorage.getItem(cacheKey);
+          if (cachedData) {
+            console.log(`[api] Serving cached response for offline/slow internet: ${originalRequest.url}`);
+            return {
+              data: JSON.parse(cachedData),
+              status: 200,
+              statusText: 'OK (Cached)',
+              headers: { 'x-from-cache': 'true' },
+              config: originalRequest,
+            };
+          }
+        } catch (cacheErr) {
+          console.error('[api] Error reading cache:', cacheErr);
+        }
+      }
+    }
+
     return Promise.reject(error);
   }
 );

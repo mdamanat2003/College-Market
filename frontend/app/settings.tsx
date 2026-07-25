@@ -99,7 +99,16 @@ export default function SettingsScreen() {
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
-  // 1. Load initial settings from AsyncStorage
+  // Dynamic Theme Tokens computed from darkMode state
+  const themeBg = darkMode ? '#09090b' : '#F9FAFB'; // Gray 50 in Light mode, Zinc 950 in Dark
+  const themeCardBg = darkMode ? '#18181b' : '#FFFFFF'; // Pure White in Light mode, Zinc 900 in Dark
+  const themeSurface = darkMode ? '#27272a' : '#F3F4F6'; // Gray 100 in Light mode, Zinc 800 in Dark
+  const themeText = darkMode ? '#F8FAFC' : '#0F172A'; // Slate 900 in Light mode, Slate 50 in Dark
+  const themeSubText = darkMode ? '#94A3B8' : '#64748B'; // Slate 500 in Light mode, Slate 400 in Dark
+  const themeBorder = darkMode ? '#27272a' : '#E2E8F0'; // Slate 200 in Light mode, Zinc 800 in Dark
+  const themeIconBg = darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.05)';
+
+  // Load initial settings from AsyncStorage
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -194,7 +203,7 @@ export default function SettingsScreen() {
     await AsyncStorage.setItem(STORAGE_KEYS.DARK_MODE, String(val));
     showToast({
       title: val ? '🌙 Dark Mode Active' : '☀️ Light Mode Theme',
-      message: val ? 'App theme set to Dark Slate.' : 'Theme preference saved.',
+      message: val ? 'App theme set to Dark Mode.' : 'App theme set to Clean Light Mode.',
       type: 'info',
     });
   };
@@ -215,7 +224,12 @@ export default function SettingsScreen() {
     });
 
     if (!result.canceled && result.assets[0]?.uri) {
-      setEditAvatarUri(result.assets[0].uri);
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > 1024 * 1024) {
+        Alert.alert('File Too Large', 'Profile photo size should be less than 1MB.');
+        return;
+      }
+      setEditAvatarUri(asset.uri);
     }
   };
 
@@ -233,14 +247,29 @@ export default function SettingsScreen() {
       if (editCollege.trim()) formData.append('college', editCollege.trim());
 
       if (editAvatarUri && !editAvatarUri.startsWith('http')) {
-        const filename = editAvatarUri.split('/').pop() || 'avatar.jpg';
+        let filename = editAvatarUri.split('/').pop() || 'avatar.jpg';
+        if (!filename.includes('.')) {
+          filename = 'avatar.jpg';
+        }
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : 'image/jpeg';
-        formData.append('avatar', {
-          uri: editAvatarUri,
-          name: filename,
-          type,
-        } as any);
+
+        if (Platform.OS === 'web') {
+          const res = await fetch(editAvatarUri);
+          const blob = await res.blob();
+          if (blob.size > 1024 * 1024) {
+            setIsUpdatingProfile(false);
+            Alert.alert('File Too Large', 'Profile photo size should be less than 1MB.');
+            return;
+          }
+          formData.append('avatar', blob, filename);
+        } else {
+          formData.append('avatar', {
+            uri: Platform.OS === 'ios' ? editAvatarUri.replace('file://', '') : editAvatarUri,
+            name: filename,
+            type,
+          } as any);
+        }
       }
 
       const success = await updateProfile(formData);
@@ -270,7 +299,6 @@ export default function SettingsScreen() {
     await AsyncStorage.setItem(STORAGE_KEYS.CAMPUS_NAME, campus);
     await AsyncStorage.setItem(STORAGE_KEYS.SEARCH_RADIUS, radius);
 
-    // Also update profile if college changed
     if (user && campus !== user.college) {
       const formData = new FormData();
       formData.append('name', user.name);
@@ -372,7 +400,7 @@ export default function SettingsScreen() {
   // --- REUSABLE SETTING ROW ---
   const SettingRow: React.FC<SettingRowProps> = ({
     iconName,
-    iconColor = COLORS.text,
+    iconColor,
     title,
     subtitle,
     onPress,
@@ -381,19 +409,19 @@ export default function SettingsScreen() {
     showChevron = true,
     badgeText,
   }) => {
-    const titleColor = isDestructive ? COLORS.danger : COLORS.text;
-    const finalIconColor = isDestructive ? COLORS.danger : iconColor;
+    const defaultIconColor = isDestructive ? COLORS.danger : (iconColor || themeText);
+    const titleColor = isDestructive ? COLORS.danger : themeText;
 
     return (
       <TouchableOpacity
         activeOpacity={onPress ? 0.7 : 1}
         onPress={onPress}
         disabled={!onPress}
-        style={styles.settingRow}
+        style={[styles.settingRow, { backgroundColor: themeCardBg }]}
       >
         <View style={styles.settingRowLeft}>
-          <View style={[styles.iconContainer, { backgroundColor: isDestructive ? 'rgba(239, 68, 68, 0.12)' : 'rgba(255, 255, 255, 0.06)' }]}>
-            <Ionicons name={iconName} size={20} color={finalIconColor} />
+          <View style={[styles.iconContainer, { backgroundColor: isDestructive ? 'rgba(239, 68, 68, 0.12)' : themeIconBg }]}>
+            <Ionicons name={iconName} size={20} color={defaultIconColor} />
           </View>
           <View style={styles.textContainer}>
             <View style={styles.titleBadgeRow}>
@@ -405,14 +433,14 @@ export default function SettingsScreen() {
                 </View>
               )}
             </View>
-            {subtitle ? <Text style={styles.settingSubtitle}>{subtitle}</Text> : null}
+            {subtitle ? <Text style={[styles.settingSubtitle, { color: themeSubText }]}>{subtitle}</Text> : null}
           </View>
         </View>
 
         <View style={styles.settingRowRight}>
           {rightComponent}
           {!rightComponent && showChevron && (
-            <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+            <Ionicons name="chevron-forward" size={18} color={themeSubText} />
           )}
         </View>
       </TouchableOpacity>
@@ -420,21 +448,29 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: themeBg }]}>
+      <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} backgroundColor={themeBg} />
 
-      {/* Header */}
-      <View style={styles.header}>
+      {/* Dynamic Header */}
+      <View style={[styles.header, { backgroundColor: themeCardBg, borderBottomColor: themeBorder }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={themeText} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: themeText }]}>Settings</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* User Profile Card */}
-        <View style={styles.profileCard}>
+        
+        {/* Improved UX: Entire Top Profile Card is a Clickable Navigation Item */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={[styles.profileCard, { backgroundColor: themeCardBg, borderColor: themeBorder }]}
+          onPress={() => {
+            console.log('[SettingsScreen] Navigate to Edit Profile');
+            setActiveModal('editProfile');
+          }}
+        >
           <Image
             source={{
               uri:
@@ -446,7 +482,7 @@ export default function SettingsScreen() {
           />
           <View style={styles.profileInfo}>
             <View style={styles.profileNameRow}>
-              <Text style={styles.profileName} numberOfLines={1}>
+              <Text style={[styles.profileName, { color: themeText }]} numberOfLines={1}>
                 {user?.name || 'College Student'}
               </Text>
               <Ionicons name="checkmark-circle" size={16} color={COLORS.success} style={{ marginLeft: 4 }} />
@@ -454,18 +490,16 @@ export default function SettingsScreen() {
             <Text style={styles.profileCollege} numberOfLines={1}>
               {selectedCampus}
             </Text>
-            <Text style={styles.profileEmail} numberOfLines={1}>
+            <Text style={[styles.profileEmail, { color: themeSubText }]} numberOfLines={1}>
               {user?.email || 'student@college.ac.in'}
             </Text>
           </View>
-          <TouchableOpacity style={styles.editProfileBtn} onPress={() => setActiveModal('editProfile')}>
-            <Text style={styles.editProfileBtnText}>Edit</Text>
-          </TouchableOpacity>
-        </View>
+          <Ionicons name="chevron-forward" size={22} color={themeSubText} style={{ marginLeft: SPACING.xs }} />
+        </TouchableOpacity>
 
         {/* Section 1: Account & Profile */}
-        <Text style={styles.sectionHeader}>ACCOUNT & PROFILE</Text>
-        <View style={styles.cardGroup}>
+        <Text style={[styles.sectionHeader, { color: themeSubText }]}>ACCOUNT & PROFILE</Text>
+        <View style={[styles.cardGroup, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
           <SettingRow
             iconName="person-outline"
             iconColor={COLORS.accent}
@@ -473,7 +507,7 @@ export default function SettingsScreen() {
             subtitle="Name, Phone & Avatar"
             onPress={() => setActiveModal('editProfile')}
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="location-outline"
             iconColor="#38BDF8"
@@ -481,7 +515,7 @@ export default function SettingsScreen() {
             subtitle={`${selectedCampus} • ${selectedRadius} Radius`}
             onPress={() => setActiveModal('campusDetails')}
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="shield-checkmark-outline"
             iconColor={COLORS.success}
@@ -493,8 +527,8 @@ export default function SettingsScreen() {
         </View>
 
         {/* Section 2: Notifications */}
-        <Text style={styles.sectionHeader}>NOTIFICATIONS</Text>
-        <View style={styles.cardGroup}>
+        <Text style={[styles.sectionHeader, { color: themeSubText }]}>NOTIFICATIONS</Text>
+        <View style={[styles.cardGroup, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
           <SettingRow
             iconName="notifications-outline"
             iconColor="#F59E0B"
@@ -505,12 +539,12 @@ export default function SettingsScreen() {
               <Switch
                 value={pushNotifications}
                 onValueChange={handleTogglePushNotifications}
-                trackColor={{ false: '#3f3f46', true: COLORS.accent }}
+                trackColor={{ false: darkMode ? '#3f3f46' : '#D1D5DB', true: COLORS.accent }}
                 thumbColor="#FFFFFF"
               />
             }
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="pricetag-outline"
             iconColor="#EC4899"
@@ -521,7 +555,7 @@ export default function SettingsScreen() {
               <Switch
                 value={listingAlerts}
                 onValueChange={handleToggleListingAlerts}
-                trackColor={{ false: '#3f3f46', true: COLORS.accent }}
+                trackColor={{ false: darkMode ? '#3f3f46' : '#D1D5DB', true: COLORS.accent }}
                 thumbColor="#FFFFFF"
               />
             }
@@ -529,8 +563,8 @@ export default function SettingsScreen() {
         </View>
 
         {/* Section 3: Privacy & Security */}
-        <Text style={styles.sectionHeader}>PRIVACY & SECURITY</Text>
-        <View style={styles.cardGroup}>
+        <Text style={[styles.sectionHeader, { color: themeSubText }]}>PRIVACY & SECURITY</Text>
+        <View style={[styles.cardGroup, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
           <SettingRow
             iconName="hand-left-outline"
             iconColor="#A855F7"
@@ -538,7 +572,7 @@ export default function SettingsScreen() {
             subtitle={`${blockedUsers.length} blocked account(s)`}
             onPress={() => setActiveModal('blockedUsers')}
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="navigate-outline"
             iconColor="#6366F1"
@@ -549,12 +583,12 @@ export default function SettingsScreen() {
               <Switch
                 value={locationPermissions}
                 onValueChange={handleToggleLocationPermissions}
-                trackColor={{ false: '#3f3f46', true: COLORS.accent }}
+                trackColor={{ false: darkMode ? '#3f3f46' : '#D1D5DB', true: COLORS.accent }}
                 thumbColor="#FFFFFF"
               />
             }
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="trash-outline"
             iconColor={COLORS.danger}
@@ -566,19 +600,19 @@ export default function SettingsScreen() {
         </View>
 
         {/* Section 4: Appearance */}
-        <Text style={styles.sectionHeader}>APPEARANCE</Text>
-        <View style={styles.cardGroup}>
+        <Text style={[styles.sectionHeader, { color: themeSubText }]}>APPEARANCE</Text>
+        <View style={[styles.cardGroup, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
           <SettingRow
-            iconName="moon-outline"
+            iconName={darkMode ? 'moon-outline' : 'sunny-outline'}
             iconColor="#38BDF8"
             title="Dark Mode"
-            subtitle="Sleek dark theme for reduced eye strain"
+            subtitle={darkMode ? 'Dark slate background theme active' : 'Clean light gray background theme active'}
             showChevron={false}
             rightComponent={
               <Switch
                 value={darkMode}
                 onValueChange={handleToggleDarkMode}
-                trackColor={{ false: '#3f3f46', true: COLORS.accent }}
+                trackColor={{ false: '#D1D5DB', true: COLORS.accent }}
                 thumbColor="#FFFFFF"
               />
             }
@@ -586,8 +620,8 @@ export default function SettingsScreen() {
         </View>
 
         {/* Section 5: Legal & Support */}
-        <Text style={styles.sectionHeader}>LEGAL & SUPPORT</Text>
-        <View style={styles.cardGroup}>
+        <Text style={[styles.sectionHeader, { color: themeSubText }]}>LEGAL & SUPPORT</Text>
+        <View style={[styles.cardGroup, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
           <SettingRow
             iconName="shield-half-outline"
             iconColor="#10B981"
@@ -595,7 +629,7 @@ export default function SettingsScreen() {
             subtitle="Guidelines for safe in-person deals"
             onPress={() => setActiveModal('safety')}
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="document-text-outline"
             iconColor="#3B82F6"
@@ -603,7 +637,7 @@ export default function SettingsScreen() {
             subtitle="Platform policies and student privacy"
             onPress={() => router.push('/terms' as any)}
           />
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName="help-circle-outline"
             iconColor="#F59E0B"
@@ -621,8 +655,8 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <View style={styles.versionFooter}>
-            <Text style={styles.versionTitle}>Ooplabdh v1.0.0</Text>
-            <Text style={styles.versionSubtitle}>Made with ❤️ for students</Text>
+            <Text style={[styles.versionTitle, { color: themeSubText }]}>Ooplabdh v1.0.0</Text>
+            <Text style={[styles.versionSubtitle, { color: themeSubText }]}>Made with ❤️ for students</Text>
           </View>
         </View>
       </ScrollView>
@@ -632,11 +666,11 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'editProfile'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
+              <Text style={[styles.modalTitle, { color: themeText }]}>Edit Profile</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
@@ -651,39 +685,39 @@ export default function SettingsScreen() {
                     }}
                     style={styles.modalAvatarImg}
                   />
-                  <View style={styles.cameraIconBadge}>
+                  <View style={[styles.cameraIconBadge, { borderColor: themeCardBg }]}>
                     <Ionicons name="camera" size={16} color="#FFF" />
                   </View>
                 </TouchableOpacity>
-                <Text style={styles.avatarChangeText}>Tap to change avatar</Text>
+                <Text style={[styles.avatarChangeText, { color: themeSubText }]}>Tap to change avatar</Text>
               </View>
 
-              <Text style={styles.inputLabel}>Full Name</Text>
+              <Text style={[styles.inputLabel, { color: themeText }]}>Full Name</Text>
               <TextInput
-                style={styles.modalInput}
+                style={[styles.modalInput, { backgroundColor: themeSurface, color: themeText, borderColor: themeBorder }]}
                 value={editName}
                 onChangeText={setEditName}
                 placeholder="Enter your full name"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={themeSubText}
               />
 
-              <Text style={styles.inputLabel}>Phone Number</Text>
+              <Text style={[styles.inputLabel, { color: themeText }]}>Phone Number</Text>
               <TextInput
-                style={styles.modalInput}
+                style={[styles.modalInput, { backgroundColor: themeSurface, color: themeText, borderColor: themeBorder }]}
                 value={editPhone}
                 onChangeText={setEditPhone}
                 placeholder="Enter 10-digit phone number"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={themeSubText}
                 keyboardType="phone-pad"
               />
 
-              <Text style={styles.inputLabel}>College Name</Text>
+              <Text style={[styles.inputLabel, { color: themeText }]}>College Name</Text>
               <TextInput
-                style={styles.modalInput}
+                style={[styles.modalInput, { backgroundColor: themeSurface, color: themeText, borderColor: themeBorder }]}
                 value={editCollege}
                 onChangeText={setEditCollege}
                 placeholder="Enter your college or university"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={themeSubText}
               />
 
               <TouchableOpacity
@@ -707,45 +741,57 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'campusDetails'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Campus Details & Radius</Text>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
+              <Text style={[styles.modalTitle, { color: themeText }]}>Campus Details & Radius</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.inputLabel}>Select Your Campus</Text>
+              <Text style={[styles.inputLabel, { color: themeText }]}>Select Your Campus</Text>
               {CAMPUS_OPTIONS.map((campus) => {
                 const isSelected = selectedCampus === campus;
                 return (
                   <TouchableOpacity
                     key={campus}
-                    style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                    style={[
+                      styles.optionCard,
+                      { backgroundColor: themeSurface, borderColor: themeBorder },
+                      isSelected && styles.optionCardSelected,
+                    ]}
                     onPress={() => setSelectedCampus(campus)}
                   >
                     <Ionicons
                       name={isSelected ? 'radio-button-on' : 'radio-button-off'}
                       size={20}
-                      color={isSelected ? COLORS.accent : COLORS.textMuted}
+                      color={isSelected ? COLORS.accent : themeSubText}
                     />
-                    <Text style={[styles.optionCardText, isSelected && styles.optionCardTextSelected]}>{campus}</Text>
+                    <Text style={[styles.optionCardText, { color: themeSubText }, isSelected && styles.optionCardTextSelected]}>
+                      {campus}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
 
-              <Text style={[styles.inputLabel, { marginTop: SPACING.md }]}>Search Distance Radius</Text>
+              <Text style={[styles.inputLabel, { color: themeText, marginTop: SPACING.md }]}>Search Distance Radius</Text>
               <View style={styles.radiusChipsRow}>
                 {RADIUS_OPTIONS.map((radius) => {
                   const isSelected = selectedRadius === radius;
                   return (
                     <TouchableOpacity
                       key={radius}
-                      style={[styles.radiusChip, isSelected && styles.radiusChipSelected]}
+                      style={[
+                        styles.radiusChip,
+                        { backgroundColor: themeSurface, borderColor: themeBorder },
+                        isSelected && styles.radiusChipSelected,
+                      ]}
                       onPress={() => setSelectedRadius(radius)}
                     >
-                      <Text style={[styles.radiusChipText, isSelected && styles.radiusChipTextSelected]}>{radius}</Text>
+                      <Text style={[styles.radiusChipText, { color: themeSubText }, isSelected && styles.radiusChipTextSelected]}>
+                        {radius}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -767,11 +813,11 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'verification'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Student Verification</Text>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
+              <Text style={[styles.modalTitle, { color: themeText }]}>Student Verification</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
@@ -780,23 +826,23 @@ export default function SettingsScreen() {
                 <View style={styles.verifiedIconCircle}>
                   <Ionicons name="shield-checkmark" size={32} color={COLORS.success} />
                 </View>
-                <Text style={styles.verifyCardTitle}>
+                <Text style={[styles.verifyCardTitle, { color: themeText }]}>
                   {user?.isVerified ? 'Verified Campus Student' : 'Verification Pending'}
                 </Text>
-                <Text style={styles.verifyCardDesc}>
+                <Text style={[styles.verifyCardDesc, { color: themeSubText }]}>
                   Verified accounts gain 3x trust score, special seller badges, and direct access to campus-only trading rooms.
                 </Text>
               </View>
 
-              <Text style={styles.inputLabel}>Uploaded College ID Proof</Text>
+              <Text style={[styles.inputLabel, { color: themeText }]}>Uploaded College ID Proof</Text>
               {studentIdImage ? (
-                <View style={styles.idImagePreviewBox}>
+                <View style={[styles.idImagePreviewBox, { borderColor: themeBorder }]}>
                   <Image source={{ uri: studentIdImage }} style={styles.idImagePreview} />
                 </View>
               ) : (
-                <View style={styles.idPlaceholderBox}>
-                  <Ionicons name="card-outline" size={40} color={COLORS.textMuted} />
-                  <Text style={styles.idPlaceholderText}>No College ID uploaded yet</Text>
+                <View style={[styles.idPlaceholderBox, { backgroundColor: themeSurface, borderColor: themeBorder }]}>
+                  <Ionicons name="card-outline" size={40} color={themeSubText} />
+                  <Text style={[styles.idPlaceholderText, { color: themeSubText }]}>No College ID uploaded yet</Text>
                 </View>
               )}
 
@@ -823,11 +869,11 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'blockedUsers'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Blocked Users</Text>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
+              <Text style={[styles.modalTitle, { color: themeText }]}>Blocked Users</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
@@ -835,12 +881,12 @@ export default function SettingsScreen() {
               {blockedUsers.length === 0 ? (
                 <View style={styles.emptyBox}>
                   <Ionicons name="checkmark-circle-outline" size={48} color={COLORS.success} />
-                  <Text style={styles.emptyTitle}>No Blocked Users</Text>
-                  <Text style={styles.emptySubtitle}>You have not blocked any campus buyers or sellers.</Text>
+                  <Text style={[styles.emptyTitle, { color: themeText }]}>No Blocked Users</Text>
+                  <Text style={[styles.emptySubtitle, { color: themeSubText }]}>You have not blocked any campus buyers or sellers.</Text>
                 </View>
               ) : (
                 blockedUsers.map((bUser) => (
-                  <View key={bUser.id} style={styles.blockedUserCard}>
+                  <View key={bUser.id} style={[styles.blockedUserCard, { backgroundColor: themeSurface, borderColor: themeBorder }]}>
                     <Image
                       source={{
                         uri:
@@ -849,7 +895,7 @@ export default function SettingsScreen() {
                       }}
                       style={styles.blockedAvatar}
                     />
-                    <Text style={styles.blockedName}>{bUser.name}</Text>
+                    <Text style={[styles.blockedName, { color: themeText }]}>{bUser.name}</Text>
                     <TouchableOpacity
                       style={styles.unblockBtn}
                       onPress={() => handleUnblockUser(bUser.id, bUser.name)}
@@ -869,36 +915,36 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'safety'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Safety Guidelines</Text>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
+              <Text style={[styles.modalTitle, { color: themeText }]}>Safety Guidelines</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.safetyCard}>
+              <View style={[styles.safetyCard, { backgroundColor: themeSurface, borderColor: themeBorder }]}>
                 <Ionicons name="location" size={24} color={COLORS.accent} />
                 <View style={styles.safetyTextContent}>
-                  <Text style={styles.safetyTitle}>Meet in Public Campus Areas</Text>
-                  <Text style={styles.safetyDesc}>Always schedule hand-offs at well-lit campus spots like library, canteen, or hostel main gates.</Text>
+                  <Text style={[styles.safetyTitle, { color: themeText }]}>Meet in Public Campus Areas</Text>
+                  <Text style={[styles.safetyDesc, { color: themeSubText }]}>Always schedule hand-offs at well-lit campus spots like library, canteen, or hostel main gates.</Text>
                 </View>
               </View>
 
-              <View style={styles.safetyCard}>
+              <View style={[styles.safetyCard, { backgroundColor: themeSurface, borderColor: themeBorder }]}>
                 <Ionicons name="eye" size={24} color={COLORS.success} />
                 <View style={styles.safetyTextContent}>
-                  <Text style={styles.safetyTitle}>Inspect Items Thoroughly</Text>
-                  <Text style={styles.safetyDesc}>Check electronic devices, books, and gear before transferring payment.</Text>
+                  <Text style={[styles.safetyTitle, { color: themeText }]}>Inspect Items Thoroughly</Text>
+                  <Text style={[styles.safetyDesc, { color: themeSubText }]}>Check electronic devices, books, and gear before transferring payment.</Text>
                 </View>
               </View>
 
-              <View style={styles.safetyCard}>
+              <View style={[styles.safetyCard, { backgroundColor: themeSurface, borderColor: themeBorder }]}>
                 <Ionicons name="lock-closed" size={24} color="#F59E0B" />
                 <View style={styles.safetyTextContent}>
-                  <Text style={styles.safetyTitle}>Use Escrow Protection</Text>
-                  <Text style={styles.safetyDesc}>Payments are safely held in Ooplabdh Escrow until buyer marks order as received.</Text>
+                  <Text style={[styles.safetyTitle, { color: themeText }]}>Use Escrow Protection</Text>
+                  <Text style={[styles.safetyDesc, { color: themeSubText }]}>Payments are safely held in Ooplabdh Escrow until buyer marks order as received.</Text>
                 </View>
               </View>
 
@@ -915,36 +961,36 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'help'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Help & Support</Text>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
+              <Text style={[styles.modalTitle, { color: themeText }]}>Help & Support</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <TouchableOpacity style={styles.supportCard} onPress={() => router.push('/contact' as any)}>
+              <TouchableOpacity style={[styles.supportCard, { backgroundColor: themeSurface, borderColor: themeBorder }]} onPress={() => router.push('/contact' as any)}>
                 <Ionicons name="chatbubbles-outline" size={24} color={COLORS.accent} />
                 <View style={styles.supportTextContent}>
-                  <Text style={styles.supportTitle}>Contact Support Desk</Text>
-                  <Text style={styles.supportDesc}>Message our support team for quick assistance.</Text>
+                  <Text style={[styles.supportTitle, { color: themeText }]}>Contact Support Desk</Text>
+                  <Text style={[styles.supportDesc, { color: themeSubText }]}>Message our support team for quick assistance.</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+                <Ionicons name="chevron-forward" size={18} color={themeSubText} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.supportCard} onPress={() => router.push('/faq' as any)}>
+              <TouchableOpacity style={[styles.supportCard, { backgroundColor: themeSurface, borderColor: themeBorder }]} onPress={() => router.push('/faq' as any)}>
                 <Ionicons name="help-circle-outline" size={24} color={COLORS.success} />
                 <View style={styles.supportTextContent}>
-                  <Text style={styles.supportTitle}>Frequently Asked Questions</Text>
-                  <Text style={styles.supportDesc}>Find instant answers about trading, escrow, and notes.</Text>
+                  <Text style={[styles.supportTitle, { color: themeText }]}>Frequently Asked Questions</Text>
+                  <Text style={[styles.supportDesc, { color: themeSubText }]}>Find instant answers about trading, escrow, and notes.</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+                <Ionicons name="chevron-forward" size={18} color={themeSubText} />
               </TouchableOpacity>
 
               <View style={styles.officialWebsiteCard}>
                 <Ionicons name="globe-outline" size={24} color="#38BDF8" />
-                <Text style={styles.webTitle}>Official Campus Portal</Text>
+                <Text style={[styles.webTitle, { color: themeText }]}>Official Campus Portal</Text>
                 <Text style={styles.webUrl}>www.ooplabdh.shop</Text>
               </View>
 
@@ -961,11 +1007,11 @@ export default function SettingsScreen() {
       {/* ========================================================================= */}
       <Modal visible={activeModal === 'deleteAccount'} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, { borderColor: COLORS.danger }]}>
-            <View style={styles.modalHeader}>
+          <View style={[styles.modalContainer, { backgroundColor: themeCardBg, borderColor: COLORS.danger }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themeBorder }]}>
               <Text style={[styles.modalTitle, { color: COLORS.danger }]}>Delete Account</Text>
               <TouchableOpacity onPress={() => setActiveModal(null)}>
-                <Ionicons name="close" size={22} color={COLORS.textMuted} />
+                <Ionicons name="close" size={22} color={themeSubText} />
               </TouchableOpacity>
             </View>
 
@@ -973,18 +1019,18 @@ export default function SettingsScreen() {
               <View style={styles.deleteWarningBox}>
                 <Ionicons name="warning" size={32} color={COLORS.danger} />
                 <Text style={styles.deleteWarningTitle}>Irreversible Action</Text>
-                <Text style={styles.deleteWarningDesc}>
+                <Text style={[styles.deleteWarningDesc, { color: themeSubText }]}>
                   Deleting your account will permanently wipe your profile, all active marketplace listings, chat records, and ratings.
                 </Text>
               </View>
 
-              <Text style={styles.inputLabel}>Type "DELETE" to confirm</Text>
+              <Text style={[styles.inputLabel, { color: themeText }]}>Type "DELETE" to confirm</Text>
               <TextInput
-                style={[styles.modalInput, { borderColor: COLORS.danger }]}
+                style={[styles.modalInput, { backgroundColor: themeSurface, color: themeText, borderColor: COLORS.danger }]}
                 value={deleteConfirmationText}
                 onChangeText={setDeleteConfirmationText}
                 placeholder='Type "DELETE"'
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor={themeSubText}
                 autoCapitalize="characters"
               />
 
@@ -1013,7 +1059,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     height: 56,
@@ -1022,8 +1067,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: COLORS.background,
   },
   backButton: {
     padding: SPACING.xs,
@@ -1031,24 +1074,25 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text,
   },
   scrollContent: {
     padding: SPACING.md,
     paddingBottom: SPACING.xxl,
   },
 
-  // User Profile Card
+  // User Profile Card - Entire Card is Clickable Navigation Item
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
     borderRadius: RADIUS.md,
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
     marginBottom: SPACING.lg,
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
   },
   profileAvatar: {
     width: 60,
@@ -1068,55 +1112,40 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
-    maxWidth: 160,
+    maxWidth: 180,
   },
   profileCollege: {
     fontSize: 13,
     color: COLORS.accent,
     marginTop: 2,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   profileEmail: {
     fontSize: 12,
-    color: COLORS.textMuted,
     marginTop: 2,
-  },
-  editProfileBtn: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    paddingHorizontal: SPACING.sm + 4,
-    paddingVertical: SPACING.xs + 2,
-    borderRadius: RADIUS.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-  },
-  editProfileBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.accent,
   },
 
   // Section Headers & Card Groups
   sectionHeader: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textMuted,
     letterSpacing: 1.1,
     marginBottom: SPACING.xs + 2,
     marginLeft: SPACING.xs,
   },
   cardGroup: {
-    backgroundColor: COLORS.card,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
     marginBottom: SPACING.lg,
     overflow: 'hidden',
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.border,
     marginLeft: 56,
   },
 
@@ -1155,7 +1184,6 @@ const styles = StyleSheet.create({
   },
   settingSubtitle: {
     fontSize: 12,
-    color: COLORS.textMuted,
     marginTop: 2,
   },
   verifiedBadge: {
@@ -1206,12 +1234,11 @@ const styles = StyleSheet.create({
   versionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.textMuted,
   },
   versionSubtitle: {
     fontSize: 11,
-    color: 'rgba(148, 163, 184, 0.6)',
     marginTop: 2,
+    opacity: 0.7,
   },
 
   // Modals Styling
@@ -1221,13 +1248,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: COLORS.card,
     borderTopLeftRadius: RADIUS.lg,
     borderTopRightRadius: RADIUS.lg,
     padding: SPACING.md,
     maxHeight: '85%',
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1235,13 +1260,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
     marginBottom: SPACING.md,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text,
   },
 
   // Edit Profile Modal
@@ -1270,29 +1293,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: COLORS.card,
   },
   avatarChangeText: {
     fontSize: 12,
-    color: COLORS.textMuted,
     marginTop: 6,
   },
   inputLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.text,
     marginBottom: 6,
     marginTop: SPACING.sm,
   },
   modalInput: {
-    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.md,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm + 2,
-    color: COLORS.text,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   saveModalBtn: {
     backgroundColor: COLORS.accent,
@@ -1312,24 +1329,21 @@ const styles = StyleSheet.create({
   optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     marginBottom: SPACING.xs + 2,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   optionCardSelected: {
     borderColor: COLORS.accent,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
   },
   optionCardText: {
     fontSize: 14,
-    color: COLORS.textMuted,
     marginLeft: SPACING.sm,
   },
   optionCardTextSelected: {
-    color: COLORS.text,
+    color: COLORS.accent,
     fontWeight: '600',
   },
   radiusChipsRow: {
@@ -1342,9 +1356,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderRadius: RADIUS.round,
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   radiusChipSelected: {
     backgroundColor: COLORS.accent,
@@ -1352,7 +1364,6 @@ const styles = StyleSheet.create({
   },
   radiusChipText: {
     fontSize: 13,
-    color: COLORS.textMuted,
   },
   radiusChipTextSelected: {
     color: '#FFF',
@@ -1381,12 +1392,10 @@ const styles = StyleSheet.create({
   verifyCardTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
     marginTop: 4,
   },
   verifyCardDesc: {
     fontSize: 12,
-    color: COLORS.textMuted,
     textAlign: 'center',
     marginTop: 4,
     lineHeight: 16,
@@ -1396,7 +1405,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.border,
     marginVertical: SPACING.xs,
   },
   idImagePreview: {
@@ -1406,15 +1414,12 @@ const styles = StyleSheet.create({
   idPlaceholderBox: {
     height: 120,
     borderRadius: RADIUS.md,
-    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.border,
     marginVertical: SPACING.xs,
   },
   idPlaceholderText: {
-    color: COLORS.textMuted,
     fontSize: 12,
     marginTop: 6,
   },
@@ -1423,12 +1428,10 @@ const styles = StyleSheet.create({
   blockedUserCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   blockedAvatar: {
     width: 40,
@@ -1440,7 +1443,6 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.md,
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text,
   },
   unblockBtn: {
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
@@ -1462,24 +1464,20 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
     marginTop: SPACING.sm,
   },
   emptySubtitle: {
     fontSize: 12,
-    color: COLORS.textMuted,
     marginTop: 4,
   },
 
   // Safety Tips
   safetyCard: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surface,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   safetyTextContent: {
     flex: 1,
@@ -1488,11 +1486,9 @@ const styles = StyleSheet.create({
   safetyTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLORS.text,
   },
   safetyDesc: {
     fontSize: 12,
-    color: COLORS.textMuted,
     marginTop: 4,
     lineHeight: 16,
   },
@@ -1501,12 +1497,10 @@ const styles = StyleSheet.create({
   supportCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   supportTextContent: {
     flex: 1,
@@ -1515,11 +1509,9 @@ const styles = StyleSheet.create({
   supportTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLORS.text,
   },
   supportDesc: {
     fontSize: 12,
-    color: COLORS.textMuted,
     marginTop: 2,
   },
   officialWebsiteCard: {
@@ -1534,7 +1526,6 @@ const styles = StyleSheet.create({
   webTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLORS.text,
     marginTop: 6,
   },
   webUrl: {
@@ -1562,7 +1553,6 @@ const styles = StyleSheet.create({
   },
   deleteWarningDesc: {
     fontSize: 12,
-    color: COLORS.textMuted,
     textAlign: 'center',
     marginTop: 4,
     lineHeight: 16,

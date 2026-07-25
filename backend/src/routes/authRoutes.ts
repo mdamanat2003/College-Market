@@ -39,6 +39,12 @@ const localStorage = multer.diskStorage({
   }
 });
 
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -48,8 +54,8 @@ const cloudinaryStorage = new CloudinaryStorage({
 });
 
 const upload = multer({ 
-  storage: cloudinaryStorage,
-  limits: { fileSize: 1 * 1024 * 1024 }
+  storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage,
+  limits: { fileSize: 1 * 1024 * 1024 } // 1MB Limit
 });
 
 const collegeIdStorage = new CloudinaryStorage({
@@ -61,9 +67,21 @@ const collegeIdStorage = new CloudinaryStorage({
 });
 
 const collegeIdUpload = multer({ 
-  storage: collegeIdStorage,
-  limits: { fileSize: 1 * 1024 * 1024 }
+  storage: isCloudinaryConfigured ? collegeIdStorage : localStorage,
+  limits: { fileSize: 1 * 1024 * 1024 } // 1MB Limit
 });
+
+const uploadSingleAvatar = (req: any, res: any, next: any) => {
+  upload.single('avatar')(req, res, (err: any) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ success: false, message: 'Bhai, profile photo 1MB se kam size ki honi chahiye!' });
+      }
+      return res.status(400).json({ success: false, message: err.message || 'File upload error' });
+    }
+    next();
+  });
+};
 
 const router = Router();
 
@@ -76,7 +94,7 @@ router.post('/verify-otp', verifyOtp);
 router.post('/reset-password', resetPassword);
 router.post('/send-registration-otp', sendRegistrationOtp);
 router.post('/verify-registration-otp', verifyRegistrationOtp);
-router.put('/update-profile', protect, upload.single('avatar'), updateProfile);
+router.put('/update-profile', protect, uploadSingleAvatar, updateProfile);
 
 // Ye line miss hone par app.use() crash hota hai!
 export default router;

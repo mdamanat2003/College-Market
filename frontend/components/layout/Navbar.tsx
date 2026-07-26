@@ -32,6 +32,8 @@ export const Navbar = () => {
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
   const { searchQuery, setSearchQuery } = useProductStore();
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const currentPath = usePathname();
   const { width } = useWindowDimensions();
@@ -57,36 +59,74 @@ export const Navbar = () => {
         </TouchableOpacity>
 
         {!isMobile && (
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={18} color={COLORS.textMuted} style={styles.searchIcon} />
+          <View 
+            testID="search-input"
+            style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}
+          >
+            <Ionicons 
+              name="search" 
+              size={18} 
+              color={isSearchFocused ? '#38BDF8' : '#94A3B8'} 
+              style={styles.searchIcon} 
+            />
             <TextInput
               placeholder="Search for books, electronics, PyQs..."
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor="#CBD5E1"
               style={styles.searchInput}
               value={localSearch}
-              onChangeText={setLocalSearch}
+              onChangeText={(text) => {
+                setLocalSearch(text);
+                setSearchQuery(text);
+              }}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
               onSubmitEditing={handleSearch}
               returnKeyType="search"
             />
+            {localSearch ? (
+              <TouchableOpacity 
+                onPress={() => {
+                  setLocalSearch('');
+                  setSearchQuery('');
+                }}
+                style={styles.clearSearchBtn}
+              >
+                <Ionicons name="close-circle" size={18} color="#94A3B8" />
+              </TouchableOpacity>
+            ) : null}
           </View>
         )}
 
         <View style={[styles.rightIcons, isPhone && styles.phoneRightIcons]}>
-          <TouchableOpacity
-            testID="sell-btn"
-            style={[styles.sellBtn, isPhone && styles.phoneSellBtn]}
-            onPress={() => router.push('/add-product')}
+          {!isMobile && (
+            <>
+              <TouchableOpacity
+                testID="sell-btn"
+                style={styles.sellBtn}
+                onPress={() => router.push('/add-product')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="add" size={18} color="#09090b" />
+                <Text style={styles.sellBtnText}>Sell</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                testID="icon-btn" 
+                style={styles.iconButton} 
+                onPress={() => router.push('/messages')}
+              >
+                <Ionicons name="chatbubble-ellipses-outline" size={19} color={COLORS.text} />
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Notification Icon (Shown on both Mobile and Desktop) */}
+          <TouchableOpacity 
+            testID="icon-btn" 
+            style={[styles.iconButton, isPhone && styles.phoneIconButton]} 
+            onPress={() => router.push('/notifications')}
           >
-            <Ionicons name="add" size={isPhone ? 24 : 18} color="#fff" />
-            {!isPhone && <Text style={styles.sellBtnText}>Sell</Text>}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.iconButton, isPhone && styles.phoneIconButton]} onPress={() => router.push('/messages')}>
-            <Ionicons name="chatbubble-ellipses-outline" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.iconButton, isPhone && styles.phoneIconButton]} onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={24} color={COLORS.text} />
+            <Ionicons name="notifications-outline" size={19} color={COLORS.text} />
             {unreadNotifications > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
@@ -94,76 +134,179 @@ export const Navbar = () => {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.profileBtn, isPhone && styles.phoneProfileBtn]} onPress={() => router.push('/profile')}>
-            {user?.avatar ? (
-              <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />
-            ) : (
-              <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
-            )}
-          </TouchableOpacity>
+          {!isMobile && (
+            <TouchableOpacity 
+              testID="icon-btn" 
+              style={styles.profileBtn} 
+              onPress={() => router.push('/profile')}
+            >
+              {user?.avatar ? (
+                <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />
+              ) : (
+                <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
+              )}
+            </TouchableOpacity>
+          )}
+
+          {/* Toggle Hamburger Button (Shown ONLY on Mobile) */}
+          {isMobile && (
+            <TouchableOpacity 
+              testID="icon-btn" 
+              style={[styles.iconButton, styles.phoneIconButton, styles.hamburgerBtn]} 
+              onPress={() => setIsMenuOpen(!isMenuOpen)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name={isMenuOpen ? "close" : "menu"} size={20} color="#38BDF8" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {/* --- LOWER BAR --- */}
-      <View style={styles.subHeader}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          contentContainerStyle={[styles.navScrollContent, isMobile && styles.phoneNavScrollContent]}
-        >
-          {NAV_ITEMS.map((item) => {
+      {/* --- DEDICATED MOBILE SEARCH BAR --- */}
+      {isMobile && (
+        <View style={styles.mobileSearchRow}>
+          <View 
+            testID="search-input"
+            style={[styles.mobileSearchContainer, isSearchFocused && styles.searchContainerFocused]}
+          >
+            <Ionicons 
+              name="search" 
+              size={17} 
+              color={isSearchFocused ? '#38BDF8' : '#94A3B8'} 
+              style={styles.searchIcon} 
+            />
+            <TextInput
+              placeholder="Search books, electronics, PyQs..."
+              placeholderTextColor="#CBD5E1"
+              style={styles.searchInput}
+              value={localSearch}
+              onChangeText={(text) => {
+                setLocalSearch(text);
+                setSearchQuery(text);
+              }}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
+            />
+            {localSearch ? (
+              <TouchableOpacity 
+                onPress={() => {
+                  setLocalSearch('');
+                  setSearchQuery('');
+                }}
+                style={styles.clearSearchBtn}
+              >
+                <Ionicons name="close-circle" size={17} color="#94A3B8" />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+      )}
+
+      {/* --- LOWER BAR (Desktop: SubHeader, Mobile: Collapsible Dropdown Menu) --- */}
+      {!isMobile ? (
+        <View style={styles.subHeader}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.navScrollContent}
+          >
+            {NAV_ITEMS.map((item) => {
+              const isActive = currentPath === item.path || currentPath.startsWith(`${item.path}/`);
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  testID="nav-item"
+                  style={[styles.navItem, isActive && styles.activeNavItem]}
+                  onPress={() => router.push(item.path as any)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={isActive ? (item.activeIcon as any) : (item.icon as any)}
+                    size={16}
+                    color={isActive ? '#38BDF8' : COLORS.textMuted}
+                  />
+                  <Text style={[styles.navText, isActive && styles.activeNavText]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      ) : isMenuOpen ? (
+        <View style={styles.mobileDropdownMenu}>
+          {[
+            ...NAV_ITEMS,
+            { id: 'sell', name: 'Sell Item (+)', path: '/add-product', icon: 'add-circle-outline', activeIcon: 'add-circle' },
+            { id: 'messages', name: 'Messages & Chats', path: '/messages', icon: 'chatbubble-ellipses-outline', activeIcon: 'chatbubble-ellipses' },
+            { id: 'profile', name: 'My Profile & Account', path: '/profile', icon: 'person-outline', activeIcon: 'person' },
+          ].map((item) => {
             const isActive = currentPath === item.path || currentPath.startsWith(`${item.path}/`);
 
             return (
               <TouchableOpacity
                 key={item.id}
-                testID="nav-item"
-                style={[styles.navItem, isActive && styles.activeNavItem]}
-                onPress={() => router.push(item.path as any)}
-                activeOpacity={0.7}
+                style={[styles.mobileMenuItem, isActive && styles.activeMobileMenuItem]}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push(item.path as any);
+                }}
+                activeOpacity={0.75}
               >
                 <Ionicons
                   name={isActive ? (item.activeIcon as any) : (item.icon as any)}
-                  size={16}
-                  color={isActive ? COLORS.primary : COLORS.textMuted}
+                  size={18}
+                  color={isActive ? '#38BDF8' : '#94A3B8'}
                 />
-                <Text style={[styles.navText, isActive && styles.activeNavText]}>
+                <Text style={[styles.mobileMenuText, isActive && styles.activeMobileMenuText]}>
                   {item.name}
                 </Text>
+                {isActive && <Ionicons name="chevron-forward" size={16} color="#38BDF8" style={{ marginLeft: 'auto' }} />}
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
-      </View>
+        </View>
+      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: COLORS.card,
+    backgroundColor: 'rgba(18, 18, 20, 0.88)',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
     zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 3,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
+      } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 4,
+      },
+    }),
   },
   header: {
-    height: 58,
+    height: 78,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    maxWidth: 1200,
+    paddingHorizontal: 28,
+    maxWidth: 1440,
     width: '100%',
     alignSelf: 'center',
   },
   phoneHeader: {
-    height: 52,
-    paddingHorizontal: 18,
+    height: 60,
+    paddingHorizontal: 16,
   },
   brandContainer: {
     flexDirection: 'row',
@@ -171,45 +314,109 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flex: 1,
-    maxWidth: 500,
+    maxWidth: 520,
     marginHorizontal: SPACING.xl,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
     borderRadius: RADIUS.round,
-    paddingHorizontal: SPACING.md,
-    height: 44,
+    paddingHorizontal: 18,
+    height: 52,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  searchContainerFocused: {
+    borderColor: '#38BDF8',
+    backgroundColor: 'rgba(39, 39, 42, 0.9)',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 0 0 3px rgba(56, 189, 248, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+      } as any,
+      default: {
+        shadowColor: '#38BDF8',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 3,
+      },
+    }),
+  },
+  mobileSearchRow: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 2,
+    maxWidth: 1440,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  mobileSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    borderRadius: RADIUS.round,
+    paddingHorizontal: 14,
+    height: 42,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  phoneSearchContainer: {
+    height: 40,
+    marginHorizontal: 8,
+    paddingHorizontal: 12,
+  },
+  clearSearchBtn: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   searchIcon: {
-    marginRight: SPACING.sm,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    height: 40,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    fontSize: 14,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    height: 46,
+    fontSize: 14.5,
+    color: '#F8FAFC',
+    fontWeight: '500',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+        outlineWidth: 0,
+        outlineColor: 'transparent',
+      } as any,
+    }),
   },
   rightIcons: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
   },
   phoneRightIcons: {
-    gap: 14,
+    gap: 8,
   },
   sellBtn: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: '#38BDF8',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: RADIUS.round,
-    marginRight: SPACING.sm,
-    gap: 4,
+    marginRight: 4,
+    gap: 6,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)',
+      } as any,
+      default: {
+        shadowColor: '#38BDF8',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 4,
+      },
+    }),
   },
   phoneSellBtn: {
     width: 36,
@@ -221,77 +428,82 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sellBtnText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
+    color: '#09090b',
+    fontWeight: '800',
+    fontSize: 14.5,
   },
   iconButton: {
-    padding: SPACING.xs,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     position: 'relative',
-    marginRight: SPACING.md,
   },
   phoneIconButton: {
-    padding: 0,
-    marginRight: 0,
-    width: 26,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badge: {
-    position: 'absolute',
-    top: 4,
-    right: 6,
-    minWidth: 18,
-    height: 18,
-    backgroundColor: COLORS.danger,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: COLORS.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  profileBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    backgroundColor: COLORS.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  phoneProfileBtn: {
-    width: 36,
-    height: 36,
-    backgroundColor: COLORS.primaryLight,
-  },
-  profileAvatarImg: {
     width: 36,
     height: 36,
     borderRadius: 18,
   },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 17,
+    height: 17,
+    backgroundColor: '#EF4444',
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: '#18181b',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  profileBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  phoneProfileBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  profileAvatarImg: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   profileInitial: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 15,
   },
   subHeader: {
-    height: 42,
+    height: 44,
     borderTopWidth: 1,
-    borderTopColor: COLORS.surface,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   navScrollContent: {
     flexGrow: 1,
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 18,
-    maxWidth: 1200,
+    gap: 16,
+    maxWidth: 1440,
     width: '100%',
     alignSelf: 'center',
   },
@@ -304,33 +516,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: RADIUS.round,
     gap: 6,
     backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   activeNavItem: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderColor: 'rgba(56, 189, 248, 0.35)',
     ...Platform.select({
       web: {
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        boxShadow: '0 0 12px rgba(56, 189, 248, 0.25), inset 0 0 8px rgba(56, 189, 248, 0.1)',
       } as any,
       default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 2,
+        shadowColor: '#38BDF8',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 3,
       },
     }),
   },
   navText: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '600',
     color: COLORS.textMuted,
   },
   activeNavText: {
-    color: COLORS.primary,
+    color: '#F8FAFC',
     fontWeight: '700',
+  },
+  hamburgerBtn: {
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+  },
+  mobileDropdownMenu: {
+    backgroundColor: '#18181b',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    gap: 4,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 12px 28px rgba(0, 0, 0, 0.5)',
+      } as any,
+    }),
+  },
+  mobileMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    gap: 12,
+    backgroundColor: 'transparent',
+  },
+  activeMobileMenuItem: {
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+  },
+  mobileMenuText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  activeMobileMenuText: {
+    color: '#F8FAFC',
+    fontWeight: '800',
   },
 });

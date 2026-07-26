@@ -1,5 +1,19 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Linking, Modal, TextInput, Alert } from 'react-native';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
+  ScrollView,
+  TouchableOpacity, 
+  ActivityIndicator, 
+  Linking, 
+  Modal, 
+  TextInput, 
+  Alert, 
+  useWindowDimensions, 
+  Platform 
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Navbar } from '../../components/layout/Navbar';
@@ -9,45 +23,71 @@ import { useAuthStore } from '../../store/authStore';
 import { api } from '../../services/api';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 
-const BRANCHES = ['CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
-const SEMESTERS = ['1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem'];
+const BRANCHES = ['All', 'CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
+const SEMESTERS = ['All', '1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem'];
 
-const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDownload: (url: string) => void }) => (
-  <View style={styles.noteCard}>
-    <View style={styles.noteIconBox}>
-      <Ionicons 
-        name={item.fileType === 'pdf' ? "document-text" : "image"} 
-        size={24} 
-        color={COLORS.primary} 
-      />
-    </View>
-    <View style={styles.noteInfo}>
-      <Text style={styles.noteTitle} numberOfLines={1}>{item.title}</Text>
-      <View style={styles.noteMeta}>
-        <Text style={styles.noteSubject}>{item.subject}</Text>
-        <View style={styles.uploaderBox}>
-            <Ionicons name="person-outline" size={12} color={COLORS.textMuted} />
-            <Text style={styles.uploaderName}>{item.uploadedBy?.name || 'User'}</Text>
+const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDownload: (url: string) => void }) => {
+  if (!item) return null;
+
+  const rawType = (item.fileType || 'pdf').toLowerCase();
+  const fileTypeLabel = rawType.includes('pyq') ? 'PYQ' : rawType.includes('note') ? 'NOTES' : 'PDF';
+  const badgeColor = fileTypeLabel === 'PYQ' ? '#10B981' : fileTypeLabel === 'NOTES' ? '#F59E0B' : '#38BDF8';
+
+  return (
+    <View testID="note-card" style={styles.noteCard}>
+      <View style={styles.cardHeaderRow}>
+        <View style={[styles.typeBadge, { backgroundColor: `${badgeColor}18`, borderColor: `${badgeColor}35` }]}>
+          <Ionicons name="document-text-outline" size={13} color={badgeColor} />
+          <Text style={[styles.typeBadgeText, { color: badgeColor }]}>{fileTypeLabel}</Text>
+        </View>
+
+        <View style={styles.branchTag}>
+          <Text style={styles.branchTagText}>{item.branch || 'CSE'} • {item.semester || 'Sem'}</Text>
         </View>
       </View>
+
+      <Text style={styles.noteTitle} numberOfLines={2}>{item.title}</Text>
+      
+      <View style={styles.subjectRow}>
+        <Ionicons name="book-outline" size={14} color="#94A3B8" />
+        <Text style={styles.noteSubject} numberOfLines={1}>{item.subject}</Text>
+      </View>
+
+      <View style={styles.cardFooter}>
+        <View style={styles.uploaderBox}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarInitial}>{(item.uploadedBy?.name || 'S').charAt(0).toUpperCase()}</Text>
+          </View>
+          <View style={styles.uploaderMeta}>
+            <Text style={styles.uploaderName} numberOfLines={1}>{item.uploadedBy?.name || 'Campus Peer'}</Text>
+            <Text style={styles.uploadDate}>{item.createdAt ? new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently'}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          testID="buy-btn"
+          style={styles.viewDocBtn}
+          onPress={() => handleDownload(item.fileUrl)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.viewDocBtnText}>View Document</Text>
+          <Ionicons name="arrow-forward" size={13} color="#09090b" />
+        </TouchableOpacity>
+      </View>
     </View>
-    <TouchableOpacity 
-      style={styles.downloadBtn}
-      onPress={() => handleDownload(item.fileUrl)}
-    >
-      <Ionicons name="eye-outline" size={20} color={COLORS.primary} />
-    </TouchableOpacity>
-  </View>
-));
+  );
+});
 
 export default function AcademicHub() {
   const router = useRouter();
   const { materials, fetchMaterials, isLoading, error } = useAcademicStore();
   const { user } = useAuthStore();
+  const { width } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
   
-  const [selectedBranch, setSelectedBranch] = useState<string | null>('CSE');
-  const [selectedSemester, setSelectedSemester] = useState<string | null>('8th Sem');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState<string>('CSE');
+  const [selectedSemester, setSelectedSemester] = useState<string>('8th Sem');
 
   // Request Modal State
   const [isRequestModalVisible, setIsRequestModalVisible] = useState(false);
@@ -57,18 +97,46 @@ export default function AcademicHub() {
   const [requestSemester, setRequestSemester] = useState('8th Sem');
   const [submittingRequest, setSubmittingRequest] = useState(false);
 
+  const isPhone = width <= 560;
+  const numColumns = width >= 1150 ? 3 : width >= 720 ? 2 : 1;
+  const CARD_GAP = 20;
+
   useEffect(() => {
-    fetchMaterials(selectedBranch || '', selectedSemester || '');
+    const branchParam = selectedBranch === 'All' ? '' : selectedBranch;
+    const semParam = selectedSemester === 'All' ? '' : selectedSemester;
+    fetchMaterials(branchParam, semParam);
   }, [selectedBranch, selectedSemester]);
 
   useEffect(() => {
     if (isRequestModalVisible) {
-      setRequestBranch(selectedBranch || 'CSE');
-      setRequestSemester(selectedSemester || '8th Sem');
+      setRequestBranch(selectedBranch === 'All' ? 'CSE' : selectedBranch);
+      setRequestSemester(selectedSemester === 'All' ? '8th Sem' : selectedSemester);
       setRequestSubject('');
       setRequestDetails('');
     }
   }, [isRequestModalVisible]);
+
+  const filteredMaterials = useMemo(() => {
+    if (!Array.isArray(materials)) return [];
+    if (!searchQuery.trim()) return materials;
+    const q = searchQuery.toLowerCase().trim();
+    return materials.filter((m: any) => 
+      (m.title && m.title.toLowerCase().includes(q)) ||
+      (m.subject && m.subject.toLowerCase().includes(q)) ||
+      (m.branch && m.branch.toLowerCase().includes(q))
+    );
+  }, [materials, searchQuery]);
+
+  const stats = useMemo(() => {
+    const list = Array.isArray(materials) ? materials : [];
+    const subjects = new Set(list.map((m: any) => m.subject).filter(Boolean)).size;
+    const contributors = new Set(list.map((m: any) => m.uploadedBy?._id || m.uploadedBy?.name).filter(Boolean)).size;
+    return {
+      total: list.length,
+      subjects,
+      contributors: Math.max(contributors, list.length > 0 ? 1 : 0),
+    };
+  }, [materials]);
 
   const handleRequestSubmit = async () => {
     if (!requestSubject.trim()) {
@@ -112,111 +180,171 @@ Details: ${requestDetails || 'None provided'}`;
   }, []);
 
   const renderItem = React.useCallback(({ item }: { item: any }) => (
-    <AcademicCard item={item} handleDownload={handleDownload} />
+    <View style={{ flex: 1, margin: CARD_GAP / 2 }}>
+      <AcademicCard item={item} handleDownload={handleDownload} />
+    </View>
   ), [handleDownload]);
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
+
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      {/* --- Header & Title --- */}
+      <View style={styles.headerSection}>
+        <View style={styles.titleBox}>
+          <Text style={styles.kicker}>Academic Resources</Text>
+          <Text style={styles.pageTitle}>PyQ & Lecture Notes</Text>
+          <Text style={styles.subtitle}>
+            Access verified lecture notes, previous year question papers, and syllabus resources shared by campus peers.
+          </Text>
+        </View>
+
+        <TouchableOpacity 
+          testID="sell-btn"
+          style={styles.uploadBtn} 
+          onPress={() => router.push('/academic/upload')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="cloud-upload" size={18} color="#09090b" />
+          <Text style={styles.uploadBtnText}>Upload Notes</Text>
+        </TouchableOpacity>
+      </View>
+
+      {error && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="alert-circle-outline" size={18} color={COLORS.danger} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {/* --- Search Bar --- */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color="#94A3B8" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search notes by subject, title, or branch..."
+            placeholderTextColor="#CBD5E1"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={18} color="#94A3B8" />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+
+      {/* --- Separated Filters Section --- */}
+      <View style={styles.filterCard}>
+        <View style={styles.filterHeaderRow}>
+          <Text style={styles.filterHeaderTitle}>Filter Notes & Papers</Text>
+          {(selectedBranch !== 'All' || selectedSemester !== 'All' || searchQuery) && (
+            <TouchableOpacity onPress={() => { setSelectedBranch('All'); setSelectedSemester('All'); setSearchQuery(''); }}>
+              <Text style={styles.resetText}>Reset All Filters</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Group 1: Branch */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.groupLabel}>BRANCH / STREAM</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
+            {BRANCHES.map((b) => (
+              <TouchableOpacity 
+                key={b}
+                testID="category-chip"
+                style={[styles.chip, selectedBranch === b && styles.activeChip]}
+                onPress={() => setSelectedBranch(b)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.chipText, selectedBranch === b && styles.activeChipText]}>{b}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Group 2: Semester */}
+        <View style={[styles.filterGroup, { marginTop: 16 }]}>
+          <Text style={styles.groupLabel}>SEMESTER</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
+            {SEMESTERS.map((s) => (
+              <TouchableOpacity 
+                key={s}
+                testID="category-chip"
+                style={[styles.chip, selectedSemester === s && styles.activeChip]}
+                onPress={() => setSelectedSemester(s)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.chipText, selectedSemester === s && styles.activeChipText]}>{s}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+
+      {/* --- Statistics Bar --- */}
+      <View style={styles.statsBar}>
+        <View style={styles.statBox}>
+          <Ionicons name="document-text-outline" size={18} color="#38BDF8" />
+          <Text style={styles.statNumber}>{stats.total}</Text>
+          <Text style={styles.statLabel}>Total Materials</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statBox}>
+          <Ionicons name="book-outline" size={18} color="#10B981" />
+          <Text style={styles.statNumber}>{stats.subjects}</Text>
+          <Text style={styles.statLabel}>Subjects</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statBox}>
+          <Ionicons name="people-outline" size={18} color="#F59E0B" />
+          <Text style={styles.statNumber}>{stats.contributors}</Text>
+          <Text style={styles.statLabel}>Contributors</Text>
+        </View>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <Navbar />
       
-      <View style={styles.content}>
-        <View style={styles.headerRow}>
-          <Text style={styles.pageTitle}>PyQ & Notes</Text>
-          <TouchableOpacity 
-            style={styles.uploadBtn} 
-            onPress={() => router.push('/academic/upload')}
-          >
-            <Ionicons name="cloud-upload-outline" size={20} color={COLORS.background} />
-            <Text style={styles.uploadBtnText}>Upload</Text>
-          </TouchableOpacity>
-        </View>
-
-        {error && (
-          <View style={styles.errorBanner}>
-            <Ionicons name="alert-circle-outline" size={20} color={COLORS.danger} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        {/* Filters Section */}
-        <View style={styles.filterCard}>
-          <View style={styles.filterHeaderRow}>
-            <Text style={styles.filterTitle}>Filter by Branch & Semester</Text>
-            {(selectedBranch !== null || selectedSemester !== null) && (
-              <TouchableOpacity onPress={() => { setSelectedBranch(null); setSelectedSemester(null); }}>
-                <Text style={styles.resetText}>Reset Filters</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <View style={styles.filterRow}>
-            <View style={styles.dropdownContainer}>
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={BRANCHES}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={[styles.chip, selectedBranch === item && styles.activeChip]}
-                    onPress={() => setSelectedBranch(item)}
-                  >
-                    <Text style={[styles.chipText, selectedBranch === item && styles.activeChipText]}>{item}</Text>
-                  </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.chipScroll}
-              />
-            </View>
-          </View>
-          <View style={[styles.filterRow, { marginTop: 10 }]}>
-            <View style={styles.dropdownContainer}>
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={SEMESTERS}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={[styles.chip, selectedSemester === item && styles.activeChip]}
-                    onPress={() => setSelectedSemester(item)}
-                  >
-                    <Text style={[styles.chipText, selectedSemester === item && styles.activeChipText]}>{item}</Text>
-                  </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.chipScroll}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Notes List Section */}
-        <Text style={styles.sectionTitle}>Available Materials</Text>
-        
+      <View style={styles.mainContent}>
         {isLoading ? (
           <View style={styles.loader}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+            <ActivityIndicator size="large" color="#38BDF8" />
           </View>
         ) : (
+          /* --- Single Unified Scroll View via FlatList --- */
           <FlatList
             ref={listRef}
-            data={materials}
+            style={{ flex: 1, width: '100%' }}
+            key={numColumns}
+            data={filteredMaterials}
             keyExtractor={keyExtractor}
+            numColumns={numColumns}
             renderItem={renderItem}
+            ListHeaderComponent={renderHeader}
+            columnWrapperStyle={numColumns > 1 ? [styles.row, filteredMaterials.length <= 2 && styles.sparseRow] : undefined}
+            showsVerticalScrollIndicator={true}
             removeClippedSubviews={true}
             initialNumToRender={8}
             maxToRenderPerBatch={8}
             windowSize={5}
             ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Ionicons name="document-outline" size={48} color={COLORS.textMuted} />
-                <Text style={styles.emptyText}>No materials found for this selection.</Text>
+              <View style={[styles.emptyState, { maxWidth: 1440, alignSelf: 'center', width: '100%' }]}>
+                <Ionicons name="folder-open-outline" size={52} color={COLORS.textMuted} />
+                <Text style={styles.emptyTitle}>No Materials Found</Text>
+                <Text style={styles.emptyText}>We couldn't find any study materials matching your current search or filter criteria.</Text>
                 <TouchableOpacity 
                   style={styles.requestBtn} 
                   onPress={() => setIsRequestModalVisible(true)}
+                  activeOpacity={0.8}
                 >
-                  <Ionicons name="help-circle-outline" size={18} color={COLORS.accent} style={{ marginRight: 6 }} />
-                  <Text style={styles.requestBtnText}>Request Material</Text>
+                  <Ionicons name="help-circle-outline" size={18} color="#38BDF8" style={{ marginRight: 6 }} />
+                  <Text style={styles.requestBtnText}>Request Study Material</Text>
                 </TouchableOpacity>
               </View>
             }
@@ -230,7 +358,7 @@ Details: ${requestDetails || 'None provided'}`;
         )}
       </View>
 
-      {/* Request Material Modal */}
+      {/* --- Request Material Modal --- */}
       <Modal
         visible={isRequestModalVisible}
         transparent
@@ -254,56 +382,48 @@ Details: ${requestDetails || 'None provided'}`;
                   placeholder="e.g. Theory of Computation"
                   value={requestSubject}
                   onChangeText={setRequestSubject}
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor="#94A3B8"
                 />
               </View>
 
               <View style={styles.modalInputGroup}>
                 <Text style={styles.modalLabel}>Branch</Text>
-                <FlatList
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  data={BRANCHES}
-                  keyExtractor={(item) => item}
-                  renderItem={({ item }) => (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
+                  {BRANCHES.filter(b => b !== 'All').map((item) => (
                     <TouchableOpacity 
+                      key={item}
                       style={[styles.modalChip, requestBranch === item && styles.activeModalChip]}
                       onPress={() => setRequestBranch(item)}
                     >
                       <Text style={[styles.modalChipText, requestBranch === item && styles.activeModalChipText]}>{item}</Text>
                     </TouchableOpacity>
-                  )}
-                  contentContainerStyle={styles.modalChipScroll}
-                />
+                  ))}
+                </ScrollView>
               </View>
 
               <View style={styles.modalInputGroup}>
                 <Text style={styles.modalLabel}>Semester</Text>
-                <FlatList
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  data={SEMESTERS}
-                  keyExtractor={(item) => item}
-                  renderItem={({ item }) => (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
+                  {SEMESTERS.filter(s => s !== 'All').map((item) => (
                     <TouchableOpacity 
+                      key={item}
                       style={[styles.modalChip, requestSemester === item && styles.activeModalChip]}
                       onPress={() => setRequestSemester(item)}
                     >
                       <Text style={[styles.modalChipText, requestSemester === item && styles.activeModalChipText]}>{item}</Text>
                     </TouchableOpacity>
-                  )}
-                  contentContainerStyle={styles.modalChipScroll}
-                />
+                  ))}
+                </ScrollView>
               </View>
 
               <View style={styles.modalInputGroup}>
-                <Text style={styles.modalLabel}>Details / Message</Text>
+                <Text style={styles.modalLabel}>Details / Notes Needed</Text>
                 <TextInput
                   style={[styles.modalInput, styles.modalTextArea]}
-                  placeholder="e.g. Need handwritten notes or last year's papers..."
+                  placeholder="e.g. Need handwritten notes or last year's exam solutions..."
                   value={requestDetails}
                   onChangeText={setRequestDetails}
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholderTextColor="#94A3B8"
                   multiline
                   numberOfLines={3}
                 />
@@ -315,7 +435,7 @@ Details: ${requestDetails || 'None provided'}`;
                 disabled={submittingRequest}
               >
                 {submittingRequest ? (
-                  <ActivityIndicator color={COLORS.background} />
+                  <ActivityIndicator color="#09090b" />
                 ) : (
                   <Text style={styles.submitRequestBtnText}>Submit Request</Text>
                 )}
@@ -329,61 +449,509 @@ Details: ${requestDetails || 'None provided'}`;
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { flex: 1, padding: SPACING.lg },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
-  pageTitle: { fontSize: 24, fontWeight: '800', color: COLORS.heading },
-  uploadBtn: { flexDirection: 'row', backgroundColor: COLORS.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: RADIUS.md, gap: 6, alignItems: 'center' },
-  uploadBtnText: { color: COLORS.background, fontWeight: '600' },
-  
-  filterCard: { backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.lg, marginBottom: SPACING.xl, borderWidth: 1, borderColor: COLORS.border },
-  filterHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
-  filterTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 1 },
-  resetText: { fontSize: 13, fontWeight: '600', color: COLORS.accent },
-  filterRow: { flexDirection: 'row' },
-  dropdownContainer: { flex: 1 },
-  chipScroll: { gap: 8 },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
-  activeChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  chipText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
-  activeChipText: { color: COLORS.background },
-  
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: SPACING.md, color: COLORS.heading },
-  listContent: { flexGrow: 1, gap: SPACING.sm, paddingBottom: 0 },
-  noteCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.card, padding: SPACING.md, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, marginBottom: 10 },
-  noteIconBox: { width: 48, height: 48, backgroundColor: COLORS.primaryLight, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginRight: SPACING.md },
-  noteInfo: { flex: 1 },
-  noteTitle: { fontSize: 16, fontWeight: '600', color: COLORS.heading, marginBottom: 4 },
-  noteMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  noteSubject: { fontSize: 13, color: COLORS.textMuted },
-  uploaderBox: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.surface, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  uploaderName: { fontSize: 11, fontWeight: '600', color: COLORS.textMuted },
-  downloadBtn: { width: 40, height: 40, backgroundColor: COLORS.surface, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2', padding: 10, borderRadius: RADIUS.md, marginBottom: SPACING.md, gap: 8 },
-  errorText: { color: COLORS.danger, fontSize: 13, fontWeight: '600' },
-  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40, gap: 12 },
-  emptyText: { color: COLORS.textMuted, fontSize: 15, textAlign: 'center' },
-  requestBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.accent, backgroundColor: 'rgba(56, 189, 248, 0.05)', marginTop: 8 },
-  requestBtnText: { color: COLORS.accent, fontSize: 14, fontWeight: '600' },
-  footerWrapper: { marginHorizontal: -SPACING.lg, marginTop: 40 },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  mainContent: {
+    flex: 1,
+    width: '100%',
+  },
+  headerContainer: {
+    width: '100%',
+    maxWidth: 1440,
+    alignSelf: 'center',
+    paddingHorizontal: 28,
+    paddingTop: 24,
+  },
+  row: {
+    width: '100%',
+    maxWidth: 1440,
+    alignSelf: 'center',
+    paddingHorizontal: 28,
+  },
+  sparseRow: {
+    justifyContent: 'center',
+  },
+  headerSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+    gap: 20,
+  },
+  titleBox: {
+    flex: 1,
+    maxWidth: 850,
+    gap: 6,
+  },
+  kicker: {
+    fontSize: 15.5,
+    fontWeight: '800',
+    color: '#38BDF8',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  pageTitle: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '900',
+    color: '#F8FAFC',
+  },
+  subtitle: {
+    fontSize: 14.5,
+    lineHeight: 22,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  uploadBtn: {
+    flexDirection: 'row',
+    backgroundColor: '#38BDF8',
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    borderRadius: 12,
+    gap: 8,
+    alignItems: 'center',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
+      } as any,
+      default: {
+        shadowColor: '#38BDF8',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 4,
+      },
+    }),
+  },
+  uploadBtnText: {
+    color: '#09090b',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  searchSection: {
+    marginBottom: 20,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 14,
+    color: '#F8FAFC',
+    fontWeight: '500',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      } as any,
+    }),
+  },
+  filterCard: {
+    backgroundColor: '#18181b',
+    padding: 20,
+    borderRadius: 18,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+      } as any,
+    }),
+  },
+  filterHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  filterHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  resetText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#38BDF8',
+  },
+  filterGroup: {
+    gap: 8,
+  },
+  groupLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    letterSpacing: 1,
+  },
+  chipScroll: {
+    gap: 10,
+    paddingVertical: 4,
+  },
+  chip: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: RADIUS.round,
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  activeChip: {
+    backgroundColor: '#38BDF8',
+    borderColor: '#38BDF8',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)',
+      } as any,
+    }),
+  },
+  chipText: {
+    fontSize: 13,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+  activeChipText: {
+    color: '#09090b',
+    fontWeight: '800',
+  },
+  statsBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(24, 24, 27, 0.7)',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  statBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#F8FAFC',
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingBottom: 0,
+  },
+  noteCard: {
+    backgroundColor: '#18181b',
+    padding: 18,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'space-between',
+    height: '100%',
+    gap: 12,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+      } as any,
+    }),
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  typeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  typeBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  branchTag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  branchTagText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+  noteTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#F8FAFC',
+    lineHeight: 22,
+  },
+  subjectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  noteSubject: {
+    fontSize: 13,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    gap: 10,
+  },
+  uploaderBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  avatarCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+  },
+  avatarInitial: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#38BDF8',
+  },
+  uploaderMeta: {
+    flex: 1,
+  },
+  uploaderName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#F8FAFC',
+  },
+  uploadDate: {
+    fontSize: 11,
+    color: '#64748B',
+  },
+  viewDocBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#38BDF8',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 9,
+    gap: 4,
+  },
+  viewDocBtnText: {
+    color: '#09090b',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 300,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 60,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#F8FAFC',
+  },
+  emptyText: {
+    color: '#94A3B8',
+    fontSize: 14,
+    textAlign: 'center',
+    maxWidth: 400,
+  },
+  requestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.4)',
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    marginTop: 8,
+  },
+  requestBtnText: {
+    color: '#38BDF8',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  footerWrapper: {
+    marginTop: 60,
+    width: '100%',
+    alignSelf: 'stretch',
+  },
 
   // Modal styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.7)', justifyContent: 'center', alignItems: 'center', padding: SPACING.md },
-  modalContent: { backgroundColor: COLORS.card, borderRadius: RADIUS.lg, width: '100%', maxWidth: 450, borderWidth: 1, borderColor: COLORS.border, padding: SPACING.lg },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: COLORS.border, paddingBottom: SPACING.md, marginBottom: SPACING.lg },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: COLORS.heading },
-  modalForm: { gap: SPACING.md },
-  modalInputGroup: { marginBottom: SPACING.sm },
-  modalLabel: { fontSize: 12, fontWeight: '700', color: COLORS.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 },
-  modalInput: { height: 48, borderWidth: 1, borderColor: COLORS.border, borderRadius: RADIUS.md, paddingHorizontal: SPACING.md, fontSize: 14, color: COLORS.heading, backgroundColor: COLORS.surface },
-  modalTextArea: { height: 80, paddingTop: SPACING.sm, paddingBottom: SPACING.sm, textAlignVertical: 'top' },
-  modalChipScroll: { gap: 6 },
-  modalChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: RADIUS.round, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border, marginRight: 6 },
-  activeModalChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  modalChipText: { fontSize: 11, color: COLORS.text, fontWeight: '600' },
-  activeModalChipText: { color: COLORS.background },
-  submitRequestBtn: { backgroundColor: COLORS.primary, height: 48, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginTop: SPACING.md },
-  submitRequestBtnDisabled: { opacity: 0.7 },
-  submitRequestBtnText: { color: COLORS.background, fontSize: 15, fontWeight: '700' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(9, 9, 11, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(8px)',
+      } as any,
+    }),
+  },
+  modalContent: {
+    backgroundColor: '#18181b',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 480,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    paddingBottom: 16,
+    marginBottom: 18,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#F8FAFC',
+  },
+  modalForm: {
+    gap: 14,
+  },
+  modalInputGroup: {
+    gap: 6,
+  },
+  modalLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  modalInput: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: '#F8FAFC',
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    ...Platform.select({
+      web: {
+        outlineStyle: 'none',
+      } as any,
+    }),
+  },
+  modalTextArea: {
+    height: 84,
+    paddingTop: 12,
+    paddingBottom: 12,
+    textAlignVertical: 'top',
+  },
+  modalChipScroll: {
+    gap: 8,
+  },
+  modalChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: RADIUS.round,
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  activeModalChip: {
+    backgroundColor: '#38BDF8',
+    borderColor: '#38BDF8',
+  },
+  modalChipText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+  activeModalChipText: {
+    color: '#09090b',
+    fontWeight: '800',
+  },
+  submitRequestBtn: {
+    backgroundColor: '#38BDF8',
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  submitRequestBtnDisabled: {
+    opacity: 0.6,
+  },
+  submitRequestBtnText: {
+    color: '#09090b',
+    fontSize: 15,
+    fontWeight: '800',
+  },
 });

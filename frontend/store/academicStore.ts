@@ -43,11 +43,12 @@ export const useAcademicStore = create<AcademicState>()(
           if (semester) query.append('semester', semester);
 
           const response = await api.get(`/academic?${query.toString()}`);
-          set({ materials: response.data, isLoading: false });
+          set({ materials: Array.isArray(response.data) ? response.data : [], isLoading: false });
         } catch (error: any) {
           set({ 
             error: error.response?.data?.message || 'Failed to fetch materials', 
-            isLoading: false 
+            isLoading: false,
+            materials: []
           });
         }
       },

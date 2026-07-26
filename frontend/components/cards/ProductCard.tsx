@@ -25,7 +25,7 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
   const handleHoverIn = () => {
     setIsHovered(true);
     Animated.spring(scale, {
-      toValue: 1.03,
+      toValue: 1.02,
       useNativeDriver: true,
     }).start();
   };
@@ -41,7 +41,7 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
   const handlePressIn = () => {
     setIsPressed(true);
     Animated.spring(scale, {
-      toValue: 0.97,
+      toValue: 0.98,
       useNativeDriver: true,
     }).start();
   };
@@ -49,7 +49,7 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
   const handlePressOut = () => {
     setIsPressed(false);
     Animated.spring(scale, {
-      toValue: isHovered ? 1.03 : 1,
+      toValue: isHovered ? 1.02 : 1,
       useNativeDriver: true,
     }).start();
   };
@@ -64,8 +64,9 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
   const imageUrl = product.images?.[0];
 
   return (
-    <Animated.View style={{ transform: [{ scale }], width: '100%' }}>
+    <Animated.View style={{ transform: [{ scale }], width: '100%', height: '100%' }}>
       <Pressable
+        testID="product-card"
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -77,33 +78,47 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
           styles.card,
           isPhone && styles.phoneCard,
           {
-            borderColor: (isHovered || isPressed) ? 'rgba(56, 189, 248, 0.5)' : COLORS.border,
+            borderColor: (isHovered || isPressed) ? 'rgba(56, 189, 248, 0.45)' : 'rgba(255, 255, 255, 0.08)',
           }
         ]}
       >
-        <SafeImage uri={imageUrl} style={[styles.image, isPhone && styles.phoneImage]} resizeMode="contain" />
+        <View style={styles.imageContainer}>
+          <SafeImage 
+            testID="product-image"
+            uri={imageUrl} 
+            style={[styles.image, isPhone && styles.phoneImage]} 
+            resizeMode="cover" 
+          />
+        </View>
 
         <View style={[styles.content, isPhone && styles.phoneContent]}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title} numberOfLines={1}>{product.title}</Text>
-            <View style={styles.priceContainer}>
-              <Text style={styles.price}>₹{product.price}</Text>
-              {product.marketPrice ? (
-                <Text style={styles.marketPrice}>₹{product.marketPrice}</Text>
-              ) : null}
+          <View style={styles.topSection}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title} numberOfLines={1}>{product.title}</Text>
+              <View style={styles.priceContainer}>
+                <Text style={styles.price}>₹{product.price}</Text>
+                {product.marketPrice ? (
+                  <Text style={styles.marketPrice}>₹{product.marketPrice}</Text>
+                ) : null}
+              </View>
             </View>
-          </View>
 
-          <Text style={styles.category}>{product.category} • {product.condition}</Text>
+            <Text style={styles.category}>{product.category} • {product.condition}</Text>
+          </View>
 
           <View style={styles.footer}>
             <View style={styles.locationContainer}>
-              <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
+              <Ionicons name="location-outline" size={14} color="#94A3B8" />
               <Text style={styles.college} numberOfLines={1}>{product.college || 'N/A'}</Text>
             </View>
-            <TouchableOpacity style={styles.buyButton} onPress={handleBuyPress} activeOpacity={0.8}>
+            <TouchableOpacity 
+              testID="buy-btn"
+              style={styles.buyButton} 
+              onPress={handleBuyPress} 
+              activeOpacity={0.8}
+            >
               <Text style={styles.buyButtonText}>Buy</Text>
-              <Ionicons name="chevron-forward" size={11} color="#000" />
+              <Ionicons name="chevron-forward" size={12} color="#09090b" />
             </TouchableOpacity>
           </View>
         </View>
@@ -114,96 +129,133 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.lg,
+    backgroundColor: '#18181b',
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     width: '100%',
-    marginBottom: SPACING.md,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      } as any,
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        elevation: 4,
+      },
+    }),
   },
   phoneCard: {
-    borderRadius: 14,
-    marginBottom: 0,
+    borderRadius: 16,
+  },
+  imageContainer: {
+    width: '100%',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(39, 39, 42, 0.5)',
   },
   image: {
     width: '100%',
-    height: 200,
-    backgroundColor: COLORS.surface,
+    height: 235,
+    backgroundColor: 'rgba(39, 39, 42, 0.5)',
   },
   phoneImage: {
-    height: 188,
+    height: 205,
   },
   content: {
-    padding: SPACING.md,
+    padding: 16,
+    flex: 1,
+    justifyContent: 'space-between',
+    gap: 12,
   },
   phoneContent: {
-    paddingHorizontal: 14,
-    paddingTop: 14,
-    paddingBottom: 15,
+    padding: 14,
+    gap: 10,
+  },
+  topSection: {
+    gap: 6,
   },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    gap: 10,
   },
   title: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginRight: SPACING.sm,
+    fontWeight: '700',
+    color: '#F8FAFC',
+    lineHeight: 22,
   },
   price: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: COLORS.accent,
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#38BDF8',
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   marketPrice: {
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: 'rgba(148, 163, 184, 0.6)',
     textDecorationLine: 'line-through',
     marginTop: 1,
   },
   category: {
     fontSize: 13,
-    color: COLORS.textMuted,
-    marginBottom: SPACING.sm,
+    color: '#94A3B8',
+    fontWeight: '500',
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: SPACING.xs,
+    marginTop: 4,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: SPACING.sm,
+    marginRight: 10,
   },
   college: {
-    fontSize: 12,
-    color: COLORS.textMuted,
+    fontSize: 12.5,
+    color: '#94A3B8',
     marginLeft: 4,
     flex: 1,
+    fontWeight: '500',
   },
   buyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: RADIUS.sm,
-    gap: 2,
+    backgroundColor: '#38BDF8',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    gap: 4,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 2px 10px rgba(56, 189, 248, 0.35)',
+      } as any,
+      default: {
+        shadowColor: '#38BDF8',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 3,
+      },
+    }),
   },
   buyButtonText: {
-    color: '#000',
-    fontSize: 12,
-    fontWeight: '700',
+    color: '#09090b',
+    fontSize: 13,
+    fontWeight: '800',
   },
 });

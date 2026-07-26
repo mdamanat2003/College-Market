@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
 import Footer from '../../components/layout/Footer';
 import { Navbar } from '../../components/layout/Navbar';
 import { ProductCard } from '../../components/cards/ProductCard';
@@ -18,21 +18,31 @@ export default function MarketplaceHome() {
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<any>>(null);
 
-  const isPhone = width <= 480;
-  const numColumns = width >= 1100 ? 4 : width >= 768 ? 3 : width >= 540 ? 2 : 2; // 👈 Changed to 2 for mobile if width > 540 or just 2
-  const H_PADDING = isPhone ? 12 : SPACING.md * 2;
-  const CARD_GAP = isPhone ? 10 : SPACING.sm * 2;
-  const cardWidth = Math.floor((width - H_PADDING - (CARD_GAP * (numColumns - 1))) / numColumns);
+  const isPhone = width <= 560;
+  const numColumns = width >= 1150 ? 4 : width >= 820 ? 3 : width >= 560 ? 2 : 1;
+  const H_PADDING = isPhone ? 16 : 28 * 2;
+  const CARD_GAP = isPhone ? 16 : 24;
+  const containerMaxWidth = 1440;
+  const effectiveWidth = Math.min(width, containerMaxWidth);
+  const cardWidth = numColumns === 1 
+    ? Math.min(effectiveWidth - H_PADDING, 480)
+    : Math.floor((effectiveWidth - H_PADDING - (CARD_GAP * (numColumns - 1))) / numColumns);
 
   const handleBackToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
   const renderItem = React.useCallback(({ item }: { item: any }) => (
-    <View style={[styles.cardWrapper, isPhone && styles.phoneCardWrapper, { width: cardWidth, marginBottom: CARD_GAP }]}>
+    <View style={[
+      styles.cardWrapper, 
+      { 
+        width: cardWidth, 
+        marginBottom: CARD_GAP,
+      }
+    ]}>
       <ProductCard product={item} />
     </View>
-  ), [isPhone, cardWidth, CARD_GAP]);
+  ), [cardWidth, CARD_GAP]);
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
@@ -48,6 +58,8 @@ export default function MarketplaceHome() {
     }
   };
 
+  const isSparse = products.length > 0 && products.length <= 2;
+
   return (
     <View style={styles.container}>
       <Navbar />
@@ -62,30 +74,78 @@ export default function MarketplaceHome() {
           </View>
         )}
 
-        {/* --- College Filter Bar --- */}
+        {/* --- Segmented College Filter Chips (24px gap from Menu) --- */}
         <View style={styles.filterSection}>
-          <TouchableOpacity 
-            style={[styles.filterToggle, activeCollege !== 'All Colleges' && styles.filterToggleActive]} 
-            onPress={toggleCollegeFilter}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.collegeScroll}
           >
-            <Ionicons 
-              name={activeCollege === 'All Colleges' ? "business-outline" : "school"} 
-              size={18} 
-              color={activeCollege === 'All Colleges' ? COLORS.text : COLORS.background} 
-            />
-            <Text style={[styles.filterToggleText, activeCollege !== 'All Colleges' && styles.filterToggleTextActive]}>
-              {activeCollege === 'All Colleges' ? "Show My College Only" : `Showing: ${activeCollege}`}
-            </Text>
-          </TouchableOpacity>
+            {/* 1. All Colleges Chip */}
+            <TouchableOpacity 
+              testID="category-chip"
+              style={[
+                styles.categoryPill, 
+                isPhone && styles.phoneCategoryPill, 
+                styles.collegeChipRow,
+                activeCollege === 'All Colleges' && styles.activePill
+              ]} 
+              onPress={() => setActiveCollege('All Colleges')}
+              activeOpacity={0.75}
+            >
+              <Ionicons 
+                name="globe-outline" 
+                size={16} 
+                color={activeCollege === 'All Colleges' ? '#09090b' : '#38BDF8'} 
+              />
+              <Text style={[
+                styles.categoryText, 
+                activeCollege === 'All Colleges' && styles.activeText
+              ]}>
+                All Colleges
+              </Text>
+            </TouchableOpacity>
+
+            {/* 2. My College Chip */}
+            <TouchableOpacity 
+              testID="category-chip"
+              style={[
+                styles.categoryPill, 
+                isPhone && styles.phoneCategoryPill, 
+                styles.collegeChipRow,
+                activeCollege !== 'All Colleges' && styles.activePill
+              ]} 
+              onPress={() => setActiveCollege(user?.college || 'My College')}
+              activeOpacity={0.75}
+            >
+              <Ionicons 
+                name="school-outline" 
+                size={16} 
+                color={activeCollege !== 'All Colleges' ? '#09090b' : '#38BDF8'} 
+              />
+              <Text 
+                numberOfLines={1}
+                style={[
+                  styles.categoryText, 
+                  activeCollege !== 'All Colleges' && styles.activeText
+                ]}
+              >
+                {user?.college ? `My College (${user.college})` : 'My College'}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
 
+        {/* --- Category Filters (24px gap from College Badge) --- */}
         <View style={[styles.categoryContainer, isPhone && styles.phoneCategoryContainer]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.categoryScroll, isPhone && styles.phoneCategoryScroll]}>
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
                 key={cat}
+                testID="category-chip"
                 style={[styles.categoryPill, isPhone && styles.phoneCategoryPill, activeCategory === cat && styles.activePill]}
                 onPress={() => setActiveCategory(cat)}
+                activeOpacity={0.75}
               >
                 <Text style={[styles.categoryText, activeCategory === cat && styles.activeText]}>{cat}</Text>
               </TouchableOpacity>
@@ -95,27 +155,30 @@ export default function MarketplaceHome() {
 
         {isLoading ? (
           <View style={styles.loader}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+            <ActivityIndicator size="large" color="#38BDF8" />
           </View>
         ) : (
+          /* --- Product Grid (32px gap from Categories) --- */
           <FlatList
             ref={listRef}
-            key={numColumns}
+            key={`${numColumns}-${products.length}`}
             data={products}
             keyExtractor={keyExtractor}
             numColumns={numColumns}
             contentContainerStyle={[styles.gridList, isPhone && styles.phoneGridList]}
-            columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
-            removeClippedSubviews={true} // Performance optimization
+            columnWrapperStyle={numColumns > 1 ? [styles.row, isSparse && styles.sparseRow, { gap: CARD_GAP }] : undefined}
+            removeClippedSubviews={true}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={5}
             ListEmptyComponent={
               <View style={styles.emptyState}>
+                <Ionicons name="cart-outline" size={48} color={COLORS.textMuted} />
                 <Text style={styles.emptyText}>No products found in this category.</Text>
               </View>
             }
             ListFooterComponent={
+              /* --- Footer (80px gap from Products) --- */
               <View style={styles.footerWrapper}>
                 <Footer onBackToTop={handleBackToTop} />
               </View>
@@ -138,117 +201,150 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'stretch',
   },
+  filterSection: {
+    paddingHorizontal: 28,
+    paddingTop: 20,
+    paddingBottom: 4,
+    backgroundColor: 'transparent',
+    maxWidth: 1440,
+    width: '100%',
+    alignSelf: 'center',
+    overflow: 'visible',
+  },
+  collegeScroll: {
+    gap: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
+  },
+  collegeChipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    maxWidth: 280,
+  },
   categoryContainer: {
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.card,
+    paddingVertical: 4,
+    marginTop: 16,
+    backgroundColor: 'transparent',
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    overflow: 'visible',
   },
   phoneCategoryContainer: {
-    paddingTop: 16,
-    paddingBottom: 13,
+    paddingTop: 4,
+    paddingBottom: 4,
+    marginTop: 12,
   },
   categoryScroll: {
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.sm,
+    paddingHorizontal: 28,
+    paddingVertical: 8,
+    gap: 12,
+    maxWidth: 1440,
+    alignSelf: 'center',
   },
   phoneCategoryScroll: {
-    paddingHorizontal: 17,
+    paddingHorizontal: 16,
     gap: 8,
   },
   categoryPill: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: 8,
-    borderRadius: RADIUS.round,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  phoneCategoryPill: {
-    minWidth: 62,
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 9,
+    borderRadius: RADIUS.round,
+    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  phoneCategoryPill: {
+    minWidth: 64,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   activePill: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: '#38BDF8',
+    borderColor: '#38BDF8',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 16px rgba(56, 189, 248, 0.45)',
+      } as any,
+      default: {
+        shadowColor: '#38BDF8',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+        elevation: 5,
+      },
+    }),
   },
   categoryText: {
-    color: COLORS.text,
-    fontWeight: '500',
+    color: COLORS.textMuted,
+    fontSize: 13.5,
+    fontWeight: '600',
   },
   activeText: {
-    color: COLORS.background,
+    color: '#09090b',
+    fontWeight: '800',
   },
   gridList: {
-    flexGrow: 1, // 👈 Added to push footer down
-    paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.md,
+    flexGrow: 1,
+    paddingHorizontal: 28,
+    paddingTop: 32,
     paddingBottom: 0,
+    maxWidth: 1440,
+    width: '100%',
+    alignSelf: 'center',
   },
   phoneGridList: {
-    flexGrow: 1, // 👈 Added to push footer down
-    paddingHorizontal: 18,
-    paddingTop: 30,
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    alignItems: 'center',
   },
   row: {
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    width: '100%',
+  },
+  sparseRow: {
+    justifyContent: 'center',
   },
   cardWrapper: {
-    padding: SPACING.sm,
+    alignItems: 'stretch',
   },
   phoneCardWrapper: {
-    padding: 0,
+    alignItems: 'center',
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  filterSection: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 12,
-    backgroundColor: COLORS.card,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  filterToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: RADIUS.md,
-    gap: 8,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  filterToggleActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  filterToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  filterToggleTextActive: {
-    color: COLORS.background,
+    minHeight: 300,
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 100,
+    marginTop: 80,
+    gap: 12,
   },
   emptyText: {
     color: COLORS.textMuted,
     fontSize: 16,
   },
   footerWrapper: {
-    marginHorizontal: -SPACING.md,
+    marginTop: 80,
+    width: '100%',
+    alignSelf: 'stretch',
+    ...Platform.select({
+      web: {
+        width: '100vw',
+        position: 'relative',
+        left: '50%',
+        marginLeft: '-50vw',
+      } as any,
+      default: {
+        marginHorizontal: -28,
+      },
+    }),
   },
   verificationBanner: {
     flexDirection: 'row',

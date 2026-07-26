@@ -51,23 +51,115 @@ export default function RootLayout() {
 
       body {
         overflow-x: hidden;
-        background: ${COLORS.background};
+        background: linear-gradient(180deg, #09090b 0%, #0f172a 100%);
+        background-attachment: fixed;
       }
 
-      /* Web Hover Animations */
+      /* Custom Glowing Right-Side Scrollbar Slider */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #09090b;
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #38BDF8 0%, #0284C7 100%);
+        border-radius: 10px;
+        border: 2px solid #09090b;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #38BDF8;
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.8);
+      }
+
+      /* Global Input Focus Rectangle Removal */
+      input, textarea, select {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      input:focus, textarea:focus, select:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        border-color: transparent !important;
+      }
+
+      /* Web Hover & Focus Micro-Interactions */
+      [data-testid="product-card"] {
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="product-card"]:hover {
+        transform: translateY(-6px) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.15) !important;
+        border-color: rgba(56, 189, 248, 0.4) !important;
+      }
+      [data-testid="product-card"]:hover [data-testid="product-image"] {
+        transform: scale(1.025) !important;
+      }
+      [data-testid="product-image"] {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="buy-btn"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="buy-btn"]:hover {
+        transform: scale(1.04) translateY(-1px) !important;
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.45) !important;
+        filter: brightness(1.1) !important;
+      }
       [data-testid="nav-item"] {
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
       }
       [data-testid="nav-item"]:hover {
-        transform: translateY(-2px) !important;
-        opacity: 0.85 !important;
+        transform: translateY(-1.5px) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+      }
+      [data-testid="nav-item"]:hover i,
+      [data-testid="nav-item"]:hover svg,
+      [data-testid="nav-item"]:hover text {
+        color: #38BDF8 !important;
       }
       [data-testid="logo-btn"] {
-        transition: all 0.25s ease !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
       }
       [data-testid="logo-btn"]:hover {
-        transform: scale(1.03) !important;
-        opacity: 0.95 !important;
+        transform: scale(1.05) !important;
+        filter: brightness(1.1) !important;
+      }
+      [data-testid="sell-btn"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="sell-btn"]:hover {
+        transform: scale(1.03) translateY(-1px) !important;
+        box-shadow: 0 8px 24px rgba(56, 189, 248, 0.45) !important;
+        filter: brightness(1.08) !important;
+      }
+      [data-testid="icon-btn"] {
+        transition: all 0.2s ease !important;
+      }
+      [data-testid="icon-btn"]:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.18) !important;
+        transform: translateY(-1px) scale(1.05) !important;
+      }
+      [data-testid="category-chip"] {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="category-chip"]:hover {
+        transform: translateY(-2px) !important;
+        border-color: rgba(56, 189, 248, 0.4) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+      }
+      [data-testid="note-card"], [data-testid="lost-found-card"], [data-testid="event-card"] {
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      [data-testid="note-card"]:hover, [data-testid="lost-found-card"]:hover, [data-testid="event-card"]:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 16px rgba(56, 189, 248, 0.12) !important;
+        border-color: rgba(56, 189, 248, 0.4) !important;
       }
       [data-testid="login-btn"] {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -75,14 +167,6 @@ export default function RootLayout() {
       [data-testid="login-btn"]:hover {
         transform: translateY(-1px) scale(1.02) !important;
         box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4) !important;
-        filter: brightness(1.1) !important;
-      }
-      [data-testid="sell-btn"] {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      }
-      [data-testid="sell-btn"]:hover {
-        transform: translateY(-1px) scale(1.02) !important;
-        box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35) !important;
         filter: brightness(1.1) !important;
       }
 

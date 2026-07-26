@@ -67,7 +67,7 @@ const startServer = async () => {
 
     // 1. Middleware order sahi rakhein: pehle CORS aur JSON, phir Routes
     app.set("trust proxy", 1);
-    
+
     // Robust CORS configuration
     app.use(cors({
       origin: true, // Reflects the request origin
@@ -89,11 +89,11 @@ const startServer = async () => {
     const uploadsDir = path.resolve(__dirname, "..", "uploads");
     const academicUploadsDir = path.join(uploadsDir, "academic");
     const lostFoundUploadsDir = path.join(uploadsDir, "lost-found");
-    
+
     if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
     if (!fs.existsSync(academicUploadsDir)) fs.mkdirSync(academicUploadsDir, { recursive: true });
     if (!fs.existsSync(lostFoundUploadsDir)) fs.mkdirSync(lostFoundUploadsDir, { recursive: true });
-    
+
     // Serve APK file with correct headers to prevent parsing error on Android devices
     app.get("/uploads/app-release.apk", (req, res) => {
       const apkPath = path.join(uploadsDir, "app-release.apk");

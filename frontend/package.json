@@ -12,6 +12,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "web:clean": "expo start --web --clear",
     "lint": "expo lint",
     "test": "vitest run"
   },

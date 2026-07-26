@@ -22,7 +22,6 @@ import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 const NAV_ITEMS = [
   { id: 'home', name: 'Home', path: '/home', icon: 'home-outline', activeIcon: 'home' },
   { id: 'market', name: 'Marketplace', path: '/marketplace', icon: 'cart-outline', activeIcon: 'cart' },
-  { id: 'notifications', name: 'Notifications', path: '/notifications', icon: 'notifications-outline', activeIcon: 'notifications' },
   { id: 'academic', name: 'PyQ & Notes', path: '/academic', icon: 'book-outline', activeIcon: 'book' },
   { id: 'lostfound', name: 'Lost & Found', path: '/lost-found', icon: 'search-outline', activeIcon: 'search' },
   { id: 'events', name: 'Campus Fests', path: '/events', icon: 'calendar-outline', activeIcon: 'calendar' },
@@ -39,7 +38,7 @@ export const Navbar = () => {
   const insets = useSafeAreaInsets();
 
   const isPhone = width <= 480;
-  const isMobile = width < 600;
+  const isMobile = width < 768;
   const isTiny = width < 360;
 
   const handleSearch = () => {
@@ -110,7 +109,7 @@ export const Navbar = () => {
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
-          contentContainerStyle={[styles.navScrollContent, isPhone && styles.phoneNavScrollContent]}
+          contentContainerStyle={[styles.navScrollContent, isMobile && styles.phoneNavScrollContent]}
         >
           {NAV_ITEMS.map((item) => {
             const isActive = currentPath === item.path || currentPath.startsWith(`${item.path}/`);
@@ -297,7 +296,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   phoneNavScrollContent: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 14,
+    justifyContent: 'flex-start',
+    gap: 8,
   },
   navItem: {
     flexDirection: 'row',

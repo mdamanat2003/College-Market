@@ -15,7 +15,7 @@ import {
   Platform 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { useAcademicStore } from '../../store/academicStore';
@@ -80,14 +80,19 @@ const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDo
 
 export default function AcademicHub() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ search?: string; q?: string; branch?: string; semester?: string }>();
   const { materials, fetchMaterials, isLoading, error } = useAcademicStore();
   const { user } = useAuthStore();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
   
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState<string>('CSE');
-  const [selectedSemester, setSelectedSemester] = useState<string>('8th Sem');
+  const initialSearch = (params.search || params.q || '').toString();
+  const initialBranch = params.branch && BRANCHES.includes(params.branch) ? params.branch : 'All';
+  const initialSemester = params.semester && SEMESTERS.includes(params.semester) ? params.semester : 'All';
+
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
+  const [selectedSemester, setSelectedSemester] = useState<string>(initialSemester);
 
   // Request Modal State
   const [isRequestModalVisible, setIsRequestModalVisible] = useState(false);
@@ -104,8 +109,13 @@ export default function AcademicHub() {
   useEffect(() => {
     const branchParam = selectedBranch === 'All' ? '' : selectedBranch;
     const semParam = selectedSemester === 'All' ? '' : selectedSemester;
-    fetchMaterials(branchParam, semParam);
-  }, [selectedBranch, selectedSemester]);
+    
+    const handler = setTimeout(() => {
+      fetchMaterials(branchParam, semParam, searchQuery);
+    }, 250);
+
+    return () => clearTimeout(handler);
+  }, [selectedBranch, selectedSemester, searchQuery]);
 
   useEffect(() => {
     if (isRequestModalVisible) {
@@ -120,11 +130,20 @@ export default function AcademicHub() {
     if (!Array.isArray(materials)) return [];
     if (!searchQuery.trim()) return materials;
     const q = searchQuery.toLowerCase().trim();
-    return materials.filter((m: any) => 
-      (m.title && m.title.toLowerCase().includes(q)) ||
-      (m.subject && m.subject.toLowerCase().includes(q)) ||
-      (m.branch && m.branch.toLowerCase().includes(q))
-    );
+    return materials.filter((m: any) => {
+      const rawType = (m.fileType || 'pdf').toLowerCase();
+      const fileTypeLabel = rawType.includes('pyq') ? 'pyq' : rawType.includes('note') ? 'notes' : 'pdf';
+      return (
+        (m.title && m.title.toLowerCase().includes(q)) ||
+        (m.subject && m.subject.toLowerCase().includes(q)) ||
+        (m.branch && m.branch.toLowerCase().includes(q)) ||
+        (m.semester && m.semester.toLowerCase().includes(q)) ||
+        (m.description && m.description.toLowerCase().includes(q)) ||
+        (m.fileType && m.fileType.toLowerCase().includes(q)) ||
+        fileTypeLabel.includes(q) ||
+        (m.uploadedBy?.name && m.uploadedBy.name.toLowerCase().includes(q))
+      );
+    });
   }, [materials, searchQuery]);
 
   const stats = useMemo(() => {

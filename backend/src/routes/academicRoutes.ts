@@ -50,11 +50,23 @@ const isCloudinaryConfigured = !!(
 // Use Cloudinary for notes storage if configured, otherwise fallback to local storage
 const upload = multer({ 
   storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage,
-  limits: { fileSize: 1 * 1024 * 1024 }
+  limits: { fileSize: 25 * 1024 * 1024 }
 });
 
 // 3. Upload Route API (Protected)
-router.post('/upload', protect, upload.single('file'), async (req: any, res: any) => {
+router.post('/upload', protect, (req: any, res: any, next: any) => {
+  upload.single('file')(req, res, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'File size exceeds 25MB limit. Please upload a smaller PDF or image.' });
+      }
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(400).json({ message: err.message || 'Error uploading file' });
+    }
+    next();
+  });
+}, async (req: any, res: any) => {
   try {
     console.log("📥 Academic Upload Request Received");
     console.log("Body:", req.body);
@@ -111,11 +123,24 @@ router.post('/upload', protect, upload.single('file'), async (req: any, res: any
 // 4. GET Route
 router.get('/', async (req: any, res: any) => {
   try {
-    const { branch, semester } = req.query;
+    const { branch, semester, search, q } = req.query;
+    const searchTerm = (search || q || '').toString().trim();
     let query: any = {};
     
     if (branch && branch !== 'All') query.branch = branch;
     if (semester && semester !== 'All') query.semester = semester;
+
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      query.$or = [
+        { title: searchRegex },
+        { subject: searchRegex },
+        { branch: searchRegex },
+        { semester: searchRegex },
+        { description: searchRegex },
+        { fileType: searchRegex },
+      ];
+    }
 
     const notes = await Academic.find(query)
       .sort({ createdAt: -1 })

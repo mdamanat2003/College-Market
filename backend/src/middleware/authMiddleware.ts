@@ -24,7 +24,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
             role: 'student',
             college: 'Demo College',
             isDemo: true,
-          });
+          } as any);
         }
         req.user = demoUser as IUser;
         return next();

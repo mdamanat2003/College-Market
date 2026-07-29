@@ -18,6 +18,7 @@ export interface IUser extends Document {
   resetOtp?: string | null;
   resetOtpExpires?: Date | null;
   isBlocked?: boolean;
+  isDemo?: boolean;
   
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
@@ -33,6 +34,7 @@ const userSchema: Schema = new Schema(
     avatar: { type: String, default: "" },
     collegeIdProof: { type: String, default: "" },
     isVerified: { type: Boolean, default: false },
+    isDemo: { type: Boolean, default: false },
     role: { type: String, enum: ["student", "admin"], default: "student" },
     rating: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },

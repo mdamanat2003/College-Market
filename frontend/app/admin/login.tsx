@@ -70,7 +70,7 @@ export default function AdminLoginScreen() {
               <Text style={styles.badgeText}>ADMIN PORTAL</Text>
             </View>
 
-            <Text style={styles.title}>System Login</Text>
+            <Text style={styles.title}>Login as a administrator</Text>
             <Text style={styles.subtitle}>Enter your secure credentials to manage Ooplabdh</Text>
 
             {errorMsg ? (

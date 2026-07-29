@@ -35,21 +35,10 @@ export function OoplabdhLogo({ compact = false, markOnly = false, size = 'md', s
       accessibilityLabel="Ooplabdh logo"
     >
       <View style={[styles.mark, { width: markSize, height: markSize, borderRadius: markSize * 0.28 }]}>
-        <View
-          style={{
-            width: markSize * 0.72,
-            height: markSize * 0.72,
-            borderRadius: (markSize * 0.72) / 2,
-            borderWidth: markSize * 0.18,
-            borderLeftColor: '#F59E0B', // Golden
-            borderTopColor: '#1E3A8A',  // Dark Blue
-            borderRightColor: '#38BDF8', // Light Blue (Image 2 color)
-            borderBottomColor: '#000000', // Black
-            transform: [{ rotate: '-30deg' }],
-            position: 'absolute',
-            left: markSize * 0.14,
-            top: markSize * 0.14,
-          }}
+        <Image
+          source={require('../../assets/images/ooplabdh-logo.jpg')}
+          style={{ width: markSize, height: markSize, borderRadius: markSize * 0.28 }}
+          resizeMode="cover"
         />
       </View>
 

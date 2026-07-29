@@ -22,7 +22,7 @@ export default function AdminLoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
 
@@ -87,7 +87,7 @@ export default function AdminLoginScreen() {
                 <Ionicons name="mail-outline" size={20} color={COLORS.textMuted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="admin@ooplabdh.shop"
+                  placeholder="admin"
                   placeholderTextColor={COLORS.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -117,8 +117,8 @@ export default function AdminLoginScreen() {
             </View>
 
             {/* Login Button */}
-            <TouchableOpacity 
-              style={styles.submitBtn} 
+            <TouchableOpacity
+              style={styles.submitBtn}
               onPress={handleAdminLogin}
               disabled={isSubmitting}
               activeOpacity={0.8}
@@ -133,7 +133,7 @@ export default function AdminLoginScreen() {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => router.replace('/home')}
               style={styles.backBtn}
             >
@@ -150,7 +150,7 @@ export default function AdminLoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.md },
-  
+
   card: {
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.lg,

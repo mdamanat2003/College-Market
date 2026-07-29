@@ -219,10 +219,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isReady) return;
 
-    const currentSegment = segments[0];
+    const currentSegment = (segments[0] || '').toLowerCase();
     const inAuthGroup = currentSegment === '(auth)';
-    const inAdminRoute = currentSegment === 'admin';
-    const isAdminLoginPage = pathname === '/admin/login';
+    const inAdminRoute = currentSegment === 'admin' || currentSegment === 'opadmin';
+    const normalizedPath = (pathname || '').toLowerCase();
+    const isAdminLoginPage = normalizedPath === '/admin/login' || normalizedPath === '/opadmin/login' || normalizedPath === '/opadmin';
     const inTabsGroup = currentSegment === '(tabs)';
     const isPublicRoute = (pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
 
@@ -237,7 +238,7 @@ export default function RootLayout() {
         if (user && user.role !== 'admin') {
           router.replace('/(tabs)');
         } else {
-          router.replace('/admin/login');
+          router.replace('/Opadmin/login' as any);
         }
         return;
       }

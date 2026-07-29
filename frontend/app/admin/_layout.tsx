@@ -14,8 +14,9 @@ export default function AdminLayout() {
   const { width } = useWindowDimensions();
   const isWebLarge = Platform.OS === 'web' && width > 768;
 
-  const isLoginPage = pathname === '/admin/login';
-  const inAdminRoute = segments[0] === 'admin';
+  const normalizedPath = (pathname || '').toLowerCase();
+  const isLoginPage = normalizedPath === '/admin/login' || normalizedPath === '/opadmin/login';
+  const inAdminRoute = (segments[0] || '').toLowerCase() === 'admin' || (segments[0] || '').toLowerCase() === 'opadmin';
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function AdminLayout() {
         if (user && user.role !== 'admin') {
           router.replace('/(tabs)');
         } else {
-          router.replace('/admin/login');
+          router.replace('/Opadmin/login' as any);
         }
       }
     }
@@ -40,7 +41,7 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     logout();
-    router.replace('/admin/login' as any);
+    router.replace('/Opadmin/login' as any);
   };
 
   const navItems = [

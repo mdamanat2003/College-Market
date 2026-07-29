@@ -92,11 +92,23 @@ export default function UploadAcademic() {
         Alert.alert('Success!', 'Your document has been uploaded successfully.');
         router.back();
       } else {
-        Alert.alert('Upload Failed', 'There was an error uploading your file. Please try again.');
+        const storeErr = useAcademicStore.getState().error || 'There was an error uploading your file. Please try again.';
+        if (storeErr.includes('authorized') || storeErr.includes('token')) {
+          Alert.alert(
+            'Login Required',
+            'Bhai, upload karne ke liye aapko login karna padega.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
+            ]
+          );
+        } else {
+          Alert.alert('Upload Failed', storeErr);
+        }
       }
     } catch (error: any) {
       console.error('Upload failed:', error);
-      Alert.alert('Upload Failed', 'Something went wrong.');
+      Alert.alert('Upload Failed', error?.response?.data?.message || 'Something went wrong.');
     }
   };
 

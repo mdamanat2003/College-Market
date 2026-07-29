@@ -74,6 +74,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isDemo: true,
     };
     AsyncStorage.setItem('userData', JSON.stringify(demoUser)).catch(() => {});
+    AsyncStorage.setItem('userAccessToken', 'demo_token').catch(() => {});
+    AsyncStorage.setItem('userRefreshToken', 'demo_refresh_token').catch(() => {});
     set({ 
       user: demoUser, 
       accessToken: 'demo_token', 
@@ -84,8 +86,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   ensureRealUser: () => {
-    const { user } = get();
-    if (user?.isDemo) {
+    const { user, accessToken } = get();
+    if (!user || user.isDemo || !accessToken) {
       return false;
     }
     return true;

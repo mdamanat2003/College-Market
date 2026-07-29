@@ -222,20 +222,29 @@ export default function RootLayout() {
     const currentSegment = segments[0];
     const inAuthGroup = currentSegment === '(auth)';
     const inAdminRoute = currentSegment === 'admin';
+    const isAdminLoginPage = pathname === '/admin/login';
     const inTabsGroup = currentSegment === '(tabs)';
     const isPublicRoute = (pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
 
-    if (inAdminRoute && (!user || user.role !== 'admin')) {
-      if (user && user.role !== 'admin') {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/(auth)/login');
+    if (inAdminRoute) {
+      if (isAdminLoginPage) {
+        if (user && user.role === 'admin') {
+          router.replace('/admin/dashboard');
+        }
+        return;
       }
-      return;
+      if (!user || user.role !== 'admin') {
+        if (user && user.role !== 'admin') {
+          router.replace('/(tabs)');
+        } else {
+          router.replace('/admin/login');
+        }
+        return;
+      }
     }
 
     if (!user && !inAuthGroup) {
-      if (isPublicRoute) {
+      if (isPublicRoute || isAdminLoginPage) {
         return;
       }
       router.replace('/(auth)/login');

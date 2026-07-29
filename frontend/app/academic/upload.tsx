@@ -67,15 +67,19 @@ export default function UploadAcademic() {
       const formData = new FormData();
       
       if (Platform.OS === 'web') {
-        // 🌐 WEB FIX: Browser me URI ko Blob me convert karna padta hai
-        const response = await fetch(file.uri);
-        const blob = await response.blob();
-        formData.append('file', blob, file.name);
+        const fileObj = (file as any).file;
+        if (fileObj) {
+          formData.append('file', fileObj, file.name || 'document.pdf');
+        } else {
+          const response = await fetch(file.uri);
+          const blob = await response.blob();
+          formData.append('file', blob, file.name || 'document.pdf');
+        }
       } else {
         // 📱 MOBILE FIX: Expo default tareeka
         formData.append('file', {
           uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
-          name: file.name,
+          name: file.name || 'document.pdf',
           type: file.mimeType || 'application/pdf',
         } as any);
       }

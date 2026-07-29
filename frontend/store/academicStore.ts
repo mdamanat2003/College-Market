@@ -57,8 +57,16 @@ export const useAcademicStore = create<AcademicState>()(
       uploadMaterial: async (formData) => {
         set({ isLoading: true, error: null });
         try {
-          await api.post('/academic/upload', formData);
-          set({ isLoading: false });
+          const response = await api.post('/academic/upload', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          const newNote = response.data?.note;
+          set((state) => ({
+            materials: newNote ? [newNote, ...state.materials] : state.materials,
+            isLoading: false
+          }));
           return true;
         } catch (error: any) {
           set({ 

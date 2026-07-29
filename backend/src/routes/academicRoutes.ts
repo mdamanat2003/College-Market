@@ -50,7 +50,7 @@ const isCloudinaryConfigured = !!(
 // Use Cloudinary for notes storage if configured, otherwise fallback to local storage
 const upload = multer({ 
   storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage,
-  limits: { fileSize: 25 * 1024 * 1024 }
+  limits: { fileSize: Math.round(1.5 * 1024 * 1024) }
 });
 
 // 3. Upload Route API (Protected)
@@ -58,7 +58,7 @@ router.post('/upload', protect, (req: any, res: any, next: any) => {
   upload.single('file')(req, res, (err: any) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ message: 'File size exceeds 25MB limit. Please upload a smaller PDF or image.' });
+        return res.status(400).json({ message: 'File size exceeds 1.5MB limit. Please upload a smaller PDF or image.' });
       }
       return res.status(400).json({ message: err.message });
     } else if (err) {

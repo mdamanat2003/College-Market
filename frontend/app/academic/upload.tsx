@@ -45,8 +45,8 @@ export default function UploadAcademic() {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedFile = result.assets[0];
-        if (selectedFile.size && selectedFile.size > 25 * 1024 * 1024) {
-          Alert.alert('File Too Large', 'Document file size 25MB se kam honi chahiye.');
+        if (selectedFile.size && selectedFile.size > 1.5 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Document file size 1.5MB se kam honi chahiye.');
           return;
         }
         setFile(selectedFile);

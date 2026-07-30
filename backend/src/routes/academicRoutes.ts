@@ -38,7 +38,7 @@ const cloudinaryStorage = new CloudinaryStorage({
     folder: 'ooplabdh_notes',
     resource_type: 'auto',
     allowed_formats: ['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'],
-  } as any, 
+  } as any,
 });
 
 const isCloudinaryConfigured = !!(
@@ -48,9 +48,9 @@ const isCloudinaryConfigured = !!(
 );
 
 // Use Cloudinary for notes storage if configured, otherwise fallback to local storage
-const upload = multer({ 
+const upload = multer({
   storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage,
-  limits: { fileSize: 15 * 1024 * 1024 }
+  limits: { fileSize: 1.5 * 1024 * 1024 }
 });
 
 // 3. Upload Route API (Protected)
@@ -58,7 +58,7 @@ router.post('/upload', protect, (req: any, res: any, next: any) => {
   upload.single('file')(req, res, (err: any) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ message: 'File size exceeds 15MB limit. Please upload a smaller PDF or image.' });
+        return res.status(400).json({ message: 'File size exceeds 1.5MB limit. Please upload a smaller PDF or image.' });
       }
       return res.status(400).json({ message: err.message });
     } else if (err) {
@@ -100,22 +100,22 @@ router.post('/upload', protect, (req: any, res: any, next: any) => {
 
     await newNote.save();
     console.log("✅ Academic Material Saved:", newNote._id);
-    
+
     // Populate uploadedBy before sending response
     await newNote.populate('uploadedBy', 'name');
-    
-    res.status(201).json({ 
-      success: true, 
-      message: 'Notes uploaded successfully!', 
-      note: newNote 
+
+    res.status(201).json({
+      success: true,
+      message: 'Notes uploaded successfully!',
+      note: newNote
     });
 
   } catch (error: any) {
     console.error('❌ Upload Error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error during upload', 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: 'Server error during upload',
+      error: error.message
     });
   }
 });
@@ -126,7 +126,7 @@ router.get('/', async (req: any, res: any) => {
     const { branch, semester, search, q } = req.query;
     const searchTerm = (search || q || '').toString().trim();
     let query: any = {};
-    
+
     if (branch && branch !== 'All') query.branch = branch;
     if (semester && semester !== 'All') query.semester = semester;
 
@@ -145,7 +145,7 @@ router.get('/', async (req: any, res: any) => {
     const notes = await Academic.find(query)
       .sort({ createdAt: -1 })
       .populate('uploadedBy', 'name');
-      
+
     res.status(200).json(notes);
   } catch (error) {
     console.error('Fetch Error:', error);

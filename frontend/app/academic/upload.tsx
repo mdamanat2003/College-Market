@@ -45,8 +45,8 @@ export default function UploadAcademic() {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedFile = result.assets[0];
-        if (selectedFile.size && selectedFile.size > 15 * 1024 * 1024) {
-          Alert.alert('File Too Large', 'Document file size 15MB se kam honi chahiye.');
+        if (selectedFile.size && selectedFile.size > 1.5 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Document file size 1.5MB se kam honi chahiye.');
           return;
         }
         setFile(selectedFile);
@@ -65,7 +65,7 @@ export default function UploadAcademic() {
 
     try {
       const formData = new FormData();
-      
+
       if (Platform.OS === 'web') {
         const fileObj = (file as any).file;
         if (fileObj) {
@@ -127,91 +127,91 @@ export default function UploadAcademic() {
           <View style={{ width: 24 }} />
         </View>
 
-      <View style={styles.formCard}>
-        <TouchableOpacity style={styles.filePickerBtn} onPress={pickDocument}>
-          <Ionicons 
-            name={file ? "checkmark-circle" : "cloud-upload-outline"} 
-            size={40} 
-            color={file ? COLORS.success : COLORS.primary} 
-          />
-          <Text style={[styles.filePickerText, file && { color: COLORS.success }]}>
-            {file ? file.name : 'Tap to select PDF or Image'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.formCard}>
+          <TouchableOpacity style={styles.filePickerBtn} onPress={pickDocument}>
+            <Ionicons
+              name={file ? "checkmark-circle" : "cloud-upload-outline"}
+              size={40}
+              color={file ? COLORS.success : COLORS.primary}
+            />
+            <Text style={[styles.filePickerText, file && { color: COLORS.success }]}>
+              {file ? file.name : 'Tap to select PDF or Image'}
+            </Text>
+          </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Document Title</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 2024 End Sem PyQ"
-            value={title}
-            onChangeText={setTitle}
-            placeholderTextColor={COLORS.textMuted}
-          />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Document Title</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 2024 End Sem PyQ"
+              value={title}
+              onChangeText={setTitle}
+              placeholderTextColor={COLORS.textMuted}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Subject Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. Operating Systems"
-            value={subject}
-            onChangeText={setSubject}
-            placeholderTextColor={COLORS.textMuted}
-          />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Subject Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Operating Systems"
+              value={subject}
+              onChangeText={setSubject}
+              placeholderTextColor={COLORS.textMuted}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Select Branch</Text>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={BRANCHES}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={[styles.chip, branch === item && styles.activeChip]}
-                onPress={() => setBranch(item)}
-              >
-                <Text style={[styles.chipText, branch === item && styles.activeChipText]}>{item}</Text>
-              </TouchableOpacity>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Select Branch</Text>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={BRANCHES}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.chip, branch === item && styles.activeChip]}
+                  onPress={() => setBranch(item)}
+                >
+                  <Text style={[styles.chipText, branch === item && styles.activeChipText]}>{item}</Text>
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.chipScroll}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Select Semester</Text>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={SEMESTERS}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.chip, semester === item && styles.activeChip]}
+                  onPress={() => setSemester(item)}
+                >
+                  <Text style={[styles.chipText, semester === item && styles.activeChipText]}>{item}</Text>
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.chipScroll}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.submitBtn, isLoading && styles.submitBtnDisabled]}
+            onPress={handleUpload}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={COLORS.background} />
+            ) : (
+              <Text style={styles.submitBtnText}>Upload Now</Text>
             )}
-            contentContainerStyle={styles.chipScroll}
-          />
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Select Semester</Text>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={SEMESTERS}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
-                style={[styles.chip, semester === item && styles.activeChip]}
-                onPress={() => setSemester(item)}
-              >
-                <Text style={[styles.chipText, semester === item && styles.activeChipText]}>{item}</Text>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={styles.chipScroll}
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[styles.submitBtn, isLoading && styles.submitBtnDisabled]}
-          onPress={handleUpload}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color={COLORS.background} />
-          ) : (
-            <Text style={styles.submitBtnText}>Upload Now</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 }

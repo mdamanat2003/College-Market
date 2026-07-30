@@ -29,7 +29,8 @@ describe('useAuthStore', () => {
   it('stores the user and token after a successful login', async () => {
     vi.mocked(api.post).mockResolvedValueOnce({
       data: {
-        token: 'token-123',
+        accessToken: 'token-123',
+        refreshToken: 'refresh-123',
         _id: 'user-1',
         name: 'Asha',
         email: 'asha@example.com',
@@ -41,9 +42,11 @@ describe('useAuthStore', () => {
     await expect(useAuthStore.getState().login({ email: 'asha@example.com', password: 'secret' })).resolves.toBe(true);
 
     expect(api.post).toHaveBeenCalledWith('/auth/login', { email: 'asha@example.com', password: 'secret' });
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith('userToken', 'token-123');
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('userAccessToken', 'token-123');
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('userRefreshToken', 'refresh-123');
     expect(useAuthStore.getState()).toMatchObject({
-      token: 'token-123',
+      accessToken: 'token-123',
+      refreshToken: 'refresh-123',
       isLoading: false,
       error: null,
       user: expect.objectContaining({ _id: 'user-1', email: 'asha@example.com' }),
@@ -59,14 +62,20 @@ describe('useAuthStore', () => {
 
     expect(useAuthStore.getState()).toMatchObject({
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       isLoading: false,
       error: 'Invalid credentials',
     });
   });
 
   it('loads the current user when a saved token exists', async () => {
-    vi.mocked(AsyncStorage.getItem).mockResolvedValueOnce('saved-token');
+    vi.mocked(AsyncStorage.getItem).mockImplementation(async (key: string) => {
+      if (key === 'userAccessToken') return 'saved-token';
+      if (key === 'userRefreshToken') return 'saved-refresh';
+      if (key === 'userData') return JSON.stringify({ _id: 'user-2', name: 'Ravi', email: 'ravi@example.com' });
+      return null;
+    });
     vi.mocked(api.get).mockResolvedValueOnce({
       data: { user: { _id: 'user-2', name: 'Ravi', email: 'ravi@example.com' } },
     });
@@ -75,18 +84,23 @@ describe('useAuthStore', () => {
 
     expect(api.get).toHaveBeenCalledWith('/auth/me');
     expect(useAuthStore.getState()).toMatchObject({
-      token: 'saved-token',
+      accessToken: 'saved-token',
       user: expect.objectContaining({ _id: 'user-2' }),
     });
   });
 
   it('clears a bad saved token when checkAuth fails', async () => {
-    vi.mocked(AsyncStorage.getItem).mockResolvedValueOnce('expired-token');
+    vi.mocked(AsyncStorage.getItem).mockImplementation(async (key: string) => {
+      if (key === 'userAccessToken') return 'expired-token';
+      return null;
+    });
     vi.mocked(api.get).mockRejectedValueOnce(new Error('Unauthorized'));
 
     await useAuthStore.getState().checkAuth();
 
-    expect(AsyncStorage.removeItem).toHaveBeenCalledWith('userToken');
-    expect(useAuthStore.getState()).toMatchObject({ user: null, token: null });
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith('userAccessToken');
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith('userRefreshToken');
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith('userData');
+    expect(useAuthStore.getState()).toMatchObject({ user: null, accessToken: null, refreshToken: null });
   });
 });

@@ -59,7 +59,7 @@ export default function AdminDashboardScreen() {
 
   const handleLogout = () => {
     logout();
-    router.replace('/(auth)/login' as any);
+    router.replace('/Opadmin/login' as any);
   };
 
   const navItems = [

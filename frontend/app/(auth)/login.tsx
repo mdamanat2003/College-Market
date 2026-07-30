@@ -81,14 +81,16 @@ export default function Login() {
     try {
       const ok = await login({ email: normalizedEmail, password });
       if (ok) {
-        Alert.alert('Welcome back!', `Hi ${normalizedEmail}`);
         const currentUser = useAuthStore.getState().user;
 
         if (currentUser?.role === 'admin') {
-          router.replace('/admin/dashboard');
-        } else {
-          router.replace('/(tabs)');
+          useAuthStore.getState().logout();
+          setFieldError('email', 'Admin login is not allowed from here. Please use the Admin Portal.');
+          return;
         }
+
+        Alert.alert('Welcome back!', `Hi ${normalizedEmail}`);
+        router.replace('/(tabs)');
       } else {
         setFieldErrors(mapLoginError(useAuthStore.getState().error || 'Login failed'));
       }

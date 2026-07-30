@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
   ScrollView,
-  TouchableOpacity, 
-  Image, 
-  ActivityIndicator, 
-  TextInput, 
-  Alert, 
-  useWindowDimensions, 
-  Platform 
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  TextInput,
+  Alert,
+  useWindowDimensions,
+  Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -44,7 +44,7 @@ const LostFoundCard = React.memo(({ item, user, handleResolve }: { item: any, us
       <View style={styles.itemInfo}>
         <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
         <Text style={styles.itemDesc} numberOfLines={2}>{item.description}</Text>
-        
+
         <View style={styles.metaRow}>
           <Ionicons name="location-outline" size={14} color="#94A3B8" />
           <Text style={styles.metaText} numberOfLines={1}>{item.location}</Text>
@@ -59,7 +59,7 @@ const LostFoundCard = React.memo(({ item, user, handleResolve }: { item: any, us
           </View>
 
           {item.reporter?._id === user?._id && item.status === 'Active' && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.resolveBtn}
               onPress={() => handleResolve(item._id)}
               activeOpacity={0.8}
@@ -80,7 +80,7 @@ export default function LostFoundList() {
   const { items, fetchItems, isLoading, updateStatus, error } = useLostFoundStore();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
-  
+
   const [activeTab, setActiveTab] = useState<'Lost' | 'Found'>('Lost');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchInput, setSearchInput] = useState('');
@@ -131,9 +131,9 @@ export default function LostFoundList() {
           </Text>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           testID="report-item-btn"
-          style={styles.reportBtn} 
+          style={styles.reportBtn}
           onPress={() => router.push('/lost-found/report')}
           activeOpacity={0.8}
         >
@@ -193,7 +193,7 @@ export default function LostFoundList() {
         <Text style={styles.categoryGroupTitle}>CATEGORIES</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
           {CATEGORIES.map((cat) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={cat}
               testID="category-chip"
               style={[styles.chip, selectedCategory === cat && styles.activeChip]}
@@ -211,7 +211,7 @@ export default function LostFoundList() {
   return (
     <View style={styles.container}>
       <Navbar />
-      
+
       <View style={styles.mainContent}>
         <FlatList
           ref={listRef}
@@ -239,15 +239,15 @@ export default function LostFoundList() {
                 <Text style={styles.emptyTitle}>No Items Reported</Text>
                 <Text style={styles.emptyText}>No items found matching your filter criteria.</Text>
               </View>
-            }
-            ListFooterComponent={
-              <View style={styles.footerWrapper}>
-                <Footer onBackToTop={handleBackToTop} />
-              </View>
-            }
-            contentContainerStyle={styles.listContent}
-          />
-        )}
+            )
+          }
+          ListFooterComponent={
+            <View style={styles.footerWrapper}>
+              <Footer onBackToTop={handleBackToTop} />
+            </View>
+          }
+          contentContainerStyle={styles.listContent}
+        />
       </View>
     </View>
   );

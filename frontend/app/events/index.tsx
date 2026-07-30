@@ -120,7 +120,7 @@ export default function EventsList() {
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
-  const renderHeader = () => (
+  const renderHeader = React.useCallback(() => (
     <View style={styles.headerContainer}>
       {/* --- Header Section --- */}
       <View style={styles.headerSection}>
@@ -154,7 +154,9 @@ export default function EventsList() {
             value={searchInput}
             onChangeText={setSearchInput}
           />
-          {searchInput ? (
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#38BDF8" style={{ marginLeft: 6 }} />
+          ) : searchInput ? (
             <TouchableOpacity onPress={() => setSearchInput('')}>
               <Ionicons name="close-circle" size={18} color="#94A3B8" />
             </TouchableOpacity>
@@ -180,41 +182,42 @@ export default function EventsList() {
         </ScrollView>
       </View>
     </View>
-  );
+  ), [searchInput, isLoading, selectedCategory, router]);
 
   return (
     <View style={styles.container}>
       <Navbar />
       
       <View style={styles.mainContent}>
-        {isLoading ? (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#38BDF8" />
-          </View>
-        ) : (
-          <FlatList
-            ref={listRef}
-            style={{ flex: 1, width: '100%' }}
-            key={numColumns}
-            data={filteredEvents}
-            keyExtractor={keyExtractor}
-            numColumns={numColumns}
-            renderItem={renderItem}
-            ListHeaderComponent={renderHeader}
-            columnWrapperStyle={numColumns > 1 ? [styles.row, filteredEvents.length <= 2 && styles.sparseRow] : undefined}
-            showsVerticalScrollIndicator={true}
-            removeClippedSubviews={true}
-            initialNumToRender={8}
-            maxToRenderPerBatch={8}
-            windowSize={5}
-            ListEmptyComponent={
+        <FlatList
+          ref={listRef}
+          style={{ flex: 1, width: '100%' }}
+          key={numColumns}
+          data={filteredEvents}
+          keyExtractor={keyExtractor}
+          numColumns={numColumns}
+          renderItem={renderItem}
+          ListHeaderComponent={renderHeader}
+          columnWrapperStyle={numColumns > 1 ? [styles.row, filteredEvents.length <= 2 && styles.sparseRow] : undefined}
+          showsVerticalScrollIndicator={true}
+          removeClippedSubviews={true}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          ListEmptyComponent={
+            isLoading && events.length === 0 ? (
+              <View style={{ paddingVertical: 60, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator size="large" color="#38BDF8" />
+              </View>
+            ) : (
               <View style={[styles.emptyState, { maxWidth: 1440, alignSelf: 'center', width: '100%' }]}>
                 <Ionicons name="calendar-outline" size={52} color={COLORS.textMuted} />
                 <Text style={styles.emptyTitle}>No Upcoming Events</Text>
                 <Text style={styles.emptyText}>No campus events match your selected category.</Text>
               </View>
-            }
-            ListFooterComponent={
+            )
+          }
+          ListFooterComponent={
               <View style={styles.footerWrapper}>
                 <Footer onBackToTop={handleBackToTop} />
               </View>

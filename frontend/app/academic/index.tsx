@@ -206,7 +206,7 @@ Details: ${requestDetails || 'None provided'}`;
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
-  const renderHeader = () => (
+  const renderHeader = React.useCallback(() => (
     <View style={styles.headerContainer}>
       {/* --- Header & Title --- */}
       <View style={styles.headerSection}>
@@ -247,7 +247,9 @@ Details: ${requestDetails || 'None provided'}`;
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-          {searchQuery ? (
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#38BDF8" style={{ marginLeft: 6 }} />
+          ) : searchQuery ? (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
               <Ionicons name="close-circle" size={18} color="#94A3B8" />
             </TouchableOpacity>
@@ -324,35 +326,35 @@ Details: ${requestDetails || 'None provided'}`;
         </View>
       </View>
     </View>
-  );
+  ), [error, searchQuery, isLoading, selectedBranch, selectedSemester, stats, router]);
 
   return (
     <View style={styles.container}>
       <Navbar />
       
       <View style={styles.mainContent}>
-        {isLoading ? (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#38BDF8" />
-          </View>
-        ) : (
-          /* --- Single Unified Scroll View via FlatList --- */
-          <FlatList
-            ref={listRef}
-            style={{ flex: 1, width: '100%' }}
-            key={numColumns}
-            data={filteredMaterials}
-            keyExtractor={keyExtractor}
-            numColumns={numColumns}
-            renderItem={renderItem}
-            ListHeaderComponent={renderHeader}
-            columnWrapperStyle={numColumns > 1 ? [styles.row, filteredMaterials.length <= 2 && styles.sparseRow] : undefined}
-            showsVerticalScrollIndicator={true}
-            removeClippedSubviews={true}
-            initialNumToRender={8}
-            maxToRenderPerBatch={8}
-            windowSize={5}
-            ListEmptyComponent={
+        {/* --- Single Unified Scroll View via FlatList --- */}
+        <FlatList
+          ref={listRef}
+          style={{ flex: 1, width: '100%' }}
+          key={numColumns}
+          data={filteredMaterials}
+          keyExtractor={keyExtractor}
+          numColumns={numColumns}
+          renderItem={renderItem}
+          ListHeaderComponent={renderHeader}
+          columnWrapperStyle={numColumns > 1 ? [styles.row, filteredMaterials.length <= 2 && styles.sparseRow] : undefined}
+          showsVerticalScrollIndicator={true}
+          removeClippedSubviews={true}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          ListEmptyComponent={
+            isLoading && materials.length === 0 ? (
+              <View style={{ paddingVertical: 60, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator size="large" color="#38BDF8" />
+              </View>
+            ) : (
               <View style={[styles.emptyState, { maxWidth: 1440, alignSelf: 'center', width: '100%' }]}>
                 <Ionicons name="folder-open-outline" size={52} color={COLORS.textMuted} />
                 <Text style={styles.emptyTitle}>No Materials Found</Text>
@@ -366,15 +368,15 @@ Details: ${requestDetails || 'None provided'}`;
                   <Text style={styles.requestBtnText}>Request Study Material</Text>
                 </TouchableOpacity>
               </View>
-            }
-            ListFooterComponent={
-              <View style={styles.footerWrapper}>
-                <Footer onBackToTop={handleBackToTop} />
-              </View>
-            }
-            contentContainerStyle={styles.listContent}
-          />
-        )}
+            )
+          }
+          ListFooterComponent={
+            <View style={styles.footerWrapper}>
+              <Footer onBackToTop={handleBackToTop} />
+            </View>
+          }
+          contentContainerStyle={styles.listContent}
+        />
       </View>
 
       {/* --- Request Material Modal --- */}

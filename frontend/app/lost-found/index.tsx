@@ -119,20 +119,20 @@ export default function LostFoundList() {
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
-  const renderHeader = () => (
+  const renderHeader = React.useCallback(() => (
     <View style={styles.headerContainer}>
-      {/* --- Header Row --- */}
+      {/* --- Header & Action Button --- */}
       <View style={styles.headerSection}>
         <View style={styles.titleBox}>
-          <Text style={styles.kicker}>Campus Recovery Hub</Text>
-          <Text style={styles.pageTitle}>Lost & Found</Text>
+          <Text style={styles.kicker}>Campus Community</Text>
+          <Text style={styles.pageTitle}>Lost & Found Desk</Text>
           <Text style={styles.subtitle}>
-            Report lost belongings on campus or search returned items shared by helpful peers.
+            Report lost possessions or help return found items to fellow students across campus.
           </Text>
         </View>
 
         <TouchableOpacity 
-          testID="sell-btn"
+          testID="report-item-btn"
           style={styles.reportBtn} 
           onPress={() => router.push('/lost-found/report')}
           activeOpacity={0.8}
@@ -149,25 +149,22 @@ export default function LostFoundList() {
         </View>
       )}
 
-      {/* --- Tab Switcher --- */}
+      {/* --- Tab Switcher (All, Lost, Found) --- */}
       <View style={styles.tabCard}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'Lost' && styles.activeTab]} 
-          onPress={() => setActiveTab('Lost')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="help-circle-outline" size={16} color={activeTab === 'Lost' ? '#09090b' : '#94A3B8'} style={{ marginRight: 6 }} />
-          <Text style={[styles.tabText, activeTab === 'Lost' && styles.activeTabText]}>Lost Items</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'Found' && styles.activeTab]} 
-          onPress={() => setActiveTab('Found')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="checkmark-circle-outline" size={16} color={activeTab === 'Found' ? '#09090b' : '#94A3B8'} style={{ marginRight: 6 }} />
-          <Text style={[styles.tabText, activeTab === 'Found' && styles.activeTabText]}>Found Items</Text>
-        </TouchableOpacity>
+        <View style={styles.tabBar}>
+          {(['All', 'Lost', 'Found'] as const).map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
+              onPress={() => setActiveTab(tab)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                {tab === 'All' ? 'All Listed Items' : tab === 'Lost' ? '🔴 Lost Items' : '🟢 Found Items'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       {/* --- Search Bar --- */}
@@ -181,7 +178,9 @@ export default function LostFoundList() {
             value={searchInput}
             onChangeText={setSearchInput}
           />
-          {searchInput ? (
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#38BDF8" style={{ marginLeft: 6 }} />
+          ) : searchInput ? (
             <TouchableOpacity onPress={() => setSearchInput('')}>
               <Ionicons name="close-circle" size={18} color="#94A3B8" />
             </TouchableOpacity>
@@ -207,34 +206,34 @@ export default function LostFoundList() {
         </ScrollView>
       </View>
     </View>
-  );
+  ), [error, activeTab, searchInput, isLoading, selectedCategory, router]);
 
   return (
     <View style={styles.container}>
       <Navbar />
       
       <View style={styles.mainContent}>
-        {isLoading ? (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#38BDF8" />
-          </View>
-        ) : (
-          <FlatList
-            ref={listRef}
-            style={{ flex: 1, width: '100%' }}
-            key={numColumns}
-            data={filteredItems}
-            keyExtractor={keyExtractor}
-            numColumns={numColumns}
-            renderItem={renderItem}
-            ListHeaderComponent={renderHeader}
-            columnWrapperStyle={numColumns > 1 ? [styles.row, filteredItems.length <= 2 && styles.sparseRow] : undefined}
-            showsVerticalScrollIndicator={true}
-            removeClippedSubviews={true}
-            initialNumToRender={8}
-            maxToRenderPerBatch={8}
-            windowSize={5}
-            ListEmptyComponent={
+        <FlatList
+          ref={listRef}
+          style={{ flex: 1, width: '100%' }}
+          key={numColumns}
+          data={filteredItems}
+          keyExtractor={keyExtractor}
+          numColumns={numColumns}
+          renderItem={renderItem}
+          ListHeaderComponent={renderHeader}
+          columnWrapperStyle={numColumns > 1 ? [styles.row, filteredItems.length <= 2 && styles.sparseRow] : undefined}
+          showsVerticalScrollIndicator={true}
+          removeClippedSubviews={true}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          ListEmptyComponent={
+            isLoading && items.length === 0 ? (
+              <View style={{ paddingVertical: 60, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator size="large" color="#38BDF8" />
+              </View>
+            ) : (
               <View style={[styles.emptyState, { maxWidth: 1440, alignSelf: 'center', width: '100%' }]}>
                 <Ionicons name="search-outline" size={52} color={COLORS.textMuted} />
                 <Text style={styles.emptyTitle}>No Items Reported</Text>

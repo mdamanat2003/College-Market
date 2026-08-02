@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
   ScrollView,
-  TouchableOpacity, 
-  ActivityIndicator, 
-  Linking, 
-  Modal, 
-  TextInput, 
-  Alert, 
-  useWindowDimensions, 
-  Platform 
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
+  Modal,
+  TextInput,
+  Alert,
+  useWindowDimensions,
+  Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -24,17 +24,17 @@ import { useAuthStore } from '../../store/authStore';
 import { api } from '../../services/api';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 
-const BRANCHES = ['All', 'CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
+const BRANCHES = ['All', 'CSE', 'ECE', 'EE', 'ME', 'CS', 'IT'];
 const SEMESTERS = ['All', '1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem'];
 
-const AcademicCard = React.memo(({ 
-  item, 
+const AcademicCard = React.memo(({
+  item,
   handleDownload,
   currentUser,
   onEdit,
   onDelete,
-}: { 
-  item: any; 
+}: {
+  item: any;
   handleDownload: (url: string) => void;
   currentUser?: any;
   onEdit?: (item: any) => void;
@@ -104,7 +104,7 @@ const AcademicCard = React.memo(({
           </View>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           testID="buy-btn"
           style={styles.viewDocBtn}
           onPress={() => handleDownload(item.fileUrl)}
@@ -125,7 +125,7 @@ export default function AcademicHub() {
   const { user } = useAuthStore();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
-  
+
   const initialSearch = (params.search || params.q || '').toString();
   const initialBranch = params.branch && BRANCHES.includes(params.branch) ? params.branch : 'All';
   const initialSemester = params.semester && SEMESTERS.includes(params.semester) ? params.semester : 'All';
@@ -266,7 +266,7 @@ export default function AcademicHub() {
   useEffect(() => {
     const branchParam = selectedBranch === 'All' ? '' : selectedBranch;
     const semParam = selectedSemester === 'All' ? '' : selectedSemester;
-    
+
     const handler = setTimeout(() => {
       fetchMaterials(branchParam, semParam, searchQuery);
     }, 250);
@@ -357,9 +357,9 @@ Details: ${requestDetails || 'None provided'}`;
 
   const renderItem = React.useCallback(({ item }: { item: any }) => (
     <View style={{ flex: 1, margin: CARD_GAP / 2 }}>
-      <AcademicCard 
-        item={item} 
-        handleDownload={handleDownload} 
+      <AcademicCard
+        item={item}
+        handleDownload={handleDownload}
         currentUser={user}
         onEdit={handleOpenEdit}
         onDelete={handleDeleteItem}
@@ -381,9 +381,9 @@ Details: ${requestDetails || 'None provided'}`;
           </Text>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           testID="sell-btn"
-          style={styles.uploadBtn} 
+          style={styles.uploadBtn}
           onPress={() => router.push('/academic/upload')}
           activeOpacity={0.8}
         >
@@ -436,7 +436,7 @@ Details: ${requestDetails || 'None provided'}`;
           <Text style={styles.groupLabel}>BRANCH / STREAM</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
             {BRANCHES.map((b) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={b}
                 testID="category-chip"
                 style={[styles.chip, selectedBranch === b && styles.activeChip]}
@@ -454,7 +454,7 @@ Details: ${requestDetails || 'None provided'}`;
           <Text style={styles.groupLabel}>SEMESTER</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
             {SEMESTERS.map((s) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={s}
                 testID="category-chip"
                 style={[styles.chip, selectedSemester === s && styles.activeChip]}
@@ -494,7 +494,7 @@ Details: ${requestDetails || 'None provided'}`;
   return (
     <View style={styles.container}>
       <Navbar />
-      
+
       <View style={styles.mainContent}>
         {/* --- Single Unified Scroll View via FlatList --- */}
         <FlatList
@@ -522,8 +522,8 @@ Details: ${requestDetails || 'None provided'}`;
                 <Ionicons name="folder-open-outline" size={52} color={COLORS.textMuted} />
                 <Text style={styles.emptyTitle}>No Materials Found</Text>
                 <Text style={styles.emptyText}>We couldn't find any study materials matching your current search or filter criteria.</Text>
-                <TouchableOpacity 
-                  style={styles.requestBtn} 
+                <TouchableOpacity
+                  style={styles.requestBtn}
                   onPress={() => setIsRequestModalVisible(true)}
                   activeOpacity={0.8}
                 >
@@ -574,7 +574,7 @@ Details: ${requestDetails || 'None provided'}`;
                 <Text style={styles.modalLabel}>Branch</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
                   {BRANCHES.filter(b => b !== 'All').map((item) => (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       key={item}
                       style={[styles.modalChip, requestBranch === item && styles.activeModalChip]}
                       onPress={() => setRequestBranch(item)}
@@ -589,7 +589,7 @@ Details: ${requestDetails || 'None provided'}`;
                 <Text style={styles.modalLabel}>Semester</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
                   {SEMESTERS.filter(s => s !== 'All').map((item) => (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       key={item}
                       style={[styles.modalChip, requestSemester === item && styles.activeModalChip]}
                       onPress={() => setRequestSemester(item)}

@@ -118,6 +118,154 @@ const AcademicCard = React.memo(({
   );
 });
 
+const AcademicHeader = React.memo(({
+  searchQuery,
+  onSearchChange,
+  selectedBranch,
+  onBranchChange,
+  selectedSemester,
+  onSemesterChange,
+  error,
+  isLoading,
+  stats,
+  onResetFilters,
+  onUploadPress,
+}: {
+  searchQuery: string;
+  onSearchChange: (text: string) => void;
+  selectedBranch: string;
+  onBranchChange: (b: string) => void;
+  selectedSemester: string;
+  onSemesterChange: (s: string) => void;
+  error: string | null;
+  isLoading: boolean;
+  stats: { total: number; subjects: number; contributors: number };
+  onResetFilters: () => void;
+  onUploadPress: () => void;
+}) => {
+  return (
+    <View style={styles.headerContainer}>
+      {/* --- Header & Title --- */}
+      <View style={styles.headerSection}>
+        <View style={styles.titleBox}>
+          <Text style={styles.kicker}>Academic Resources</Text>
+          <Text style={styles.pageTitle}>PyQ & Lecture Notes</Text>
+          <Text style={styles.subtitle}>
+            Access verified lecture notes, previous year question papers, and syllabus resources shared by campus peers.
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          testID="sell-btn"
+          style={styles.uploadBtn}
+          onPress={onUploadPress}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="cloud-upload" size={18} color="#09090b" />
+          <Text style={styles.uploadBtnText}>Upload Notes</Text>
+        </TouchableOpacity>
+      </View>
+
+      {error && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="alert-circle-outline" size={18} color={COLORS.danger} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {/* --- Search Bar --- */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color="#94A3B8" style={{ marginRight: 10 }} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search notes by subject, title, or branch..."
+            placeholderTextColor="#CBD5E1"
+            value={searchQuery}
+            onChangeText={onSearchChange}
+          />
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#38BDF8" style={{ marginLeft: 6 }} />
+          ) : searchQuery ? (
+            <TouchableOpacity onPress={() => onSearchChange('')}>
+              <Ionicons name="close-circle" size={18} color="#94A3B8" />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+
+      {/* --- Separated Filters Section --- */}
+      <View style={styles.filterCard}>
+        <View style={styles.filterHeaderRow}>
+          <Text style={styles.filterHeaderTitle}>Filter Notes & Papers</Text>
+          {(selectedBranch !== 'All' || selectedSemester !== 'All' || searchQuery) && (
+            <TouchableOpacity onPress={onResetFilters}>
+              <Text style={styles.resetText}>Reset All Filters</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Group 1: Branch */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.groupLabel}>BRANCH / STREAM</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
+            {BRANCHES.map((b) => (
+              <TouchableOpacity
+                key={b}
+                testID="category-chip"
+                style={[styles.chip, selectedBranch === b && styles.activeChip]}
+                onPress={() => onBranchChange(b)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.chipText, selectedBranch === b && styles.activeChipText]}>{b}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Group 2: Semester */}
+        <View style={[styles.filterGroup, { marginTop: 16 }]}>
+          <Text style={styles.groupLabel}>SEMESTER</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
+            {SEMESTERS.map((s) => (
+              <TouchableOpacity
+                key={s}
+                testID="category-chip"
+                style={[styles.chip, selectedSemester === s && styles.activeChip]}
+                onPress={() => onSemesterChange(s)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.chipText, selectedSemester === s && styles.activeChipText]}>{s}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+
+      {/* --- Statistics Bar --- */}
+      <View style={styles.statsBar}>
+        <View style={styles.statBox}>
+          <Ionicons name="document-text-outline" size={18} color="#38BDF8" />
+          <Text style={styles.statNumber}>{stats.total}</Text>
+          <Text style={styles.statLabel}>Total Materials</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statBox}>
+          <Ionicons name="book-outline" size={18} color="#10B981" />
+          <Text style={styles.statNumber}>{stats.subjects}</Text>
+          <Text style={styles.statLabel}>Subjects</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statBox}>
+          <Ionicons name="people-outline" size={18} color="#F59E0B" />
+          <Text style={styles.statNumber}>{stats.contributors}</Text>
+          <Text style={styles.statLabel}>Contributors</Text>
+        </View>
+      </View>
+    </View>
+  );
+});
+
 export default function AcademicHub() {
   const router = useRouter();
   const params = useLocalSearchParams<{ search?: string; q?: string; branch?: string; semester?: string }>();
@@ -131,6 +279,7 @@ export default function AcademicHub() {
   const initialSemester = params.semester && SEMESTERS.includes(params.semester) ? params.semester : 'All';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
   const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
   const [selectedSemester, setSelectedSemester] = useState<string>(initialSemester);
 
@@ -152,6 +301,63 @@ export default function AcademicHub() {
   const [editDescription, setEditDescription] = useState('');
   const [editFile, setEditFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [updating, setUpdating] = useState(false);
+
+  // Debounce search query (500ms delay)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Fetch materials on debounced search or filter changes
+  useEffect(() => {
+    const branchParam = selectedBranch === 'All' ? '' : selectedBranch;
+    const semParam = selectedSemester === 'All' ? '' : selectedSemester;
+
+    fetchMaterials(branchParam, semParam, debouncedSearchQuery);
+  }, [selectedBranch, selectedSemester, debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (isRequestModalVisible) {
+      setRequestBranch(selectedBranch === 'All' ? 'CSE' : selectedBranch);
+      setRequestSemester(selectedSemester === 'All' ? '8th Sem' : selectedSemester);
+      setRequestSubject('');
+      setRequestDetails('');
+    }
+  }, [isRequestModalVisible]);
+
+  const filteredMaterials = useMemo(() => {
+    if (!Array.isArray(materials)) return [];
+    if (!debouncedSearchQuery.trim()) return materials;
+    const q = debouncedSearchQuery.toLowerCase().trim();
+    return materials.filter((m: any) => {
+      const rawType = (m.fileType || 'pdf').toLowerCase();
+      const fileTypeLabel = rawType.includes('pyq') ? 'pyq' : rawType.includes('note') ? 'notes' : 'pdf';
+      return (
+        (m.title && m.title.toLowerCase().includes(q)) ||
+        (m.subject && m.subject.toLowerCase().includes(q)) ||
+        (m.branch && m.branch.toLowerCase().includes(q)) ||
+        (m.semester && m.semester.toLowerCase().includes(q)) ||
+        (m.description && m.description.toLowerCase().includes(q)) ||
+        (m.fileType && m.fileType.toLowerCase().includes(q)) ||
+        fileTypeLabel.includes(q) ||
+        (m.uploadedBy?.name && m.uploadedBy.name.toLowerCase().includes(q))
+      );
+    });
+  }, [materials, debouncedSearchQuery]);
+
+  const stats = useMemo(() => {
+    const list = Array.isArray(materials) ? materials : [];
+    const subjects = new Set(list.map((m: any) => m.subject).filter(Boolean)).size;
+    const contributors = new Set(list.map((m: any) => m.uploadedBy?._id || m.uploadedBy?.name).filter(Boolean)).size;
+    return {
+      total: list.length,
+      subjects,
+      contributors: Math.max(contributors, list.length > 0 ? 1 : 0),
+    };
+  }, [materials]);
 
   const handleOpenEdit = React.useCallback((item: any) => {
     setEditingItem(item);
@@ -259,61 +465,6 @@ export default function AcademicHub() {
     );
   }, [deleteMaterial]);
 
-  const isPhone = width <= 560;
-  const numColumns = width >= 1150 ? 3 : width >= 720 ? 2 : 1;
-  const CARD_GAP = 20;
-
-  useEffect(() => {
-    const branchParam = selectedBranch === 'All' ? '' : selectedBranch;
-    const semParam = selectedSemester === 'All' ? '' : selectedSemester;
-
-    const handler = setTimeout(() => {
-      fetchMaterials(branchParam, semParam, searchQuery);
-    }, 250);
-
-    return () => clearTimeout(handler);
-  }, [selectedBranch, selectedSemester, searchQuery]);
-
-  useEffect(() => {
-    if (isRequestModalVisible) {
-      setRequestBranch(selectedBranch === 'All' ? 'CSE' : selectedBranch);
-      setRequestSemester(selectedSemester === 'All' ? '8th Sem' : selectedSemester);
-      setRequestSubject('');
-      setRequestDetails('');
-    }
-  }, [isRequestModalVisible]);
-
-  const filteredMaterials = useMemo(() => {
-    if (!Array.isArray(materials)) return [];
-    if (!searchQuery.trim()) return materials;
-    const q = searchQuery.toLowerCase().trim();
-    return materials.filter((m: any) => {
-      const rawType = (m.fileType || 'pdf').toLowerCase();
-      const fileTypeLabel = rawType.includes('pyq') ? 'pyq' : rawType.includes('note') ? 'notes' : 'pdf';
-      return (
-        (m.title && m.title.toLowerCase().includes(q)) ||
-        (m.subject && m.subject.toLowerCase().includes(q)) ||
-        (m.branch && m.branch.toLowerCase().includes(q)) ||
-        (m.semester && m.semester.toLowerCase().includes(q)) ||
-        (m.description && m.description.toLowerCase().includes(q)) ||
-        (m.fileType && m.fileType.toLowerCase().includes(q)) ||
-        fileTypeLabel.includes(q) ||
-        (m.uploadedBy?.name && m.uploadedBy.name.toLowerCase().includes(q))
-      );
-    });
-  }, [materials, searchQuery]);
-
-  const stats = useMemo(() => {
-    const list = Array.isArray(materials) ? materials : [];
-    const subjects = new Set(list.map((m: any) => m.subject).filter(Boolean)).size;
-    const contributors = new Set(list.map((m: any) => m.uploadedBy?._id || m.uploadedBy?.name).filter(Boolean)).size;
-    return {
-      total: list.length,
-      subjects,
-      contributors: Math.max(contributors, list.length > 0 ? 1 : 0),
-    };
-  }, [materials]);
-
   const handleRequestSubmit = async () => {
     if (!requestSubject.trim()) {
       Alert.alert('Incomplete Form', 'Please enter a Subject Name.');
@@ -355,6 +506,16 @@ Details: ${requestDetails || 'None provided'}`;
     Linking.openURL(url).catch((err) => console.error("Couldn't load page", err));
   }, []);
 
+  const handleResetFilters = React.useCallback(() => {
+    setSelectedBranch('All');
+    setSelectedSemester('All');
+    setSearchQuery('');
+  }, []);
+
+  const handleUploadPress = React.useCallback(() => {
+    router.push('/academic/upload');
+  }, [router]);
+
   const renderItem = React.useCallback(({ item }: { item: any }) => (
     <View style={{ flex: 1, margin: CARD_GAP / 2 }}>
       <AcademicCard
@@ -369,127 +530,9 @@ Details: ${requestDetails || 'None provided'}`;
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
-  const renderHeader = React.useCallback(() => (
-    <View style={styles.headerContainer}>
-      {/* --- Header & Title --- */}
-      <View style={styles.headerSection}>
-        <View style={styles.titleBox}>
-          <Text style={styles.kicker}>Academic Resources</Text>
-          <Text style={styles.pageTitle}>PyQ & Lecture Notes</Text>
-          <Text style={styles.subtitle}>
-            Access verified lecture notes, previous year question papers, and syllabus resources shared by campus peers.
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          testID="sell-btn"
-          style={styles.uploadBtn}
-          onPress={() => router.push('/academic/upload')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="cloud-upload" size={18} color="#09090b" />
-          <Text style={styles.uploadBtnText}>Upload Notes</Text>
-        </TouchableOpacity>
-      </View>
-
-      {error && (
-        <View style={styles.errorBanner}>
-          <Ionicons name="alert-circle-outline" size={18} color={COLORS.danger} />
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-
-      {/* --- Search Bar --- */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color="#94A3B8" style={{ marginRight: 10 }} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search notes by subject, title, or branch..."
-            placeholderTextColor="#CBD5E1"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#38BDF8" style={{ marginLeft: 6 }} />
-          ) : searchQuery ? (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color="#94A3B8" />
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-
-      {/* --- Separated Filters Section --- */}
-      <View style={styles.filterCard}>
-        <View style={styles.filterHeaderRow}>
-          <Text style={styles.filterHeaderTitle}>Filter Notes & Papers</Text>
-          {(selectedBranch !== 'All' || selectedSemester !== 'All' || searchQuery) && (
-            <TouchableOpacity onPress={() => { setSelectedBranch('All'); setSelectedSemester('All'); setSearchQuery(''); }}>
-              <Text style={styles.resetText}>Reset All Filters</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Group 1: Branch */}
-        <View style={styles.filterGroup}>
-          <Text style={styles.groupLabel}>BRANCH / STREAM</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
-            {BRANCHES.map((b) => (
-              <TouchableOpacity
-                key={b}
-                testID="category-chip"
-                style={[styles.chip, selectedBranch === b && styles.activeChip]}
-                onPress={() => setSelectedBranch(b)}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.chipText, selectedBranch === b && styles.activeChipText]}>{b}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Group 2: Semester */}
-        <View style={[styles.filterGroup, { marginTop: 16 }]}>
-          <Text style={styles.groupLabel}>SEMESTER</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScroll}>
-            {SEMESTERS.map((s) => (
-              <TouchableOpacity
-                key={s}
-                testID="category-chip"
-                style={[styles.chip, selectedSemester === s && styles.activeChip]}
-                onPress={() => setSelectedSemester(s)}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.chipText, selectedSemester === s && styles.activeChipText]}>{s}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </View>
-
-      {/* --- Statistics Bar --- */}
-      <View style={styles.statsBar}>
-        <View style={styles.statBox}>
-          <Ionicons name="document-text-outline" size={18} color="#38BDF8" />
-          <Text style={styles.statNumber}>{stats.total}</Text>
-          <Text style={styles.statLabel}>Total Materials</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statBox}>
-          <Ionicons name="book-outline" size={18} color="#10B981" />
-          <Text style={styles.statNumber}>{stats.subjects}</Text>
-          <Text style={styles.statLabel}>Subjects</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.statBox}>
-          <Ionicons name="people-outline" size={18} color="#F59E0B" />
-          <Text style={styles.statNumber}>{stats.contributors}</Text>
-          <Text style={styles.statLabel}>Contributors</Text>
-        </View>
-      </View>
-    </View>
-  ), [error, searchQuery, isLoading, selectedBranch, selectedSemester, stats, router]);
+  const isPhone = width <= 560;
+  const numColumns = width >= 1150 ? 3 : width >= 720 ? 2 : 1;
+  const CARD_GAP = 20;
 
   return (
     <View style={styles.container}>
@@ -505,7 +548,21 @@ Details: ${requestDetails || 'None provided'}`;
           keyExtractor={keyExtractor}
           numColumns={numColumns}
           renderItem={renderItem}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={
+            <AcademicHeader
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedBranch={selectedBranch}
+              onBranchChange={setSelectedBranch}
+              selectedSemester={selectedSemester}
+              onSemesterChange={setSelectedSemester}
+              error={error}
+              isLoading={isLoading}
+              stats={stats}
+              onResetFilters={handleResetFilters}
+              onUploadPress={handleUploadPress}
+            />
+          }
           columnWrapperStyle={numColumns > 1 ? [styles.row, filteredMaterials.length <= 2 && styles.sparseRow] : undefined}
           showsVerticalScrollIndicator={true}
           removeClippedSubviews={true}

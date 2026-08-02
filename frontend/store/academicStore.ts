@@ -15,7 +15,7 @@ interface AcademicMaterial {
   uploadedBy: {
     _id: string;
     name: string;
-  };
+  } | any;
   downloads: number;
   createdAt: string;
 }
@@ -26,6 +26,8 @@ interface AcademicState {
   error: string | null;
   fetchMaterials: (branch?: string, semester?: string, search?: string) => Promise<void>;
   uploadMaterial: (formData: FormData) => Promise<boolean>;
+  updateMaterial: (id: string, formData: FormData) => Promise<boolean>;
+  deleteMaterial: (id: string) => Promise<boolean>;
 }
 
 export const useAcademicStore = create<AcademicState>()(
@@ -72,6 +74,47 @@ export const useAcademicStore = create<AcademicState>()(
           set({ 
             error: error.response?.data?.message || 'Upload failed', 
             isLoading: false 
+          });
+          return false;
+        }
+      },
+
+      updateMaterial: async (id, formData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await api.put(`/academic/${id}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          const updatedNote = response.data?.note;
+          set((state) => ({
+            materials: state.materials.map((m) => (m._id === id ? updatedNote || m : m)),
+            isLoading: false
+          }));
+          return true;
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || 'Update failed',
+            isLoading: false
+          });
+          return false;
+        }
+      },
+
+      deleteMaterial: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await api.delete(`/academic/${id}`);
+          set((state) => ({
+            materials: state.materials.filter((m) => m._id !== id),
+            isLoading: false
+          }));
+          return true;
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || 'Delete failed',
+            isLoading: false
           });
           return false;
         }

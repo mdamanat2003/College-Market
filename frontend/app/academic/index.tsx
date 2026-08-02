@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { useAcademicStore } from '../../store/academicStore';
@@ -26,12 +27,27 @@ import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 const BRANCHES = ['All', 'CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
 const SEMESTERS = ['All', '1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem'];
 
-const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDownload: (url: string) => void }) => {
+const AcademicCard = React.memo(({ 
+  item, 
+  handleDownload,
+  currentUser,
+  onEdit,
+  onDelete,
+}: { 
+  item: any; 
+  handleDownload: (url: string) => void;
+  currentUser?: any;
+  onEdit?: (item: any) => void;
+  onDelete?: (item: any) => void;
+}) => {
   if (!item) return null;
 
   const rawType = (item.fileType || 'pdf').toLowerCase();
   const fileTypeLabel = rawType.includes('pyq') ? 'PYQ' : rawType.includes('note') ? 'NOTES' : 'PDF';
   const badgeColor = fileTypeLabel === 'PYQ' ? '#10B981' : fileTypeLabel === 'NOTES' ? '#F59E0B' : '#38BDF8';
+
+  const uploaderId = typeof item.uploadedBy === 'object' ? item.uploadedBy?._id : item.uploadedBy;
+  const isOwnerOrAdmin = currentUser?._id && (uploaderId === currentUser._id || currentUser?.role === 'admin');
 
   return (
     <View testID="note-card" style={styles.noteCard}>
@@ -41,13 +57,37 @@ const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDo
           <Text style={[styles.typeBadgeText, { color: badgeColor }]}>{fileTypeLabel}</Text>
         </View>
 
-        <View style={styles.branchTag}>
-          <Text style={styles.branchTagText}>{item.branch || 'CSE'} • {item.semester || 'Sem'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View style={styles.branchTag}>
+            <Text style={styles.branchTagText}>{item.branch || 'CSE'} • {item.semester || 'Sem'}</Text>
+          </View>
+          {isOwnerOrAdmin && (
+            <View style={styles.ownerActionsRow}>
+              <TouchableOpacity
+                onPress={() => onEdit?.(item)}
+                style={styles.actionIconBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="pencil" size={13} color="#38BDF8" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => onDelete?.(item)}
+                style={[styles.actionIconBtn, { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.3)' }]}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="trash-outline" size={13} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
 
       <Text style={styles.noteTitle} numberOfLines={2}>{item.title}</Text>
-      
+
+      {item.description ? (
+        <Text style={styles.noteDescription} numberOfLines={2}>{item.description}</Text>
+      ) : null}
+
       <View style={styles.subjectRow}>
         <Ionicons name="book-outline" size={14} color="#94A3B8" />
         <Text style={styles.noteSubject} numberOfLines={1}>{item.subject}</Text>
@@ -81,7 +121,7 @@ const AcademicCard = React.memo(({ item, handleDownload }: { item: any; handleDo
 export default function AcademicHub() {
   const router = useRouter();
   const params = useLocalSearchParams<{ search?: string; q?: string; branch?: string; semester?: string }>();
-  const { materials, fetchMaterials, isLoading, error } = useAcademicStore();
+  const { materials, fetchMaterials, updateMaterial, deleteMaterial, isLoading, error } = useAcademicStore();
   const { user } = useAuthStore();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
@@ -101,6 +141,123 @@ export default function AcademicHub() {
   const [requestBranch, setRequestBranch] = useState('CSE');
   const [requestSemester, setRequestSemester] = useState('8th Sem');
   const [submittingRequest, setSubmittingRequest] = useState(false);
+
+  // Edit Modal State
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSubject, setEditSubject] = useState('');
+  const [editBranch, setEditBranch] = useState('CSE');
+  const [editSemester, setEditSemester] = useState('8th Sem');
+  const [editDescription, setEditDescription] = useState('');
+  const [editFile, setEditFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [updating, setUpdating] = useState(false);
+
+  const handleOpenEdit = React.useCallback((item: any) => {
+    setEditingItem(item);
+    setEditTitle(item.title || '');
+    setEditSubject(item.subject || '');
+    setEditBranch(item.branch || 'CSE');
+    setEditSemester(item.semester || '8th Sem');
+    setEditDescription(item.description || '');
+    setEditFile(null);
+    setIsEditModalVisible(true);
+  }, []);
+
+  const pickEditDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedFile = result.assets[0];
+        if (selectedFile.size && selectedFile.size > 1.5 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Document file size 1.5MB se kam honi chahiye.');
+          return;
+        }
+        setEditFile(selectedFile);
+      }
+    } catch (err) {
+      console.error('Document picker error:', err);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    if (!editTitle.trim() || !editSubject.trim()) {
+      Alert.alert('Incomplete Form', 'Please enter Title and Subject.');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', editTitle.trim());
+      formData.append('subject', editSubject.trim());
+      formData.append('branch', editBranch);
+      formData.append('semester', editSemester);
+      formData.append('description', editDescription.trim());
+
+      if (editFile) {
+        if (Platform.OS === 'web') {
+          const fileObj = (editFile as any).file;
+          if (fileObj) {
+            formData.append('file', fileObj, editFile.name || 'document.pdf');
+          } else {
+            const response = await fetch(editFile.uri);
+            const blob = await response.blob();
+            formData.append('file', blob, editFile.name || 'document.pdf');
+          }
+        } else {
+          formData.append('file', {
+            uri: Platform.OS === 'ios' ? editFile.uri.replace('file://', '') : editFile.uri,
+            name: editFile.name || 'document.pdf',
+            type: editFile.mimeType || 'application/pdf',
+          } as any);
+        }
+      }
+
+      const ok = await updateMaterial(editingItem._id, formData);
+      if (ok) {
+        Alert.alert('Success', 'PyQ / Notes updated successfully!');
+        setIsEditModalVisible(false);
+        setEditingItem(null);
+      } else {
+        const storeErr = useAcademicStore.getState().error || 'Failed to update material.';
+        Alert.alert('Update Failed', storeErr);
+      }
+    } catch (err: any) {
+      console.error('Update failed:', err);
+      Alert.alert('Error', err?.message || 'Failed to update material.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteItem = React.useCallback((item: any) => {
+    Alert.alert(
+      'Delete PyQ / Material',
+      `Are you sure you want to delete "${item.title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const ok = await deleteMaterial(item._id);
+            if (ok) {
+              Alert.alert('Deleted', 'Academic material has been deleted.');
+            } else {
+              const storeErr = useAcademicStore.getState().error || 'Failed to delete material.';
+              Alert.alert('Delete Failed', storeErr);
+            }
+          },
+        },
+      ]
+    );
+  }, [deleteMaterial]);
 
   const isPhone = width <= 560;
   const numColumns = width >= 1150 ? 3 : width >= 720 ? 2 : 1;
@@ -200,9 +357,15 @@ Details: ${requestDetails || 'None provided'}`;
 
   const renderItem = React.useCallback(({ item }: { item: any }) => (
     <View style={{ flex: 1, margin: CARD_GAP / 2 }}>
-      <AcademicCard item={item} handleDownload={handleDownload} />
+      <AcademicCard 
+        item={item} 
+        handleDownload={handleDownload} 
+        currentUser={user}
+        onEdit={handleOpenEdit}
+        onDelete={handleDeleteItem}
+      />
     </View>
-  ), [handleDownload]);
+  ), [handleDownload, user, handleOpenEdit, handleDeleteItem]);
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
@@ -462,6 +625,116 @@ Details: ${requestDetails || 'None provided'}`;
                 )}
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* --- Edit Material Modal --- */}
+      <Modal
+        visible={isEditModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit PyQ / Material</Text>
+              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.modalForm} showsVerticalScrollIndicator={false}>
+              {/* Optional Replacement File */}
+              <TouchableOpacity style={styles.editFileBtn} onPress={pickEditDocument}>
+                <Ionicons
+                  name={editFile ? "checkmark-circle" : "document-attach-outline"}
+                  size={22}
+                  color={editFile ? COLORS.success : "#38BDF8"}
+                />
+                <Text style={[styles.editFileText, editFile && { color: COLORS.success }]} numberOfLines={1}>
+                  {editFile ? editFile.name : 'Tap to replace PDF/Image (Optional)'}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.modalInputGroup}>
+                <Text style={styles.modalLabel}>Document Title *</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="e.g. 2024 End Sem PyQ"
+                  value={editTitle}
+                  onChangeText={setEditTitle}
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+
+              <View style={styles.modalInputGroup}>
+                <Text style={styles.modalLabel}>Subject Name *</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="e.g. Operating Systems"
+                  value={editSubject}
+                  onChangeText={setEditSubject}
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+
+              <View style={styles.modalInputGroup}>
+                <Text style={styles.modalLabel}>Branch</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
+                  {BRANCHES.filter(b => b !== 'All').map((b) => (
+                    <TouchableOpacity
+                      key={b}
+                      style={[styles.modalChip, editBranch === b && styles.activeModalChip]}
+                      onPress={() => setEditBranch(b)}
+                    >
+                      <Text style={[styles.modalChipText, editBranch === b && styles.activeModalChipText]}>{b}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={styles.modalInputGroup}>
+                <Text style={styles.modalLabel}>Semester</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
+                  {SEMESTERS.filter(s => s !== 'All').map((s) => (
+                    <TouchableOpacity
+                      key={s}
+                      style={[styles.modalChip, editSemester === s && styles.activeModalChip]}
+                      onPress={() => setEditSemester(s)}
+                    >
+                      <Text style={[styles.modalChipText, editSemester === s && styles.activeModalChipText]}>{s}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={styles.modalInputGroup}>
+                <Text style={styles.modalLabel}>Description / Notes (Optional)</Text>
+                <TextInput
+                  style={[styles.modalInput, styles.modalTextArea]}
+                  placeholder="Optional details..."
+                  value={editDescription}
+                  onChangeText={setEditDescription}
+                  placeholderTextColor="#94A3B8"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.submitRequestBtn, updating && styles.submitRequestBtnDisabled]}
+                onPress={handleSaveEdit}
+                disabled={updating}
+              >
+                {updating ? (
+                  <ActivityIndicator color="#09090b" />
+                ) : (
+                  <Text style={styles.submitRequestBtnText}>Save Changes</Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -974,5 +1247,42 @@ const styles = StyleSheet.create({
     color: '#09090b',
     fontSize: 15,
     fontWeight: '800',
+  },
+  ownerActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  actionIconBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noteDescription: {
+    fontSize: 12.5,
+    color: '#94A3B8',
+    lineHeight: 18,
+  },
+  editFileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    marginBottom: 6,
+  },
+  editFileText: {
+    fontSize: 13,
+    color: '#38BDF8',
+    fontWeight: '600',
+    flex: 1,
   },
 });

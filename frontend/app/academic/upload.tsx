@@ -97,10 +97,11 @@ export default function UploadAcademic() {
         router.back();
       } else {
         const storeErr = useAcademicStore.getState().error || 'There was an error uploading your file. Please try again.';
-        if (storeErr.includes('authorized') || storeErr.includes('token')) {
+        const lowerErr = String(storeErr).toLowerCase();
+        if (lowerErr.includes('authorized') || lowerErr.includes('token') || lowerErr.includes('login') || lowerErr.includes('401') || lowerErr.includes('unauthorized')) {
           Alert.alert(
             'Login Required',
-            'Bhai, upload karne ke liye aapko login karna padega.',
+            'Bhai, upload karne ke liye aapko account se login karna padega.',
             [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
@@ -112,7 +113,20 @@ export default function UploadAcademic() {
       }
     } catch (error: any) {
       console.error('Upload failed:', error);
-      Alert.alert('Upload Failed', error?.response?.data?.message || 'Something went wrong.');
+      const errMsg = error?.response?.data?.message || error?.message || 'Something went wrong.';
+      const lowerErr = String(errMsg).toLowerCase();
+      if (lowerErr.includes('authorized') || lowerErr.includes('token') || lowerErr.includes('401') || lowerErr.includes('unauthorized')) {
+        Alert.alert(
+          'Login Required',
+          'Bhai, upload karne ke liye aapko account se login karna padega.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
+          ]
+        );
+      } else {
+        Alert.alert('Upload Failed', errMsg);
+      }
     }
   };
 

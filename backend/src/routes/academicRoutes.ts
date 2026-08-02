@@ -153,4 +153,97 @@ router.get('/', async (req: any, res: any) => {
   }
 });
 
+// 5. UPDATE (PUT) Academic Material Route (Protected)
+router.put('/:id', protect, (req: any, res: any, next: any) => {
+  upload.single('file')(req, res, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'File size exceeds 1.5MB limit.' });
+      }
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(400).json({ message: err.message || 'Error uploading file' });
+    }
+    next();
+  });
+}, async (req: any, res: any) => {
+  try {
+    const note = await Academic.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'Academic material not found' });
+    }
+
+    const isOwner = note.uploadedBy.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to update this material' });
+    }
+
+    const { title, description, branch, semester, subject } = req.body;
+
+    if (title !== undefined) note.title = title;
+    if (description !== undefined) note.description = description;
+    if (branch !== undefined) note.branch = branch;
+    if (semester !== undefined) note.semester = semester;
+    if (subject !== undefined) note.subject = subject;
+
+    if (req.file) {
+      let fileUrl = req.file.path;
+      if (!isCloudinaryConfigured) {
+        const forwardedProto = req.headers['x-forwarded-proto'] || req.protocol;
+        const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${forwardedProto}://${req.get('host')}/uploads/academic`;
+        fileUrl = `${uploadsBase}/${req.file.filename}`;
+      }
+      note.fileUrl = fileUrl;
+      note.fileType = req.file.originalname.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image';
+    }
+
+    await note.save();
+    await note.populate('uploadedBy', 'name');
+
+    res.status(200).json({
+      success: true,
+      message: 'Notes updated successfully!',
+      note
+    });
+  } catch (error: any) {
+    console.error('❌ Update Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during update',
+      error: error.message
+    });
+  }
+});
+
+// 6. DELETE Academic Material Route (Protected)
+router.delete('/:id', protect, async (req: any, res: any) => {
+  try {
+    const note = await Academic.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'Academic material not found' });
+    }
+
+    const isOwner = note.uploadedBy.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to delete this material' });
+    }
+
+    await Academic.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Academic material deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('❌ Delete Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during deletion',
+      error: error.message
+    });
+  }
+});
+
 export default router;

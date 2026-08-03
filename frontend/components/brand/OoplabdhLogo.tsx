@@ -53,7 +53,7 @@ export function OoplabdhLogo({ compact = false, markOnly = false, size = 'md', s
 
 const webShadow = Platform.select({
   web: {
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
     backdropFilter: 'blur(10px)',
   } as ViewStyle,
   default: {},
@@ -63,10 +63,10 @@ const nativeShadow = Platform.select({
   web: {},
   default: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.28,
-    shadowRadius: 40,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   } as ViewStyle,
 });
 

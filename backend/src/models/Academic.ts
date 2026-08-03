@@ -6,7 +6,7 @@ const academicSchema = new mongoose.Schema(
     description: { type: String },
     fileUrl: { type: String, required: true },
     fileType: { type: String, enum: ['pdf', 'image', 'link'], default: 'pdf' },
-    branch: { type: String, required: true },
+    branch: { type: mongoose.Schema.Types.Mixed, required: true },
     semester: { type: String, required: true },
     subject: { type: String, required: true },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

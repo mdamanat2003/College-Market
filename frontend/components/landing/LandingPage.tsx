@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView, Alert } from 'react-native';
+import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView, Alert, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { io, Socket } from 'socket.io-client';
@@ -95,30 +95,39 @@ export default function LandingPage() {
   // Socket from global chat store — used to receive live review events
   const socket = useChatStore((s) => s.socket);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPublicReviews = async () => {
+    try {
+      const res = await api.get('/reviews/public?limit=40');
+      const fetched: any[] = res.data?.reviews || [];
+      if (fetched.length > 0) {
+        const mapped = fetched.map((r) => ({
+          id: r._id,
+          name: r.reviewerName || 'Someone',
+          time: r.createdAt ? new Date(r.createdAt).toLocaleString() : 'JUST NOW',
+          text: `"${r.comment || ''}"`,
+          initial: (r.reviewerName || 'S').charAt(0).toUpperCase(),
+        }));
+        setReviewsList(mapped);
+      }
+    } catch (err) {
+      console.warn('[LandingPage] failed to load public reviews', err);
+    }
+  };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchPublicReviews();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   // Load persisted public reviews from backend on mount
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const res = await api.get('/reviews/public?limit=40');
-        const fetched: any[] = res.data?.reviews || [];
-        if (!mounted) return;
-        if (fetched.length > 0) {
-          const mapped = fetched.map((r) => ({
-            id: r._id,
-            name: r.reviewerName || 'Someone',
-            time: r.createdAt ? new Date(r.createdAt).toLocaleString() : 'JUST NOW',
-            text: `"${r.comment || ''}"`,
-            initial: (r.reviewerName || 'S').charAt(0).toUpperCase(),
-          }));
-          setReviewsList(mapped);
-        }
-      } catch (err) {
-        console.warn('[LandingPage] failed to load public reviews', err);
-      }
-    };
-    load();
-    return () => { mounted = false; };
+    fetchPublicReviews();
   }, []);
 
   useEffect(() => {
@@ -255,7 +264,19 @@ export default function LandingPage() {
 
   return (
     <>
-      <ScrollView ref={scrollRef} style={styles.page} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        ref={scrollRef} 
+        style={styles.page} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#38bdf8"
+            colors={['#38bdf8']}
+          />
+        }
+      >
         <View style={styles.glowBlue} />
         <View style={styles.glowPurple} />
 

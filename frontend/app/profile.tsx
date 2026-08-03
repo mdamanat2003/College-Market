@@ -11,7 +11,8 @@ import {
   Alert, 
   Modal, 
   TextInput, 
-  Platform 
+  Platform,
+  RefreshControl
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,6 +42,17 @@ export default function ProfileScreen() {
   const [editCollege, setEditCollege] = useState('');
   const [editAvatarUri, setEditAvatarUri] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchMyOrders();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchMyOrders]);
 
   useEffect(() => {
     fetchMyOrders();
@@ -192,7 +204,18 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        ref={scrollRef}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#38bdf8"
+            colors={['#38bdf8']}
+          />
+        }
+      >
         <View style={styles.scrollContent}>
         
         {/* Profile Card */}

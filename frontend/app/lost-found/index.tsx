@@ -81,7 +81,7 @@ export default function LostFoundList() {
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList>(null);
 
-  const [activeTab, setActiveTab] = useState<'Lost' | 'Found'>('Lost');
+  const [activeTab, setActiveTab] = useState<'All' | 'Lost' | 'Found'>('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchInput, setSearchInput] = useState('');
 
@@ -89,7 +89,7 @@ export default function LostFoundList() {
   const CARD_GAP = 20;
 
   useEffect(() => {
-    fetchItems({ type: activeTab, category: selectedCategory, search: searchInput });
+    fetchItems({ type: activeTab === 'All' ? undefined : activeTab, category: selectedCategory, search: searchInput });
   }, [activeTab, selectedCategory, searchInput]);
 
   const filteredItems = useMemo(() => {
@@ -151,20 +151,18 @@ export default function LostFoundList() {
 
       {/* --- Tab Switcher (All, Lost, Found) --- */}
       <View style={styles.tabCard}>
-        <View style={styles.tabBar}>
-          {(['All', 'Lost', 'Found'] as const).map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
-              onPress={() => setActiveTab(tab)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-                {tab === 'All' ? 'All Listed Items' : tab === 'Lost' ? '🔴 Lost Items' : '🟢 Found Items'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {(['All', 'Lost', 'Found'] as const).map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+              {tab === 'All' ? 'All Listed Items' : tab === 'Lost' ? '🔴 Lost Items' : '🟢 Found Items'}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* --- Search Bar --- */}

@@ -59,7 +59,13 @@ const AcademicCard = React.memo(({
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <View style={styles.branchTag}>
-            <Text style={styles.branchTagText}>{item.branch || 'CSE'} • {item.semester || 'Sem'}</Text>
+            <Text style={styles.branchTagText}>
+              {(Array.isArray(item.branch)
+                ? item.branch.join(', ')
+                : typeof item.branch === 'string' && item.branch.startsWith('[')
+                ? (() => { try { return JSON.parse(item.branch).join(', '); } catch (e) { return item.branch; } })()
+                : item.branch || 'CSE')} • {item.semester || 'Sem'}
+            </Text>
           </View>
           {isOwnerOrAdmin && (
             <View style={styles.ownerActionsRow}>
@@ -296,11 +302,22 @@ export default function AcademicHub() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSubject, setEditSubject] = useState('');
-  const [editBranch, setEditBranch] = useState('CSE');
+  const [editBranches, setEditBranches] = useState<string[]>(['CSE']);
   const [editSemester, setEditSemester] = useState('8th Sem');
   const [editDescription, setEditDescription] = useState('');
   const [editFile, setEditFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [updating, setUpdating] = useState(false);
+
+  const toggleEditBranch = (b: string) => {
+    setEditBranches((prev) => {
+      if (prev.includes(b)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((item) => item !== b);
+      } else {
+        return [...prev, b];
+      }
+    });
+  };
 
   // Debounce search query (500ms delay)
   useEffect(() => {
@@ -363,7 +380,20 @@ export default function AcademicHub() {
     setEditingItem(item);
     setEditTitle(item.title || '');
     setEditSubject(item.subject || '');
-    setEditBranch(item.branch || 'CSE');
+    
+    let initialBranches: string[] = ['CSE'];
+    if (Array.isArray(item.branch)) {
+      initialBranches = item.branch;
+    } else if (typeof item.branch === 'string') {
+      if (item.branch.startsWith('[')) {
+        try { initialBranches = JSON.parse(item.branch); } catch (e) { initialBranches = [item.branch]; }
+      } else if (item.branch.includes(',')) {
+        initialBranches = item.branch.split(',').map((b: string) => b.trim());
+      } else {
+        initialBranches = [item.branch];
+      }
+    }
+    setEditBranches(initialBranches);
     setEditSemester(item.semester || '8th Sem');
     setEditDescription(item.description || '');
     setEditFile(null);
@@ -392,8 +422,8 @@ export default function AcademicHub() {
 
   const handleSaveEdit = async () => {
     if (!editingItem) return;
-    if (!editTitle.trim() || !editSubject.trim()) {
-      Alert.alert('Incomplete Form', 'Please enter Title and Subject.');
+    if (!editTitle.trim() || !editSubject.trim() || editBranches.length === 0) {
+      Alert.alert('Incomplete Form', 'Please enter Title, Subject and select at least one Branch.');
       return;
     }
 
@@ -402,7 +432,7 @@ export default function AcademicHub() {
       const formData = new FormData();
       formData.append('title', editTitle.trim());
       formData.append('subject', editSubject.trim());
-      formData.append('branch', editBranch);
+      formData.append('branch', JSON.stringify(editBranches));
       formData.append('semester', editSemester);
       formData.append('description', editDescription.trim());
 
@@ -738,17 +768,22 @@ Details: ${requestDetails || 'None provided'}`;
               </View>
 
               <View style={styles.modalInputGroup}>
-                <Text style={styles.modalLabel}>Branch</Text>
+                <Text style={styles.modalLabel}>Select Branch(es) (Multiple Allowed)</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.modalChipScroll}>
-                  {BRANCHES.filter(b => b !== 'All').map((b) => (
-                    <TouchableOpacity
-                      key={b}
-                      style={[styles.modalChip, editBranch === b && styles.activeModalChip]}
-                      onPress={() => setEditBranch(b)}
-                    >
-                      <Text style={[styles.modalChipText, editBranch === b && styles.activeModalChipText]}>{b}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  {BRANCHES.filter(b => b !== 'All').map((b) => {
+                    const isSelected = editBranches.includes(b);
+                    return (
+                      <TouchableOpacity
+                        key={b}
+                        style={[styles.modalChip, isSelected && styles.activeModalChip]}
+                        onPress={() => toggleEditBranch(b)}
+                      >
+                        <Text style={[styles.modalChipText, isSelected && styles.activeModalChipText]}>
+                          {isSelected ? `✓ ${b}` : b}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </ScrollView>
               </View>
 

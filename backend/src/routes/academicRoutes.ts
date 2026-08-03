@@ -53,6 +53,24 @@ const upload = multer({
   limits: { fileSize: 1.5 * 1024 * 1024 }
 });
 
+const parseBranch = (input: any): any => {
+  if (Array.isArray(input)) return input;
+  if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    if (trimmed.includes(',')) {
+      return trimmed.split(',').map((b) => b.trim()).filter(Boolean);
+    }
+    return [trimmed];
+  }
+  return input;
+};
+
 // 3. Upload Route API (Protected)
 router.post('/upload', protect, (req: any, res: any, next: any) => {
   upload.single('file')(req, res, (err: any) => {
@@ -92,7 +110,7 @@ router.post('/upload', protect, (req: any, res: any, next: any) => {
       description,
       fileUrl,
       fileType: req.file.originalname.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
-      branch,
+      branch: parseBranch(branch),
       semester,
       subject,
       uploadedBy: req.user._id,
@@ -183,7 +201,7 @@ router.put('/:id', protect, (req: any, res: any, next: any) => {
 
     if (title !== undefined) note.title = title;
     if (description !== undefined) note.description = description;
-    if (branch !== undefined) note.branch = branch;
+    if (branch !== undefined) note.branch = parseBranch(branch);
     if (semester !== undefined) note.semester = semester;
     if (subject !== undefined) note.subject = subject;
 

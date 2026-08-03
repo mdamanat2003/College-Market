@@ -5,12 +5,13 @@ import { PlaceholderImage } from './PlaceholderImage';
 import { resolveImageUri } from '../../utils/imageUri';
 
 type SafeImageProps = {
+  testID?: string;
   uri?: string | null;
   style?: StyleProp<ImageStyle>;
   resizeMode?: ImageProps['resizeMode'];
 };
 
-export function SafeImage({ uri, style, resizeMode }: SafeImageProps) {
+export function SafeImage({ testID, uri, style, resizeMode }: SafeImageProps) {
   const [failed, setFailed] = useState(false);
   const resolvedUri = resolveImageUri(uri);
 
@@ -22,6 +23,7 @@ export function SafeImage({ uri, style, resizeMode }: SafeImageProps) {
 
   return (
     <Image
+      testID={testID}
       source={{ uri: resolvedUri }}
       style={style}
       resizeMode={resizeMode}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions, Platform, RefreshControl } from 'react-native';
 import Footer from '../../components/layout/Footer';
 import { Navbar } from '../../components/layout/Navbar';
 import { ProductCard } from '../../components/cards/ProductCard';
@@ -45,6 +45,17 @@ export default function MarketplaceHome() {
   ), [cardWidth, CARD_GAP]);
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchProducts(activeCategory, searchQuery, activeCollege);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [activeCategory, searchQuery, activeCollege, fetchProducts]);
 
   useEffect(() => {
     fetchProducts(activeCategory, searchQuery, activeCollege);
@@ -165,6 +176,14 @@ export default function MarketplaceHome() {
             data={products}
             keyExtractor={keyExtractor}
             numColumns={numColumns}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#38bdf8"
+                colors={['#38bdf8']}
+              />
+            }
             contentContainerStyle={[styles.gridList, isPhone && styles.phoneGridList]}
             columnWrapperStyle={numColumns > 1 ? [styles.row, isSparse && styles.sparseRow, { gap: CARD_GAP }] : undefined}
             removeClippedSubviews={true}

@@ -11,7 +11,8 @@ import {
   TextInput, 
   Linking, 
   useWindowDimensions, 
-  Platform 
+  Platform,
+  RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -92,6 +93,17 @@ export default function EventsList() {
 
   const numColumns = width >= 1150 ? 3 : width >= 720 ? 2 : 1;
   const CARD_GAP = 20;
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchEvents({ category: selectedCategory, search: searchInput });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [selectedCategory, searchInput, fetchEvents]);
 
   useEffect(() => {
     fetchEvents({ category: selectedCategory, search: searchInput });
@@ -197,6 +209,14 @@ export default function EventsList() {
           keyExtractor={keyExtractor}
           numColumns={numColumns}
           renderItem={renderItem}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#38bdf8"
+              colors={['#38bdf8']}
+            />
+          }
           ListHeaderComponent={renderHeader}
           columnWrapperStyle={numColumns > 1 ? [styles.row, filteredEvents.length <= 2 && styles.sparseRow] : undefined}
           showsVerticalScrollIndicator={true}
@@ -224,7 +244,6 @@ export default function EventsList() {
             }
             contentContainerStyle={styles.listContent}
           />
-        )}
       </View>
     </View>
   );

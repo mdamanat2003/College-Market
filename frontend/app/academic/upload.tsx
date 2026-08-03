@@ -20,7 +20,7 @@ import { useAcademicStore } from '../../store/academicStore';
 import { useDemoRestriction } from '../../hooks/use-demo-restriction';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 
-const BRANCHES = ['CSE', 'ECE', 'EE', 'ME', 'CE', 'IT'];
+const BRANCHES = ['CSE', 'ECE', 'EE', 'ME', 'CS', 'CE', 'IT'];
 const SEMESTERS = ['1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem'];
 
 export default function UploadAcademic() {
@@ -32,9 +32,22 @@ export default function UploadAcademic() {
 
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState((paramSubject as string) || '');
-  const [branch, setBranch] = useState((paramBranch as string) || 'CSE');
+  const [selectedBranches, setSelectedBranches] = useState<string[]>(
+    paramBranch ? [(paramBranch as string)] : ['CSE']
+  );
   const [semester, setSemester] = useState((paramSemester as string) || '8th Sem');
   const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+
+  const toggleBranch = (item: string) => {
+    setSelectedBranches((prev) => {
+      if (prev.includes(item)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((b) => b !== item);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
 
   const pickDocument = async () => {
     try {
@@ -58,7 +71,7 @@ export default function UploadAcademic() {
 
   const handleUpload = async () => {
     if (!checkRestriction('academic upload')) return;
-    if (!title || !subject || !branch || !semester || !file) {
+    if (!title || !subject || selectedBranches.length === 0 || !semester || !file) {
       Alert.alert('Incomplete Form', 'Please fill all fields and select a file.');
       return;
     }
@@ -86,7 +99,7 @@ export default function UploadAcademic() {
 
       formData.append('title', title);
       formData.append('subject', subject);
-      formData.append('branch', branch);
+      formData.append('branch', JSON.stringify(selectedBranches));
       formData.append('semester', semester);
       formData.append('uploadedBy', user?._id || '');
 
@@ -176,20 +189,25 @@ export default function UploadAcademic() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Select Branch</Text>
+            <Text style={styles.label}>Select Branch(es) (Multiple Allowed)</Text>
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
               data={BRANCHES}
               keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.chip, branch === item && styles.activeChip]}
-                  onPress={() => setBranch(item)}
-                >
-                  <Text style={[styles.chipText, branch === item && styles.activeChipText]}>{item}</Text>
-                </TouchableOpacity>
-              )}
+              renderItem={({ item }) => {
+                const isSelected = selectedBranches.includes(item);
+                return (
+                  <TouchableOpacity
+                    style={[styles.chip, isSelected && styles.activeChip]}
+                    onPress={() => toggleBranch(item)}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.activeChipText]}>
+                      {isSelected ? `✓ ${item}` : item}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
               contentContainerStyle={styles.chipScroll}
             />
           </View>

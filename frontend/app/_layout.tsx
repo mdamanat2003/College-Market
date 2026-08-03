@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Platform, View } from 'react-native';
 import 'react-native-reanimated';
 
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore'; // <-- Chat Store import
@@ -19,6 +21,9 @@ export const unstable_settings = {
 
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    ...Ionicons.font,
+  });
   const colorScheme = useColorScheme();
   const { checkAuth, user } = useAuthStore();
 
@@ -271,7 +276,7 @@ export default function RootLayout() {
     }
   }, [user, connectSocket, disconnectSocket]);
 
-  if (!isReady) {
+  if (!isReady || !fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background }}>
         <ActivityIndicator size="large" color={COLORS.primary} />

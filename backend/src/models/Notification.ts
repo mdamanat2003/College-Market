@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface INotification extends Document {
   recipient: mongoose.Types.ObjectId; // Jisko notification bhejni hai
   sender?: mongoose.Types.ObjectId; // Jisne action kiya (optional for system alerts)
-  type: 'Message' | 'Offer' | 'Order' | 'System' | 'Wishlist';
+  type: 'Message' | 'Offer' | 'Order' | 'System' | 'Wishlist' | 'LostFound';
   title: string;
   message: string;
   relatedId?: mongoose.Types.ObjectId; // Product ID, Order ID, ya Offer ID (Click karne par wahan redirect karne ke liye)
@@ -16,7 +16,7 @@ const notificationSchema: Schema = new Schema(
     sender: { type: Schema.Types.ObjectId, ref: 'User' },
     type: { 
       type: String, 
-      enum: ['Message', 'Offer', 'Order', 'System', 'Wishlist'], 
+      enum: ['Message', 'Offer', 'Order', 'System', 'Wishlist', 'LostFound'], 
       required: true 
     },
     title: { type: String, required: true },

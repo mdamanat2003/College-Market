@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import LostFound from '../models/LostFound';
+import User from '../models/User';
+import Notification from '../models/Notification';
+import { notifyUsers } from '../socket';
 import { AuthRequest } from '../middleware/authMiddleware';
 
 // @desc    Report a lost or found item
@@ -46,6 +49,57 @@ export const reportItem = asyncHandler(async (req: AuthRequest, res: Response) =
     
     // Populate reporter before sending response
     await item.populate('reporter', '_id name email phone');
+
+    // Notify all users in the same campus/college immediately
+    try {
+      const userCollege = req.user.college;
+      let sameCampusUsers: any[] = [];
+
+      if (userCollege && userCollege.trim() !== '') {
+        sameCampusUsers = await User.find({
+          college: userCollege,
+          _id: { $ne: req.user._id },
+          isBlocked: { $ne: true }
+        }).select('_id');
+      } else {
+        sameCampusUsers = await User.find({
+          _id: { $ne: req.user._id },
+          isBlocked: { $ne: true }
+        }).select('_id');
+      }
+
+      if (sameCampusUsers.length > 0) {
+        const isLost = type === 'Lost';
+        const notificationTitle = isLost 
+          ? `🔴 Lost Item Alert (${userCollege || 'Campus'})` 
+          : `🟢 Found Item Alert (${userCollege || 'Campus'})`;
+        
+        const notificationMessage = `${req.user.name} reported a ${isLost ? 'lost' : 'found'} item: "${title}"${location ? ` at ${location}` : ''}`;
+
+        const notificationsToCreate = sameCampusUsers.map(u => ({
+          recipient: u._id,
+          sender: req.user!._id,
+          type: 'LostFound' as const,
+          title: notificationTitle,
+          message: notificationMessage,
+          relatedId: item._id,
+          isRead: false,
+        }));
+
+        await Notification.insertMany(notificationsToCreate);
+
+        const recipientIds = sameCampusUsers.map(u => u._id.toString());
+        notifyUsers(recipientIds, {
+          title: notificationTitle,
+          message: notificationMessage,
+          type: 'info',
+          relatedId: item._id,
+        });
+        console.log(`📢 Instant notification sent to ${recipientIds.length} campus users for Lost/Found item.`);
+      }
+    } catch (notifErr) {
+      console.error("⚠️ Failed to send Lost & Found campus notifications:", notifErr);
+    }
     
     res.status(201).json({ success: true, item });
   } catch (error: any) {

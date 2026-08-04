@@ -145,8 +145,9 @@ export default function FAQ() {
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />
 
+      <PublicNavbar activeRoute="faq" />
+
       <View style={styles.content}>
-        <PublicNavbar activeRoute="faq" />
 
         {/* Hero Header Section */}
         <View style={styles.heroSection}>

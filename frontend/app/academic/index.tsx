@@ -149,13 +149,16 @@ const AcademicHeader = React.memo(({
   onResetFilters: () => void;
   onUploadPress: () => void;
 }) => {
+  const { width } = useWindowDimensions();
+  const isPhone = width <= 560;
+
   return (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, isPhone && styles.phoneHeaderContainer]}>
       {/* --- Header & Title --- */}
-      <View style={styles.headerSection}>
+      <View style={[styles.headerSection, isPhone && styles.phoneHeaderSection]}>
         <View style={styles.titleBox}>
           <Text style={styles.kicker}>Academic Resources</Text>
-          <Text style={styles.pageTitle}>PyQ & Lecture Notes</Text>
+          <Text style={[styles.pageTitle, isPhone && styles.phonePageTitle]}>PyQ & Lecture Notes</Text>
           <Text style={styles.subtitle}>
             Access verified lecture notes, previous year question papers, and syllabus resources shared by campus peers.
           </Text>
@@ -163,7 +166,7 @@ const AcademicHeader = React.memo(({
 
         <TouchableOpacity
           testID="sell-btn"
-          style={styles.uploadBtn}
+          style={[styles.uploadBtn, isPhone && styles.phoneUploadBtn]}
           onPress={onUploadPress}
           activeOpacity={0.8}
         >
@@ -249,23 +252,23 @@ const AcademicHeader = React.memo(({
       </View>
 
       {/* --- Statistics Bar --- */}
-      <View style={styles.statsBar}>
+      <View style={[styles.statsBar, isPhone && styles.phoneStatsBar]}>
         <View style={styles.statBox}>
-          <Ionicons name="document-text-outline" size={18} color="#38BDF8" />
-          <Text style={styles.statNumber}>{stats.total}</Text>
-          <Text style={styles.statLabel}>Total Materials</Text>
+          <Ionicons name="document-text-outline" size={16} color="#38BDF8" />
+          <Text style={[styles.statNumber, isPhone && styles.phoneStatNumber]}>{stats.total}</Text>
+          <Text style={[styles.statLabel, isPhone && styles.phoneStatLabel]}>Total</Text>
         </View>
-        <View style={styles.statDivider} />
+        {!isPhone && <View style={styles.statDivider} />}
         <View style={styles.statBox}>
-          <Ionicons name="book-outline" size={18} color="#10B981" />
-          <Text style={styles.statNumber}>{stats.subjects}</Text>
-          <Text style={styles.statLabel}>Subjects</Text>
+          <Ionicons name="book-outline" size={16} color="#10B981" />
+          <Text style={[styles.statNumber, isPhone && styles.phoneStatNumber]}>{stats.subjects}</Text>
+          <Text style={[styles.statLabel, isPhone && styles.phoneStatLabel]}>Subjects</Text>
         </View>
-        <View style={styles.statDivider} />
+        {!isPhone && <View style={styles.statDivider} />}
         <View style={styles.statBox}>
-          <Ionicons name="people-outline" size={18} color="#F59E0B" />
-          <Text style={styles.statNumber}>{stats.contributors}</Text>
-          <Text style={styles.statLabel}>Contributors</Text>
+          <Ionicons name="people-outline" size={16} color="#F59E0B" />
+          <Text style={[styles.statNumber, isPhone && styles.phoneStatNumber]}>{stats.contributors}</Text>
+          <Text style={[styles.statLabel, isPhone && styles.phoneStatLabel]}>Peers</Text>
         </View>
       </View>
     </View>
@@ -850,6 +853,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingTop: 24,
   },
+  phoneHeaderContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   row: {
     width: '100%',
     maxWidth: 1440,
@@ -865,6 +872,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 24,
     gap: 20,
+  },
+  phoneHeaderSection: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 14,
+    marginBottom: 16,
   },
   titleBox: {
     flex: 1,
@@ -883,6 +896,10 @@ const styles = StyleSheet.create({
     lineHeight: 38,
     fontWeight: '900',
     color: '#F8FAFC',
+  },
+  phonePageTitle: {
+    fontSize: 24,
+    lineHeight: 30,
   },
   subtitle: {
     fontSize: 14.5,
@@ -910,6 +927,10 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
     }),
+  },
+  phoneUploadBtn: {
+    justifyContent: 'center',
+    width: '100%',
   },
   uploadBtnText: {
     color: '#09090b',
@@ -1025,6 +1046,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
+  phoneStatsBar: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
   statBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1035,10 +1061,16 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#F8FAFC',
   },
+  phoneStatNumber: {
+    fontSize: 14,
+  },
   statLabel: {
     fontSize: 13,
     color: '#94A3B8',
     fontWeight: '500',
+  },
+  phoneStatLabel: {
+    fontSize: 11,
   },
   statDivider: {
     width: 1,

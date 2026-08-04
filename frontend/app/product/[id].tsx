@@ -337,38 +337,43 @@ export default function ProductDetailsScreen() {
         <View style={[styles.mainLayout, isWebLarge && styles.mainLayoutWeb]}>
           
           {/* SWIPEABLE IMAGE CAROUSEL SECTION */}
-          <View 
-            style={[styles.imageSection, isWebLarge && { flex: 1 }]}
-            onLayout={(e) => setCarouselWidth(e.nativeEvent.layout.width)}
-          >
-            <ScrollView 
-              horizontal 
-              pagingEnabled 
-              showsHorizontalScrollIndicator={false}
-              snapToInterval={carouselWidth}
-              decelerationRate="fast"
-            >
-              {images.length > 0 ? (
-                images.map((img: string, index: number) => (
-                  <View key={index} style={{ width: carouselWidth, height: 400 }}>
-                    <SafeImage uri={img} style={styles.mainImage} resizeMode="contain" />
-                  </View>
-                ))
-              ) : (
-                <View style={{ width: carouselWidth, height: 400 }}>
-                  <PlaceholderImage style={styles.mainImage} size={42} />
-                </View>
-              )}
-            </ScrollView>
+          {(() => {
+            const carouselHeight = width <= 560 ? 280 : 400;
+            return (
+              <View 
+                style={[styles.imageSection, isWebLarge && { flex: 1 }]}
+                onLayout={(e) => setCarouselWidth(e.nativeEvent.layout.width)}
+              >
+                <ScrollView 
+                  horizontal 
+                  pagingEnabled 
+                  showsHorizontalScrollIndicator={false}
+                  snapToInterval={carouselWidth}
+                  decelerationRate="fast"
+                >
+                  {images.length > 0 ? (
+                    images.map((img: string, index: number) => (
+                      <View key={index} style={{ width: carouselWidth, height: carouselHeight }}>
+                        <SafeImage uri={img} style={styles.mainImage} resizeMode="contain" />
+                      </View>
+                    ))
+                  ) : (
+                    <View style={{ width: carouselWidth, height: carouselHeight }}>
+                      <PlaceholderImage style={styles.mainImage} size={42} />
+                    </View>
+                  )}
+                </ScrollView>
 
-            {images.length > 1 && (
-              <View style={styles.paginationContainer}>
-                {images.map((_: any, index: number) => (
-                  <View key={index} style={styles.dot} />
-                ))}
+                {images.length > 1 && (
+                  <View style={styles.paginationContainer}>
+                    {images.map((_: any, index: number) => (
+                      <View key={index} style={styles.dot} />
+                    ))}
+                  </View>
+                )}
               </View>
-            )}
-          </View>
+            );
+          })()}
 
           <View style={[styles.detailsSection, isWebLarge && { flex: 1, paddingLeft: SPACING.xl }]}>
             <Text style={styles.title}>{product.title}</Text>

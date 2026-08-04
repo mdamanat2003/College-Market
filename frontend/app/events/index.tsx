@@ -132,13 +132,15 @@ export default function EventsList() {
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
+  const isPhone = width <= 560;
+
   const renderHeader = React.useCallback(() => (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, isPhone && styles.phoneHeaderContainer]}>
       {/* --- Header Section --- */}
-      <View style={styles.headerSection}>
+      <View style={[styles.headerSection, isPhone && styles.phoneHeaderSection]}>
         <View style={styles.titleBox}>
           <Text style={styles.kicker}>Campus Events & Festivals</Text>
-          <Text style={styles.pageTitle}>Campus Fests & Events</Text>
+          <Text style={[styles.pageTitle, isPhone && styles.phonePageTitle]}>Campus Fests & Events</Text>
           <Text style={styles.subtitle}>
             Discover upcoming cultural fests, tech symposiums, workshops, and sports tournaments across college campuses.
           </Text>
@@ -146,7 +148,7 @@ export default function EventsList() {
 
         <TouchableOpacity 
           testID="sell-btn"
-          style={styles.createBtn} 
+          style={[styles.createBtn, isPhone && styles.phoneCreateBtn]} 
           onPress={() => router.push('/events/create')}
           activeOpacity={0.8}
         >
@@ -194,7 +196,7 @@ export default function EventsList() {
         </ScrollView>
       </View>
     </View>
-  ), [searchInput, isLoading, selectedCategory, router]);
+  ), [searchInput, isLoading, selectedCategory, router, isPhone]);
 
   return (
     <View style={styles.container}>
@@ -265,6 +267,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingTop: 24,
   },
+  phoneHeaderContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   row: {
     width: '100%',
     maxWidth: 1440,
@@ -280,6 +286,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 24,
     gap: 20,
+  },
+  phoneHeaderSection: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 14,
+    marginBottom: 16,
   },
   titleBox: {
     flex: 1,
@@ -298,6 +310,10 @@ const styles = StyleSheet.create({
     lineHeight: 38,
     fontWeight: '900',
     color: '#F8FAFC',
+  },
+  phonePageTitle: {
+    fontSize: 24,
+    lineHeight: 30,
   },
   subtitle: {
     fontSize: 14.5,
@@ -318,6 +334,10 @@ const styles = StyleSheet.create({
         boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
       } as any,
     }),
+  },
+  phoneCreateBtn: {
+    justifyContent: 'center',
+    width: '100%',
   },
   createBtnText: {
     color: '#09090b',

@@ -116,9 +116,10 @@ export default function About() {
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />
 
+      <PublicNavbar activeRoute="about" />
+
       {/* 👇 NAYA WRAPPER: Baki saari cheezein center aur max 1200px rahengi 👇 */}
       <View style={styles.content}>
-        <PublicNavbar activeRoute="about" />
 
         {/* Hero Section */}
         <View style={[styles.hero, isWide && styles.heroWide]}>

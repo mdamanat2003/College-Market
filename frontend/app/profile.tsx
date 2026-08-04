@@ -12,7 +12,8 @@ import {
   Modal, 
   TextInput, 
   Platform,
-  RefreshControl
+  RefreshControl,
+  useWindowDimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +32,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { orders, fetchMyOrders, releaseEscrow, isLoading } = useOrderStore();
+  const { width } = useWindowDimensions();
+  const isPhone = width <= 560;
   const scrollRef = useRef<ScrollView>(null);
   
   const [activeTab, setActiveTab] = useState<'Purchases' | 'Sales'>('Purchases');
@@ -219,17 +222,17 @@ export default function ProfileScreen() {
         <View style={styles.scrollContent}>
         
         {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
+        <View style={[styles.profileCard, isPhone && styles.phoneProfileCard]}>
+          <View style={[styles.avatar, isPhone && styles.phoneAvatar]}>
             {user?.avatar ? (
-              <Image source={{ uri: user.avatar }} style={styles.avatarImg} />
+              <Image source={{ uri: user.avatar }} style={[styles.avatarImg, isPhone && styles.phoneAvatarImg]} />
             ) : (
-              <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase()}</Text>
+              <Text style={[styles.avatarText, isPhone && styles.phoneAvatarText]}>{user?.name?.charAt(0).toUpperCase()}</Text>
             )}
           </View>
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.name}>{user?.name}</Text>
+              <Text style={[styles.name, isPhone && styles.phoneName]} numberOfLines={1}>{user?.name}</Text>
               <TouchableOpacity onPress={handleOpenEditModal} style={styles.editIconBtn}>
                 <Ionicons name="create-outline" size={18} color={COLORS.primary} />
               </TouchableOpacity>
@@ -237,10 +240,10 @@ export default function ProfileScreen() {
                 <Ionicons name="settings-outline" size={20} color={COLORS.text} />
               </TouchableOpacity>
             </View>
-            <Text style={styles.email}>{user?.email}</Text>
+            <Text style={styles.email} numberOfLines={1}>{user?.email}</Text>
             <View style={styles.collegeBadge}>
               <Ionicons name="school-outline" size={12} color={COLORS.primary} />
-              <Text style={styles.collegeText}>{user?.college || 'My University'}</Text>
+              <Text style={styles.collegeText} numberOfLines={1}>{user?.college || 'My University'}</Text>
             </View>
           </View>
         </View>
@@ -427,13 +430,18 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1, padding: SPACING.lg, maxWidth: 800, width: '100%', alignSelf: 'center' },
   
   profileCard: { flexDirection: 'row', backgroundColor: COLORS.card, padding: SPACING.lg, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, marginBottom: SPACING.xl, alignItems: 'center' },
+  phoneProfileCard: { padding: 14 },
   avatar: { width: 70, height: 70, borderRadius: 35, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center', marginRight: SPACING.lg },
+  phoneAvatar: { width: 54, height: 54, borderRadius: 27, marginRight: 12 },
   avatarText: { fontSize: 28, fontWeight: 'bold', color: '#fff' },
+  phoneAvatarText: { fontSize: 22 },
   avatarImg: { width: 70, height: 70, borderRadius: 35 },
+  phoneAvatarImg: { width: 54, height: 54, borderRadius: 27 },
   userInfo: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   editIconBtn: { padding: 4 },
   name: { fontSize: 22, fontWeight: '700', color: COLORS.text },
+  phoneName: { fontSize: 18 },
   email: { fontSize: 14, color: COLORS.textMuted, marginBottom: 4 },
   collegeBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.round, alignSelf: 'flex-start' },
   collegeText: { fontSize: 12, color: COLORS.primary, marginLeft: 4, fontWeight: '500' },

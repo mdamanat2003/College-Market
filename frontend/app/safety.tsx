@@ -17,8 +17,9 @@ export default function SafetyTips() {
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />
 
+      <PublicNavbar activeRoute="about" />
+
       <View style={styles.content}>
-        <PublicNavbar activeRoute="about" />
 
         {/* Hero Section */}
         <View style={styles.heroSection}>

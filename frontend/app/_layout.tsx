@@ -14,6 +14,7 @@ import { COLORS } from '../theme/colors';
 import { InstallAppBanner } from '../components/layout/InstallAppBanner';
 import { NotificationToast } from '../components/ui/NotificationToast';
 import { OfflineBanner } from '../components/ui/OfflineBanner';
+import { BrandSpinner } from '../components/ui/BrandSpinner';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -58,6 +59,16 @@ export default function RootLayout() {
         overflow-x: hidden;
         background: linear-gradient(180deg, #09090b 0%, #0f172a 100%);
         background-attachment: fixed;
+      }
+
+      /* Branded Spinner Rotation Animation */
+      @keyframes brandSpin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .brand-spinner-spin {
+        animation: brandSpin 1.3s linear infinite !important;
+        transform-origin: center center !important;
       }
 
       /* Custom Glowing Right-Side Scrollbar Slider */
@@ -279,7 +290,7 @@ export default function RootLayout() {
   if (!isReady || !fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background }}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <BrandSpinner size={100} label="Ooplabdh" showLabel />
       </View>
     );
   }

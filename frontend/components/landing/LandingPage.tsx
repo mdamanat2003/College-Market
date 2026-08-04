@@ -280,8 +280,9 @@ export default function LandingPage() {
         <View style={styles.glowBlue} />
         <View style={styles.glowPurple} />
 
+        <PublicNavbar activeRoute="home" />
+
         <View style={styles.content}>
-          <View style={styles.navWrap}><PublicNavbar activeRoute="home" /></View>
 
           <View style={[styles.welcomeBand, isMobile && styles.welcomeBandMobile]}>
             <View style={[styles.welcomeCard, isMobile && styles.welcomeCardMobile]}>

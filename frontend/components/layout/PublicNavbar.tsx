@@ -38,21 +38,21 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
 
   const unreadNotifications = useChatStore((state) => state.unreadNotifications);
 
-  const notificationAction = user ? (
+  const notificationAction = (
     <TouchableOpacity
       style={styles.notificationBtn}
-      onPress={() => navigateTo('/notifications')}
+      onPress={() => navigateTo(user ? '/notifications' : '/(auth)/login')}
       accessibilityRole="button"
       accessibilityLabel="Notifications"
     >
       <Ionicons name="notifications-outline" size={20} color={COLORS.text} />
-      {unreadNotifications > 0 && (
+      {user && unreadNotifications > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{unreadNotifications > 9 ? '9+' : unreadNotifications}</Text>
         </View>
       )}
     </TouchableOpacity>
-  ) : null;
+  );
 
   const profileInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
   const authAction = user ? (
@@ -103,111 +103,120 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
 
   if (isCompact) {
     return (
-      <View style={{ paddingTop: insets.top, width: '100%', alignItems: 'center', paddingHorizontal: SPACING.md }}>
-        <View style={[styles.navbar, styles.navbarMobile]}>
-        <View style={styles.mobileTopRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <TouchableOpacity testID="logo-btn" style={styles.brandRow} onPress={() => navigateTo('/home')}>
-              <OoplabdhLogo size="sm" compact={isTiny} markOnly={isTiny} />
-            </TouchableOpacity>
+      <View style={[styles.fullWidthWrapper, { paddingTop: insets.top }]}>
+        <View style={styles.innerNavbarMobile}>
+          <View style={styles.mobileTopRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity testID="logo-btn" style={styles.brandRow} onPress={() => navigateTo('/home')}>
+                <OoplabdhLogo size="sm" compact={isTiny} markOnly={isTiny} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              {notificationAction}
+
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => setIsMenuOpen((value) => !value)}
+                accessibilityRole="button"
+                accessibilityLabel={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              >
+                <Ionicons name={isMenuOpen ? 'close-outline' : 'menu-outline'} size={24} color={COLORS.primary} />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => setIsMenuOpen((value) => !value)}
-            accessibilityRole="button"
-            accessibilityLabel={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          >
-            <Ionicons name={isMenuOpen ? 'close-outline' : 'menu-outline'} size={24} color={COLORS.primary} />
-          </TouchableOpacity>
+          {isMenuOpen && (
+            <View style={styles.mobileMenu}>
+              {navItems.map((item) => {
+                const isActive = activeRoute === item.key;
+
+                return (
+                  <TouchableOpacity
+                    key={item.key}
+                    testID="nav-item"
+                    style={[styles.mobileMenuItem, isActive && styles.mobileMenuItemActive]}
+                    onPress={() => navigateTo(item.href)}
+                  >
+                    <Text style={[styles.mobileMenuText, isActive && styles.navLinkTextActive]}>{item.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {mobileAuthAction}
+            </View>
+          )}
         </View>
-
-        {isMenuOpen && (
-          <View style={styles.mobileMenu}>
-            {navItems.map((item) => {
-              const isActive = activeRoute === item.key;
-
-              return (
-                <TouchableOpacity
-                  key={item.key}
-                  testID="nav-item"
-                  style={[styles.mobileMenuItem, isActive && styles.mobileMenuItemActive]}
-                  onPress={() => navigateTo(item.href)}
-                >
-                  <Text style={[styles.mobileMenuText, isActive && styles.navLinkTextActive]}>{item.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-
-            {mobileAuthAction}
-          </View>
-        )}
-      </View>
       </View>
     );
   }
 
   return (
-    <View style={{ paddingTop: insets.top, width: '100%', alignItems: 'center', paddingHorizontal: SPACING.md }}>
-      <View style={[styles.navbar, isCompact && styles.navbarCompact]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <TouchableOpacity testID="logo-btn" style={styles.brandRow} onPress={() => navigateTo('/home')}>
-          <OoplabdhLogo size="sm" />
-        </TouchableOpacity>
+    <View style={[styles.fullWidthWrapper, { paddingTop: insets.top }]}>
+      <View style={styles.innerNavbar}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <TouchableOpacity testID="logo-btn" style={styles.brandRow} onPress={() => navigateTo('/home')}>
+            <OoplabdhLogo size="sm" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.navActions}>
+          {navItems.map((item) => {
+            const isActive = activeRoute === item.key;
+
+            return (
+              <TouchableOpacity
+                key={item.key}
+                testID="nav-item"
+                style={[styles.navLink, isActive && styles.navLinkActive]}
+                onPress={() => navigateTo(item.href)}
+              >
+                <Text style={[styles.navLinkText, isActive && styles.navLinkTextActive]}>{item.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+
+          {notificationAction}
+          {authAction}
+        </View>
       </View>
-
-      <View style={[styles.navActions, isCompact && styles.navActionsCompact]}>
-        {navItems.map((item) => {
-          const isActive = activeRoute === item.key;
-
-          return (
-            <TouchableOpacity
-              key={item.key}
-              testID="nav-item"
-              style={[styles.navLink, isCompact && styles.navItemCompact, isActive && styles.navLinkActive]}
-              onPress={() => navigateTo(item.href)}
-            >
-              <Text style={[styles.navLinkText, isActive && styles.navLinkTextActive]}>{item.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-
-        {notificationAction}
-        {authAction}
-      </View>
-    </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  navbar: {
+  fullWidthWrapper: {
+    width: '100%',
+    backgroundColor: '#09090b',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    ...Platform.select({
+      web: {
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+      } as any,
+    }),
+  },
+  innerNavbar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: SPACING.md,
     width: '100%',
-    maxWidth: 1200,
+    maxWidth: 1440,
     alignSelf: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 10,
-    borderRadius: 28,
-    backgroundColor: 'rgba(18, 18, 20, 0.85)',
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
   },
-  navbarCompact: {
-    alignItems: 'stretch',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 22,
-  },
-  navbarMobile: {
+  innerNavbarMobile: {
     flexDirection: 'column',
-    alignItems: 'stretch',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 24,
+    width: '100%',
+    maxWidth: 1440,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     gap: 12,
   },
   mobileTopRow: {

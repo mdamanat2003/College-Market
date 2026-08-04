@@ -22,8 +22,9 @@ export default function Contact() {
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />
 
+      <PublicNavbar activeRoute="contact" />
+
       <View style={[styles.content, isMobile && styles.contentMobile, isTiny && styles.contentTiny]}>
-        <PublicNavbar activeRoute="contact" />
 
         <View style={[styles.hero, isMobile && styles.heroMobile]}>
           {/* 1. TOP: Left Column (Text & Heading) */}

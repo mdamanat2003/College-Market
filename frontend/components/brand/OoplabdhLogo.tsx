@@ -34,10 +34,10 @@ export function OoplabdhLogo({ compact = false, markOnly = false, size = 'md', s
       accessibilityRole="image"
       accessibilityLabel="Ooplabdh logo"
     >
-      <View style={[styles.mark, { width: markSize, height: markSize, borderRadius: markSize * 0.28 }]}>
+      <View style={[styles.mark, { width: markSize, height: markSize, borderRadius: markSize / 2 }]}>
         <Image
-          source={require('../../assets/images/ooplabdh-logo.jpg')}
-          style={{ width: markSize, height: markSize, borderRadius: markSize * 0.28 }}
+          source={require('../../assets/images/ooplabdh-logo.png')}
+          style={{ width: markSize, height: markSize, borderRadius: markSize / 2 }}
           resizeMode="cover"
         />
       </View>

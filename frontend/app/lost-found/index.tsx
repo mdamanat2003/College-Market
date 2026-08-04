@@ -119,13 +119,15 @@ export default function LostFoundList() {
 
   const keyExtractor = React.useCallback((item: any) => item._id, []);
 
+  const isPhone = width <= 560;
+
   const renderHeader = React.useCallback(() => (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, isPhone && styles.phoneHeaderContainer]}>
       {/* --- Header & Action Button --- */}
-      <View style={styles.headerSection}>
+      <View style={[styles.headerSection, isPhone && styles.phoneHeaderSection]}>
         <View style={styles.titleBox}>
           <Text style={styles.kicker}>Campus Community</Text>
-          <Text style={styles.pageTitle}>Lost & Found Desk</Text>
+          <Text style={[styles.pageTitle, isPhone && styles.phonePageTitle]}>Lost & Found Desk</Text>
           <Text style={styles.subtitle}>
             Report lost possessions or help return found items to fellow students across campus.
           </Text>
@@ -133,7 +135,7 @@ export default function LostFoundList() {
 
         <TouchableOpacity
           testID="report-item-btn"
-          style={styles.reportBtn}
+          style={[styles.reportBtn, isPhone && styles.phoneReportBtn]}
           onPress={() => router.push('/lost-found/report')}
           activeOpacity={0.8}
         >
@@ -159,7 +161,10 @@ export default function LostFoundList() {
             activeOpacity={0.8}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'All' ? 'All Listed Items' : tab === 'Lost' ? '🔴 Lost Items' : '🟢 Found Items'}
+              {isPhone
+                ? (tab === 'All' ? 'All' : tab === 'Lost' ? '🔴 Lost' : '🟢 Found')
+                : (tab === 'All' ? 'All Listed Items' : tab === 'Lost' ? '🔴 Lost Items' : '🟢 Found Items')
+              }
             </Text>
           </TouchableOpacity>
         ))}
@@ -204,7 +209,7 @@ export default function LostFoundList() {
         </ScrollView>
       </View>
     </View>
-  ), [error, activeTab, searchInput, isLoading, selectedCategory, router]);
+  ), [error, activeTab, searchInput, isLoading, selectedCategory, router, isPhone]);
 
   return (
     <View style={styles.container}>
@@ -267,6 +272,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingTop: 24,
   },
+  phoneHeaderContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   row: {
     width: '100%',
     maxWidth: 1440,
@@ -282,6 +291,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 24,
     gap: 20,
+  },
+  phoneHeaderSection: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 14,
+    marginBottom: 16,
   },
   titleBox: {
     flex: 1,
@@ -300,6 +315,10 @@ const styles = StyleSheet.create({
     lineHeight: 38,
     fontWeight: '900',
     color: '#F8FAFC',
+  },
+  phonePageTitle: {
+    fontSize: 24,
+    lineHeight: 30,
   },
   subtitle: {
     fontSize: 14.5,
@@ -320,6 +339,10 @@ const styles = StyleSheet.create({
         boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
       } as any,
     }),
+  },
+  phoneReportBtn: {
+    justifyContent: 'center',
+    width: '100%',
   },
   reportBtnText: {
     color: '#09090b',

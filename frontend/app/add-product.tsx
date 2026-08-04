@@ -502,7 +502,6 @@ export default function AddItemScreen() {
   emptyBox: { 
     width: '100%', 
     height: 120, 
-    minWidth: 320, 
     backgroundColor: COLORS.card, 
     borderRadius: RADIUS.md, 
     justifyContent: 'center', 

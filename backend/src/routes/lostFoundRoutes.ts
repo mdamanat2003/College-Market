@@ -40,16 +40,36 @@ const cloudinaryStorage = new CloudinaryStorage({
   } as any,
 });
 
-// Use Cloudinary for lost & found storage with a 1MB limit
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+// Use Cloudinary for lost & found storage if configured, otherwise fallback to local storage
 const upload = multer({ 
-  storage: cloudinaryStorage,
-  limits: { fileSize: 1 * 1024 * 1024 }
+  storage: isCloudinaryConfigured ? cloudinaryStorage : localStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
+
+const uploadSingleImage = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  upload.single('image')(req, res, (err: any) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ success: false, message: 'Image size 5MB se kam honi chahiye.' });
+      }
+      return res.status(400).json({ success: false, message: `Upload error: ${err.message}` });
+    } else if (err) {
+      return res.status(400).json({ success: false, message: err.message || 'Image upload failed' });
+    }
+    next();
+  });
+};
 
 // Routes
 router.route('/')
   .get(getItems)
-  .post(protect, upload.single('image'), reportItem);
+  .post(protect, uploadSingleImage, reportItem);
 
 router.route('/:id')
   .patch(protect, updateItemStatus)

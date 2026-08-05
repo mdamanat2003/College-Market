@@ -60,12 +60,27 @@ export const useLostFoundStore = create<LostFoundState>()(
       reportItem: async (formData) => {
         set({ isLoading: true, error: null });
         try {
-          await api.post('/lost-found', formData);
-          set({ isLoading: false });
+          const response = await api.post('/lost-found', formData);
+          
+          if (response.data?.item) {
+            set((state) => ({
+              items: [response.data.item, ...state.items],
+              isLoading: false,
+              error: null
+            }));
+          } else {
+            set({ isLoading: false });
+          }
           return true;
         } catch (error: any) {
+          console.error("Report Item Error Details:", {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+          });
+          const serverMsg = error.response?.data?.message || error.response?.data?.error;
           set({ 
-            error: error.response?.data?.message || 'Report failed', 
+            error: serverMsg || 'Report failed. Please try again.', 
             isLoading: false 
           });
           return false;

@@ -39,8 +39,8 @@ export default function ReportLostFound() {
 
     if (!result.canceled) {
       const asset = result.assets[0];
-      if (asset.fileSize && asset.fileSize > 1 * 1024 * 1024) {
-        Alert.alert('File Too Large', 'Bhai, image 1MB se kam size ki honi chahiye.');
+      if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
+        Alert.alert('File Too Large', 'Image 5MB se kam size ki honi chahiye.');
         return;
       }
       const compressedUri = await compressImage(asset.uri);
@@ -51,7 +51,11 @@ export default function ReportLostFound() {
   const handleSubmit = async () => {
     if (!checkRestriction('report item')) return;
     if (!title || !description || !location) {
-      Alert.alert('Missing Info', 'Please fill in the title, description, and location.');
+      if (Platform.OS === 'web') {
+        window.alert('Please fill in the title, description, and location.');
+      } else {
+        Alert.alert('Missing Info', 'Please fill in the title, description, and location.');
+      }
       return;
     }
 
@@ -70,6 +74,9 @@ export default function ReportLostFound() {
           filename = 'lost_found.jpg';
         }
         
+        const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+        const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+        
         if (Platform.OS === 'web') {
           const response = await fetch(image);
           const blob = await response.blob();
@@ -78,21 +85,34 @@ export default function ReportLostFound() {
           formData.append('image', {
             uri: Platform.OS === 'ios' ? image.replace('file://', '') : image,
             name: filename,
-            type: 'image/jpeg',
+            type: mimeType,
           } as any);
         }
       }
 
       const success = await reportItem(formData);
       if (success) {
-        Alert.alert('Reported Successfully', 'Your report has been posted to the campus community.');
+        if (Platform.OS === 'web') {
+          window.alert('Reported Successfully! Your report has been posted to the campus community.');
+        } else {
+          Alert.alert('Reported Successfully', 'Your report has been posted to the campus community.');
+        }
         router.back();
       } else {
-        Alert.alert('Failed', 'Could not post your report. Please try again.');
+        const storeError = useLostFoundStore.getState().error;
+        if (Platform.OS === 'web') {
+          window.alert(storeError || 'Could not post your report. Please try again.');
+        } else {
+          Alert.alert('Failed', storeError || 'Could not post your report. Please try again.');
+        }
       }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Something went wrong.');
+    } catch (error: any) {
+      console.error('Report submission error:', error);
+      if (Platform.OS === 'web') {
+        window.alert(error.message || 'Something went wrong while posting report.');
+      } else {
+        Alert.alert('Error', error.message || 'Something went wrong while posting report.');
+      }
     }
   };
 
@@ -126,16 +146,26 @@ export default function ReportLostFound() {
           </View>
 
           {/* Image Picker */}
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-            {image ? (
+          {image ? (
+            <View style={styles.previewContainer}>
               <Image source={{ uri: image }} style={styles.pickedImage} />
-            ) : (
+              <TouchableOpacity style={styles.removeImageBtn} onPress={() => setImage(null)}>
+                <Ionicons name="close-circle" size={26} color="#EF4444" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.changeImageBadge} onPress={pickImage}>
+                <Ionicons name="camera" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+                <Text style={styles.changeImageText}>Change Photo</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
               <View style={styles.imagePlaceholder}>
-                <Ionicons name="camera-outline" size={32} color={COLORS.primary} />
-                <Text style={styles.imagePlaceholderText}>Add Photo (Optional)</Text>
+                <Ionicons name="camera-outline" size={36} color={COLORS.primary} />
+                <Text style={styles.imagePlaceholderText}>Add Photo of Item</Text>
+                <Text style={styles.imageSubtext}>Helps students identify lost/found items faster</Text>
               </View>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Item Title</Text>
@@ -218,9 +248,14 @@ const styles = StyleSheet.create({
   activeFoundText: { color: '#064E3B' },
 
   imagePicker: { height: 160, backgroundColor: COLORS.surface, borderRadius: RADIUS.md, marginBottom: SPACING.lg, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border, borderStyle: 'dashed' },
-  imagePlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  imagePlaceholderText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
+  imagePlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 6, padding: 12 },
+  imagePlaceholderText: { fontSize: 14, color: COLORS.primary, fontWeight: '700' },
+  imageSubtext: { fontSize: 12, color: COLORS.textMuted, textAlign: 'center' },
+  previewContainer: { height: 200, borderRadius: RADIUS.md, marginBottom: SPACING.lg, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.border, position: 'relative', backgroundColor: '#000' },
   pickedImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  removeImageBtn: { position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 16, padding: 2 },
+  changeImageBadge: { position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.75)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  changeImageText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
 
   inputGroup: { marginBottom: SPACING.md },
   label: { fontSize: 13, fontWeight: '700', color: COLORS.textMuted, marginBottom: 8, textTransform: 'uppercase' },

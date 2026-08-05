@@ -15,14 +15,17 @@ export const reportItem = asyncHandler(async (req: AuthRequest, res: Response) =
   
   let image = '';
   if (req.file) {
-    if (req.file.filename) {
-       // Local storage fallback
-       const forwardedProto = req.headers['x-forwarded-proto'] || req.protocol;
-       const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${forwardedProto}://${req.get('host')}/uploads/lost-found`;
-       image = `${uploadsBase}/${req.file.filename}`;
-    } else {
-       // Cloudinary
-       image = req.file.path;
+    if (req.file.path && (req.file.path.startsWith('http://') || req.file.path.startsWith('https://'))) {
+      // Cloudinary image URL
+      image = req.file.path;
+    } else if (req.file.filename) {
+      // Local storage fallback
+      const forwardedProto = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.get('host');
+      const uploadsBase = process.env.PUBLIC_BASE_URL?.trim() || `${forwardedProto}://${host}/uploads/lost-found`;
+      image = `${uploadsBase}/${req.file.filename}`;
+    } else if (req.file.path) {
+      image = req.file.path;
     }
   } else if (req.body.image) {
     image = req.body.image;
@@ -158,7 +161,9 @@ export const updateItemStatus = asyncHandler(async (req: AuthRequest, res: Respo
   }
 
   // Check permission
-  const reporterId = item.reporter.toString();
+  const reporterId = (item.reporter as any)._id 
+    ? (item.reporter as any)._id.toString() 
+    : item.reporter.toString();
   const userId = req.user._id.toString();
 
   console.log(`Checking permission: Reporter=${reporterId}, User=${userId}, Role=${req.user.role}`);

@@ -47,3 +47,19 @@ export const markAllAsRead = asyncHandler(async (req: AuthRequest, res: Response
 
   res.json({ success: true, message: 'All notifications marked as read' });
 });
+
+// @desc    Delete a notification
+// @route   DELETE /api/notifications/:id
+export const deleteNotification = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const notification = await Notification.findOneAndDelete({
+    _id: req.params.id,
+    recipient: req.user._id
+  });
+
+  if (!notification) {
+    res.status(404);
+    throw new Error('Notification not found or unauthorized');
+  }
+
+  res.json({ success: true, message: 'Notification deleted' });
+});

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View, Platform, Image, StyleProp, ViewStyle } from 'react-native';
-import { COLORS } from '../../theme/colors';
 
 type BrandSpinnerProps = {
   size?: number;
@@ -18,16 +17,18 @@ export function BrandSpinner({
   const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 1400,
-        easing: Easing.linear,
-        useNativeDriver: Platform.OS !== 'web',
-      })
-    );
-    animation.start();
-    return () => animation.stop();
+    if (Platform.OS !== 'web') {
+      const spinAnim = Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
+      spinAnim.start();
+      return () => spinAnim.stop();
+    }
   }, [spinValue]);
 
   const spin = spinValue.interpolate({
@@ -35,55 +36,63 @@ export function BrandSpinner({
     outputRange: ['0deg', '360deg'],
   });
 
-  // Calculate inner stationary book overlay size & offset
-  const innerSize = Math.round(size * 0.48);
-  const offset = (size - innerSize) / 2;
+  // Calculate precise concentric dimensions & centered offsets
+  const logoSize = size;
+  // 54% of logo size perfectly covers the inner book badge while keeping outer gold & black ring visible
+  const bookSize = Math.round(logoSize * 0.54);
+  const bookOffset = (logoSize - bookSize) / 2;
 
-  const webSpinProps = Platform.OS === 'web' ? { className: 'brand-spinner-spin' } : {};
+  const rotatingStyle = Platform.OS === 'web'
+    ? ({ animation: 'brandSpin 1.8s linear infinite', transformOrigin: 'center center' } as any)
+    : { transform: [{ rotate: spin }] };
 
   return (
     <View style={[styles.container, style]}>
-      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <View style={{ width: logoSize, height: logoSize, position: 'relative' }}>
         
-        {/* === 1. ROTATING OUTER LOGO IMAGE (OUTER GOLD & BLACK CRESCENT RING SPINS 360°) === */}
+        {/* === LAYER 1: ROTATING OUTER GOLD (#C99A2E) & BLACK RING === */}
         <Animated.View
-          {...webSpinProps}
           style={[
-            styles.rotatingOuter,
+            styles.rotatingRingLayer,
             {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              transform: [{ rotate: spin }],
+              width: logoSize,
+              height: logoSize,
+              borderRadius: logoSize / 2,
+              top: 0,
+              left: 0,
             },
+            rotatingStyle,
           ]}
         >
           <Image
             source={require('../../assets/images/ooplabdh-logo.png')}
-            style={{ width: size, height: size, borderRadius: size / 2 }}
+            style={{ width: logoSize, height: logoSize, borderRadius: logoSize / 2 }}
             resizeMode="cover"
           />
         </Animated.View>
 
-        {/* === 2. STATIONARY INNER BOOK (FIXED IN CENTER FROM EXACT SAME LOGO IMAGE) === */}
+        {/* === LAYER 2: 100% FIXED CENTER BOOK ICON === */}
         <View
           style={[
-            styles.stationaryInner,
+            styles.fixedBookLayer,
             {
-              width: innerSize,
-              height: innerSize,
-              borderRadius: innerSize / 2,
+              width: bookSize,
+              height: bookSize,
+              borderRadius: bookSize / 2,
+              top: bookOffset,
+              left: bookOffset,
             },
           ]}
         >
+          {/* Exact center book portion cropped from the original logo, perfectly aligned */}
           <Image
             source={require('../../assets/images/ooplabdh-logo.png')}
             style={{
-              width: size,
-              height: size,
+              width: logoSize,
+              height: logoSize,
               position: 'absolute',
-              top: -offset,
-              left: -offset,
+              top: -bookOffset,
+              left: -bookOffset,
             }}
             resizeMode="cover"
           />
@@ -92,34 +101,63 @@ export function BrandSpinner({
       </View>
 
       {showLabel && label ? (
-        <Text style={styles.label}>{label}</Text>
+        <View style={styles.labelWrapper}>
+          <Text style={styles.label}>
+            {label}
+            <Text style={styles.dot}>.</Text>
+          </Text>
+        </View>
       ) : null}
     </View>
   );
 }
+
+const dotGlow = Platform.select({
+  web: { textShadow: '0 0 12px rgba(245, 158, 11, 0.8)' },
+  default: {
+    textShadowColor: 'rgba(245, 158, 11, 0.8)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rotatingOuter: {
+  rotatingRingLayer: {
     position: 'absolute',
     overflow: 'hidden',
+    zIndex: 1,
   },
-  stationaryInner: {
+  fixedBookLayer: {
     position: 'absolute',
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
     zIndex: 10,
-    elevation: 5,
+    elevation: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  labelWrapper: {
+    marginTop: 20,
+    alignItems: 'center',
   },
   label: {
-    marginTop: 18,
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
+  },
+  dot: {
+    color: '#F59E0B',
+    ...dotGlow,
   },
 });
+
+
+
+
+

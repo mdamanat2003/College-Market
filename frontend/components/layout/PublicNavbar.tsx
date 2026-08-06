@@ -9,7 +9,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useChatStore } from '../../store/chatStore';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
-type ActiveRoute = 'home' | 'about' | 'contact' | 'faq';
+type ActiveRoute = 'home' | 'community' | 'about' | 'contact' | 'faq';
 
 type PublicNavbarProps = {
   activeRoute: ActiveRoute;
@@ -26,6 +26,7 @@ export function PublicNavbar({ activeRoute }: PublicNavbarProps) {
 
   const navItems = [
     { label: 'Home', href: '/home', key: 'home' as const },
+    { label: 'Community', href: '/community', key: 'community' as const },
     { label: 'About', href: '/about', key: 'about' as const },
     { label: 'FAQ', href: '/faq', key: 'faq' as const },
     { label: 'Contact', href: '/contact', key: 'contact' as const },

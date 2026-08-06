@@ -29,6 +29,7 @@ import adminRoutes from "./routes/adminRoutes";
 import academicRoutes from "./routes/academicRoutes";
 import lostFoundRoutes from "./routes/lostFoundRoutes";
 import eventRoutes from "./routes/eventRoutes";
+import communityRoutes from "./routes/communityRoutes";
 import fs from "fs";
 import { rateLimit } from "express-rate-limit";
 
@@ -89,10 +90,12 @@ const startServer = async () => {
     const uploadsDir = path.resolve(__dirname, "..", "uploads");
     const academicUploadsDir = path.join(uploadsDir, "academic");
     const lostFoundUploadsDir = path.join(uploadsDir, "lost-found");
+    const communityUploadsDir = path.join(uploadsDir, "community");
 
     if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
     if (!fs.existsSync(academicUploadsDir)) fs.mkdirSync(academicUploadsDir, { recursive: true });
     if (!fs.existsSync(lostFoundUploadsDir)) fs.mkdirSync(lostFoundUploadsDir, { recursive: true });
+    if (!fs.existsSync(communityUploadsDir)) fs.mkdirSync(communityUploadsDir, { recursive: true });
 
     // Serve APK file with correct headers to prevent parsing error on Android devices
     app.get("/uploads/app-release.apk", (req, res) => {
@@ -132,6 +135,7 @@ const startServer = async () => {
     app.use("/api/academic", apiLimiter, academicRoutes);
     app.use("/api/lost-found", apiLimiter, lostFoundRoutes);
     app.use("/api/events", apiLimiter, eventRoutes);
+    app.use("/api/community", apiLimiter, communityRoutes);
 
     // Serve frontend static files in production
     // const frontendDist = path.join(__dirname, "../../frontend/dist");

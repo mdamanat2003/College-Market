@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { id: 'home', name: 'Home', path: '/home', icon: 'home-outline', activeIcon: 'home' },
   { id: 'market', name: 'Marketplace', path: '/marketplace', icon: 'cart-outline', activeIcon: 'cart' },
   { id: 'academic', name: 'PyQ & Notes', path: '/academic', icon: 'book-outline', activeIcon: 'book' },
+  { id: 'community', name: 'Community', path: '/community', icon: 'people-outline', activeIcon: 'people' },
   { id: 'lostfound', name: 'Lost & Found', path: '/lost-found', icon: 'search-outline', activeIcon: 'search' },
   { id: 'events', name: 'Campus Fests', path: '/events', icon: 'calendar-outline', activeIcon: 'calendar' },
 ];

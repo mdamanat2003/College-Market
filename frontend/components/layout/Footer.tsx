@@ -101,11 +101,28 @@ export default function Footer({ onBackToTop }: FooterProps) {
   };
 
   const handleInstallApp = () => {
-    const apkUrl = `${SOCKET_URL}/uploads/app-release.apk`;
-    Linking.openURL(apkUrl).catch((err) => {
-      console.error('[Footer] Failed to open APK download link', err);
-      Alert.alert('Download Error', 'Could not open the download link. Please try again.');
-    });
+    const baseUrl = SOCKET_URL.replace(/\/$/, '');
+    const apkUrl = `${baseUrl}/uploads/app-release.apk`;
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        const link = document.createElement('a');
+        link.href = apkUrl;
+        link.download = 'app-release.apk';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch {
+        window.location.href = apkUrl;
+      }
+    } else {
+      Linking.openURL(apkUrl).catch((err) => {
+        console.error('[Footer] Failed to open APK download link', err);
+        Alert.alert('Download Error', 'Could not open the download link. Please try again.');
+      });
+    }
   };
 
   const submitReview = async () => {

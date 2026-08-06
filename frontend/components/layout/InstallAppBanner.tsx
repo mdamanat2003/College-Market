@@ -52,9 +52,28 @@ export function InstallAppBanner() {
   };
 
   const handleDownload = () => {
-    // Construct APK URL hosted on the backend server static folder
-    const apkUrl = `${SOCKET_URL}/uploads/app-release.apk`;
-    Linking.openURL(apkUrl);
+    // Construct APK URL hosted on backend server static folder
+    const baseUrl = SOCKET_URL.replace(/\/$/, '');
+    const apkUrl = `${baseUrl}/uploads/app-release.apk`;
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        const link = document.createElement('a');
+        link.href = apkUrl;
+        link.download = 'app-release.apk';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch {
+        window.location.href = apkUrl;
+      }
+    } else {
+      Linking.openURL(apkUrl).catch((err) => {
+        console.error('[InstallAppBanner] Failed to open APK download link:', err);
+      });
+    }
   };
 
   if (!isVisible) {

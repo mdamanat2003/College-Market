@@ -98,19 +98,48 @@ const startServer = async () => {
     if (!fs.existsSync(communityUploadsDir)) fs.mkdirSync(communityUploadsDir, { recursive: true });
 
     // Serve APK file with correct headers to prevent parsing error on Android devices
-    app.get("/uploads/app-release.apk", (req, res) => {
+    const handleApkDownload = (req: express.Request, res: express.Response) => {
       const apkPath = path.join(uploadsDir, "app-release.apk");
+      const externalApkUrl = process.env.APK_DOWNLOAD_URL?.trim();
+
       if (fs.existsSync(apkPath)) {
-        res.setHeader("Content-Type", "application/vnd.android.package-archive");
-        res.download(apkPath, "app-release.apk", (err) => {
-          if (err) {
-            console.error("Error during APK download:", err);
+        try {
+          const stat = fs.statSync(apkPath);
+          res.setHeader("Content-Type", "application/vnd.android.package-archive");
+          res.setHeader("Content-Disposition", 'attachment; filename="app-release.apk"');
+          res.setHeader("Content-Length", stat.size.toString());
+          res.setHeader("Cache-Control", "public, max-age=3600");
+
+          if (req.method === "HEAD") {
+            return res.status(200).end();
           }
-        });
+
+          return res.sendFile(apkPath, (err) => {
+            if (err && !res.headersSent) {
+              console.error("Error during APK download:", err);
+              res.status(500).json({ success: false, message: "Error downloading APK file" });
+            }
+          });
+        } catch (statErr) {
+          console.error("Error statting APK file:", statErr);
+          if (externalApkUrl) {
+            return res.redirect(302, externalApkUrl);
+          }
+          return res.status(500).json({ success: false, message: "Failed to access APK file" });
+        }
+      } else if (externalApkUrl) {
+        return res.redirect(302, externalApkUrl);
       } else {
-        res.status(404).json({ success: false, message: "APK file not found" });
+        return res.status(404).json({
+          success: false,
+          message: "APK file not found on server. Please ensure app-release.apk exists in uploads directory or set APK_DOWNLOAD_URL in environment.",
+        });
       }
-    });
+    };
+
+    app.get("/uploads/app-release.apk", handleApkDownload);
+    app.head("/uploads/app-release.apk", handleApkDownload);
+
 
     app.use("/uploads", express.static(uploadsDir));
 

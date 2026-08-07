@@ -7,6 +7,10 @@
       "destination": "https://college-market-ahrs.onrender.com/api/:path*"
     },
     {
+      "source": "/uploads/:path*",
+      "destination": "https://college-market-ahrs.onrender.com/uploads/:path*"
+    },
+    {
       "source": "/:path*",
       "destination": "/index.html"
     }

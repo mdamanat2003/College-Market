@@ -100,23 +100,30 @@ export default function Footer({ onBackToTop }: FooterProps) {
     }
   };
 
+  const getApkDownloadUrl = () => {
+    const envApkUrl = process.env.EXPO_PUBLIC_APK_DOWNLOAD_URL?.trim();
+    if (envApkUrl) return envApkUrl;
+
+    const rawSocket = SOCKET_URL?.trim() || '';
+    let host = rawSocket ? rawSocket.replace(/\/$/, '') : '';
+
+    if (!host || host === 'null' || host.startsWith('/')) {
+      if (typeof window !== 'undefined' && !/localhost|127\.0\.0\.1/.test(window.location.hostname)) {
+        host = 'https://college-market-ahrs.onrender.com';
+      } else if (typeof window !== 'undefined') {
+        host = window.location.origin;
+      }
+    }
+
+    const cleanHost = (host || '').replace(/\/$/, '');
+    return cleanHost ? `${cleanHost}/uploads/app-release.apk` : 'https://college-market-ahrs.onrender.com/uploads/app-release.apk';
+  };
+
   const handleInstallApp = () => {
-    const baseUrl = SOCKET_URL.replace(/\/$/, '');
-    const apkUrl = `${baseUrl}/uploads/app-release.apk`;
+    const apkUrl = getApkDownloadUrl();
 
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      try {
-        const link = document.createElement('a');
-        link.href = apkUrl;
-        link.download = 'app-release.apk';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch {
-        window.location.href = apkUrl;
-      }
+      window.location.href = apkUrl;
     } else {
       Linking.openURL(apkUrl).catch((err) => {
         console.error('[Footer] Failed to open APK download link', err);

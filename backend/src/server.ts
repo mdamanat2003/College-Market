@@ -102,6 +102,9 @@ const startServer = async () => {
       const apkPath = path.join(uploadsDir, "app-release.apk");
       const externalApkUrl = process.env.APK_DOWNLOAD_URL?.trim();
 
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Content-Length");
+
       if (fs.existsSync(apkPath)) {
         try {
           const stat = fs.statSync(apkPath);
@@ -139,6 +142,8 @@ const startServer = async () => {
 
     app.get("/uploads/app-release.apk", handleApkDownload);
     app.head("/uploads/app-release.apk", handleApkDownload);
+    app.get("/download-apk", handleApkDownload);
+    app.get("/download/app", handleApkDownload);
 
 
     app.use("/uploads", express.static(uploadsDir));

@@ -45,6 +45,8 @@ app-example
 /ios
 /android
 *.apk
-backend/uploads/
+!backend/uploads/app-release.apk
+backend/uploads/*
+!backend/uploads/app-release.apk
 
 

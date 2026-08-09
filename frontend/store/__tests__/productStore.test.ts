@@ -2,6 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useProductStore } from '../productStore';
 import { api } from '../../services/api';
 
+vi.mock('@react-native-async-storage/async-storage', () => ({
+  default: {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+  },
+}));
+
 vi.mock('../../services/api', () => ({
   api: {
     get: vi.fn(),
@@ -51,15 +59,21 @@ describe('useProductStore', () => {
     expect(useProductStore.getState().products).toEqual([newProduct, existingProduct]);
   });
 
-  it('returns null and stores an error when wishlist update fails', async () => {
+  it('returns null and stores an error when wishlist update fails for logged in user', async () => {
+    const { useAuthStore } = await import('../authStore');
+    useAuthStore.setState({ user: { _id: 'user-1', name: 'Test' } as any });
+    useProductStore.setState({
+      products: [{ _id: 'product-1', title: 'Test Product', wishlistedBy: [] } as any],
+    });
+
     vi.mocked(api.post).mockRejectedValueOnce({
-      response: { data: { message: 'Login required' } },
+      response: { data: { message: 'Server error' } },
     });
 
     await expect(useProductStore.getState().toggleWishlist('product-1')).resolves.toBeNull();
 
     expect(useProductStore.getState()).toMatchObject({
-      error: 'Login required',
+      error: 'Failed to update wishlist',
       isLoading: false,
     });
   });

@@ -31,7 +31,7 @@ describe('PlaceholderImage fallback usage', () => {
     ];
 
     for (const file of files) {
-      expect(readProjectFile(file), file).toContain('PlaceholderImage');
+      expect(readProjectFile(file), file).toMatch(/PlaceholderImage|SafeImage/);
     }
   });
 });

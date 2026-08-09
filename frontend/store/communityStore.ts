@@ -137,7 +137,11 @@ export const useCommunityStore = create<CommunityState>()(
       createPost: async (formData: FormData) => {
         set({ isSubmitting: true, error: null });
         try {
-          const response = await api.post('/community/posts', formData);
+          const response = await api.post('/community/posts', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
           if (response.data?.post) {
             set((state) => ({
               posts: [response.data.post, ...state.posts],
@@ -148,6 +152,7 @@ export const useCommunityStore = create<CommunityState>()(
           set({ isSubmitting: false });
           return false;
         } catch (error: any) {
+          console.error('[communityStore] createPost error:', error.response?.data || error.message);
           set({
             error: error.response?.data?.message || 'Failed to create post',
             isSubmitting: false,

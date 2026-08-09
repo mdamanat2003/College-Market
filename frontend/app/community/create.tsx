@@ -60,6 +60,12 @@ export default function CreatePostScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      Alert.alert('Login Required', 'You must be logged in to post a question.');
+      router.push('/(auth)/login');
+      return;
+    }
+
     if (!title.trim() || !content.trim()) {
       Alert.alert('Missing fields', 'Please enter a title and question description.');
       return;
@@ -76,18 +82,30 @@ export default function CreatePostScreen() {
       const filename = imageUri.split('/').pop() || 'post.jpg';
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : `image/jpeg`;
-      formData.append('image', {
-        uri: imageUri,
-        name: filename,
-        type,
-      } as any);
+
+      if (Platform.OS === 'web') {
+        try {
+          const res = await fetch(imageUri);
+          const blob = await res.blob();
+          formData.append('image', blob, filename);
+        } catch (err) {
+          console.error('[createPost] Failed to convert web image uri to blob:', err);
+        }
+      } else {
+        formData.append('image', {
+          uri: Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri,
+          name: filename,
+          type,
+        } as any);
+      }
     }
 
     const success = await createPost(formData);
     if (success) {
       router.replace('/community' as any);
     } else {
-      Alert.alert('Error', 'Failed to publish post. Please try again.');
+      const storeError = useCommunityStore.getState().error;
+      Alert.alert('Error', storeError || 'Failed to publish post. Please try again.');
     }
   };
 

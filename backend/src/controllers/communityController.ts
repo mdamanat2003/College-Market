@@ -44,13 +44,15 @@ export const createPost = asyncHandler(async (req: AuthRequest, res: Response) =
     }
   }
 
+  const isAnon = isAnonymous === true || isAnonymous === 'true';
+
   const post = await CommunityPost.create({
     author: req.user._id,
     title,
     content,
     category: category || 'General Discussion',
     tags: parsedTags,
-    isAnonymous: Boolean(isAnonymous),
+    isAnonymous: isAnon,
     image,
   });
 
@@ -75,7 +77,7 @@ export const createPost = asyncHandler(async (req: AuthRequest, res: Response) =
     }
 
     if (targetUsers.length > 0) {
-      const posterName = Boolean(isAnonymous) ? 'A fellow student' : req.user.name;
+      const posterName = isAnon ? 'A fellow student' : req.user.name;
       const notifTitle = `💡 New Community Discussion (${userCollege || 'Campus'})`;
       const notifMsg = `${posterName} asked/posted: "${title.length > 45 ? title.substring(0, 45) + '...' : title}"`;
 
@@ -221,11 +223,13 @@ export const addComment = asyncHandler(async (req: AuthRequest, res: Response) =
     throw new Error('Post not found');
   }
 
+  const isCommentAnon = isAnonymous === true || isAnonymous === 'true';
+
   const comment = await CommunityComment.create({
     post: post._id,
     author: req.user._id,
     content,
-    isAnonymous: Boolean(isAnonymous),
+    isAnonymous: isCommentAnon,
   });
 
   // Increment answers count on post
@@ -237,7 +241,7 @@ export const addComment = asyncHandler(async (req: AuthRequest, res: Response) =
   // Notify post author if not self
   if (post.author.toString() !== req.user._id.toString()) {
     try {
-      const commenterName = isAnonymous ? 'A fellow student' : req.user.name;
+      const commenterName = isCommentAnon ? 'A fellow student' : req.user.name;
       const notifTitle = `💬 New Answer / Comment`;
       const notifMsg = `${commenterName} commented on your question: "${post.title.substring(0, 40)}..."`;
 

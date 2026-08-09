@@ -10,6 +10,13 @@ const socket = {
   disconnect: vi.fn(),
 };
 
+vi.mock('expo-router', () => ({
+  router: {
+    push: vi.fn(),
+    replace: vi.fn(),
+  },
+}));
+
 vi.mock('socket.io-client', () => ({
   io: vi.fn(() => socket),
 }));
@@ -19,6 +26,7 @@ vi.mock('../../services/api', () => ({
     get: vi.fn(),
     post: vi.fn(),
   },
+  SOCKET_URL: 'http://localhost:3001',
 }));
 
 const initialState = useChatStore.getState();

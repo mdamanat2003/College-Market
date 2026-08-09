@@ -91,11 +91,18 @@ export default function CreatePostScreen() {
     }
   };
 
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleBackToTop = () => scrollRef.current?.scrollTo({ y: 0, animated: true });
+
   return (
     <View style={styles.container}>
       <Navbar />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.contentWrapper}>
           {/* Back Navigation */}
           <TouchableOpacity style={styles.backBtn} onPress={() => router.push('/community' as any)}>
@@ -214,9 +221,9 @@ export default function CreatePostScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
 
-      <Footer />
+        <Footer onBackToTop={handleBackToTop} />
+      </ScrollView>
     </View>
   );
 }
@@ -226,8 +233,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingBottom: 40,
+    flexGrow: 1,
+    paddingBottom: 0,
   },
   contentWrapper: {
     maxWidth: 800,

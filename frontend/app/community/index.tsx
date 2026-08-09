@@ -172,11 +172,16 @@ export default function CommunityFeedScreen() {
     );
   };
 
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleBackToTop = () => scrollRef.current?.scrollTo({ y: 0, animated: true });
+
   return (
     <View style={styles.container}>
       <Navbar />
 
       <ScrollView
+        ref={scrollRef}
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={fetchPosts} tintColor="#38BDF8" />
@@ -306,16 +311,18 @@ export default function CommunityFeedScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item._id}
-            renderItem={renderPostCard}
-            scrollEnabled={false} // Nested inside main ScrollView
-          />
+          <View style={styles.feedContainer}>
+            <FlatList
+              data={posts}
+              keyExtractor={(item) => item._id}
+              renderItem={renderPostCard}
+              scrollEnabled={false} // Nested inside main ScrollView
+            />
+          </View>
         )}
-      </ScrollView>
 
-      <Footer />
+        <Footer onBackToTop={handleBackToTop} />
+      </ScrollView>
     </View>
   );
 }
@@ -325,8 +332,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingBottom: 40,
+    flexGrow: 1,
+    paddingBottom: 0,
   },
   heroBanner: {
     paddingHorizontal: 24,
@@ -475,10 +486,16 @@ const styles = StyleSheet.create({
     color: '#09090b',
     fontWeight: '800',
   },
-  postCard: {
+  feedContainer: {
+    flex: 1,
     maxWidth: 1200,
-    width: '90%',
+    width: '100%',
     alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  postCard: {
+    width: '100%',
     backgroundColor: '#18181b',
     borderRadius: 16,
     padding: 20,
@@ -615,8 +632,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   loadingContainer: {
+    flex: 1,
+    minHeight: 300,
     paddingVertical: 60,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
     color: '#94A3B8',
@@ -624,8 +644,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   emptyContainer: {
+    flex: 1,
+    minHeight: 300,
     paddingVertical: 60,
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
   },
   emptyTitle: {

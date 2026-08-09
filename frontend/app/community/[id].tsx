@@ -47,15 +47,20 @@ export default function PostDetailScreen() {
     }
   }, [id]);
 
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleBackToTop = () => scrollRef.current?.scrollTo({ y: 0, animated: true });
+
   if (isLoading || !activePost) {
     return (
       <View style={styles.container}>
         <Navbar />
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color="#38BDF8" />
-          <Text style={styles.loadingText}>Loading question details...</Text>
-        </View>
-        <Footer />
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.loadingScrollContent}>
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color="#38BDF8" />
+            <Text style={styles.loadingText}>Loading question details...</Text>
+          </View>
+          <Footer />
+        </ScrollView>
       </View>
     );
   }
@@ -102,7 +107,11 @@ export default function PostDetailScreen() {
     <View style={styles.container}>
       <Navbar />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.contentWrapper}>
           {/* Back Navigation Bar */}
           <TouchableOpacity style={styles.backBtn} onPress={() => router.push('/community' as any)}>
@@ -387,9 +396,9 @@ export default function PostDetailScreen() {
             )}
           </View>
         </View>
-      </ScrollView>
 
-      <Footer />
+        <Footer onBackToTop={handleBackToTop} />
+      </ScrollView>
     </View>
   );
 }
@@ -399,16 +408,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 0,
+  },
+  loadingScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+  },
   loadingBox: {
+    flex: 1,
     paddingVertical: 100,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
     color: '#94A3B8',
     marginTop: 12,
-  },
-  scrollContent: {
-    paddingBottom: 40,
   },
   contentWrapper: {
     maxWidth: 900,

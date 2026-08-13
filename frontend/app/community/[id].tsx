@@ -430,12 +430,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   contentWrapper: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 0,
     maxWidth: 900,
     width: '100%',
     alignSelf: 'center',
     paddingHorizontal: 20,
     paddingTop: 20,
+    paddingBottom: 32,
   },
   backBtn: {
     flexDirection: 'row',

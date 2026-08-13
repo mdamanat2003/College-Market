@@ -486,12 +486,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   feedContainer: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 0,
     maxWidth: 1200,
     width: '100%',
     alignSelf: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 32,
   },
   postCard: {
     width: '100%',
@@ -631,7 +632,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   loadingContainer: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 0,
     minHeight: 300,
     paddingVertical: 60,
     alignItems: 'center',
@@ -643,7 +645,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   emptyContainer: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 0,
     minHeight: 300,
     paddingVertical: 60,
     alignItems: 'center',

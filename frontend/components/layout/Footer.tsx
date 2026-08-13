@@ -477,10 +477,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     ...Platform.select({
       web: {
-        width: '100vw',
-        position: 'relative',
-        left: '50%',
-        marginLeft: '-50vw',
+        width: '100%',
         boxSizing: 'border-box',
       } as any,
     }),

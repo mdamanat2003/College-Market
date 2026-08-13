@@ -312,12 +312,11 @@ export default function CommunityFeedScreen() {
           </View>
         ) : (
           <View style={styles.feedContainer}>
-            <FlatList
-              data={posts}
-              keyExtractor={(item) => item._id}
-              renderItem={renderPostCard}
-              scrollEnabled={false} // Nested inside main ScrollView
-            />
+            {posts.map((item) => (
+              <React.Fragment key={item._id}>
+                {renderPostCard({ item })}
+              </React.Fragment>
+            ))}
           </View>
         )}
 

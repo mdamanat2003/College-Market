@@ -259,6 +259,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   contentWrapper: {
+    flex: 1,
     maxWidth: 800,
     width: '100%',
     alignSelf: 'center',

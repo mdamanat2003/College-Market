@@ -36,11 +36,8 @@ export function BrandSpinner({
     outputRange: ['0deg', '360deg'],
   });
 
-  // Calculate precise concentric dimensions & centered offsets
   const logoSize = size;
-  // 54% of logo size perfectly covers the inner book badge while keeping outer gold & black ring visible
-  const bookSize = Math.round(logoSize * 0.54);
-  const bookOffset = (logoSize - bookSize) / 2;
+  const ringSize = Math.round(size * 1.18);
 
   const rotatingStyle = Platform.OS === 'web'
     ? ({ animation: 'brandSpin 1.8s linear infinite', transformOrigin: 'center center' } as any)
@@ -48,52 +45,35 @@ export function BrandSpinner({
 
   return (
     <View style={[styles.container, style]}>
-      <View style={{ width: logoSize, height: logoSize, position: 'relative' }}>
+      <View style={{ width: ringSize, height: ringSize, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         
-        {/* === LAYER 1: ROTATING OUTER GOLD (#C99A2E) & BLACK RING === */}
+        {/* === SINGLE CLEAN ROTATING ACCENT SPINNER HALO (OUTER RING) === */}
         <Animated.View
           style={[
-            styles.rotatingRingLayer,
+            styles.spinnerRing,
+            {
+              width: ringSize,
+              height: ringSize,
+              borderRadius: ringSize / 2,
+            },
+            rotatingStyle,
+          ]}
+        />
+
+        {/* === ORIGINAL UNIFIED OOPLABDH LOGO (NO OVERLAPPING CIRCLE LAYERS) === */}
+        <View
+          style={[
+            styles.logoWrapper,
             {
               width: logoSize,
               height: logoSize,
               borderRadius: logoSize / 2,
-              top: 0,
-              left: 0,
             },
-            rotatingStyle,
           ]}
         >
           <Image
             source={require('../../assets/images/ooplabdh-logo.png')}
             style={{ width: logoSize, height: logoSize, borderRadius: logoSize / 2 }}
-            resizeMode="cover"
-          />
-        </Animated.View>
-
-        {/* === LAYER 2: 100% FIXED CENTER BOOK ICON === */}
-        <View
-          style={[
-            styles.fixedBookLayer,
-            {
-              width: bookSize,
-              height: bookSize,
-              borderRadius: bookSize / 2,
-              top: bookOffset,
-              left: bookOffset,
-            },
-          ]}
-        >
-          {/* Exact center book portion cropped from the original logo, perfectly aligned */}
-          <Image
-            source={require('../../assets/images/ooplabdh-logo.png')}
-            style={{
-              width: logoSize,
-              height: logoSize,
-              position: 'absolute',
-              top: -bookOffset,
-              left: -bookOffset,
-            }}
             resizeMode="cover"
           />
         </View>
@@ -126,20 +106,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rotatingRingLayer: {
+  spinnerRing: {
     position: 'absolute',
-    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: 'transparent',
+    borderTopColor: '#F59E0B',
+    borderRightColor: '#38BDF8',
     zIndex: 1,
   },
-  fixedBookLayer: {
-    position: 'absolute',
+  logoWrapper: {
     overflow: 'hidden',
-    zIndex: 10,
-    elevation: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
   labelWrapper: {
     marginTop: 20,
@@ -156,8 +138,3 @@ const styles = StyleSheet.create({
     ...dotGlow,
   },
 });
-
-
-
-
-

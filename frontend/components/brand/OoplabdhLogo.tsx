@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     }),
   },
   mark: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     overflow: 'hidden',
     position: 'relative',
     ...markGlow,

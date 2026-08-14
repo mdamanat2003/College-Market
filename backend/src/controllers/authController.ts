@@ -146,9 +146,7 @@ export const sendRegistrationOtp = asyncHandler(async (req: Request, res: Respon
 
   res.json({
     success: true,
-    message: emailSentSuccessfully
-      ? "OTP sent to your email"
-      : "OTP sent to your email (Sandbox Mode: enter 123456 if email not received)",
+    message: "OTP sent to your email (Use 123456 for verification)",
   });
 });
 
@@ -463,9 +461,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
   res.json({ 
     success: true, 
-    message: emailSentSuccessfully 
-      ? "OTP sent to your email successfully" 
-      : "OTP sent to your email successfully (Sandbox Mode: enter 123456 if email not received)" 
+    message: "OTP sent to your email successfully (Use 123456 for verification)" 
   });
 });
 

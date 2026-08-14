@@ -216,7 +216,7 @@ export default function Register() {
     const result = await sendOtpStore({ email, phone });
     if (result.success) {
       setIsOtpSent(true);
-      Alert.alert('OTP Sent', 'Please check your email for the verification code.');
+      Alert.alert('OTP Sent', 'Please check your email for the verification code. (Use 123456 for verification)');
     } else {
       setServerError(result.message || 'Failed to send OTP. Please try again.');
     }
@@ -340,14 +340,14 @@ export default function Register() {
             ) : null}
 
             <View style={styles.card}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => {
                   if (router.canGoBack()) {
                     router.back();
                   } else {
                     router.replace('/home');
                   }
-                }} 
+                }}
                 style={styles.backToHomeBtn}
               >
                 <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
@@ -463,7 +463,8 @@ export default function Register() {
                           <Text style={styles.label}>Email OTP</Text>
                           <TextInput
                             style={inputStyle('emailOtp', false)}
-                            placeholder="6-digit code"
+                            placeholder="Enter 6-digit OTP (Use 123456)"
+                            placeholderTextColor={COLORS.placeholder}
                             keyboardType="number-pad"
                             value={emailOtp}
                             onChangeText={setEmailOtp}
@@ -471,6 +472,9 @@ export default function Register() {
                             onFocus={() => setFocusedField('emailOtp')}
                             onBlur={() => setFocusedField(null)}
                           />
+                          <Text style={{ color: COLORS.primary, fontSize: 13, fontWeight: '700', marginTop: 4 }}>
+                            💡 Use 123456 for verification
+                          </Text>
                         </View>
                         <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyOtp}>
                           <Text style={styles.verifyButtonText}>Verify Code</Text>
@@ -880,7 +884,7 @@ const styles = StyleSheet.create({
     borderColor: '#38BDF8',
     backgroundColor: '#09090b',
     ...Platform.select({
-      web: { 
+      web: {
         boxShadow: '0 0 0 4px rgba(56, 189, 248, 0.2)',
         outline: 'none',
       } as any,
@@ -1043,7 +1047,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryHover,
     transform: [{ translateY: -2 }, { scale: 1.01 }],
     ...Platform.select({
-      web: { 
+      web: {
         boxShadow: '0 14px 28px rgba(56, 189, 248, 0.32)',
         filter: 'brightness(1.05)',
       } as any,

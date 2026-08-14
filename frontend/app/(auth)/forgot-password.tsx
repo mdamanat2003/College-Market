@@ -44,7 +44,7 @@ export default function ForgotPasswordScreen() {
     try {
       const response = await api.post('/auth/forgot-password', { email: email.trim().toLowerCase() });
       if (response.data.success) {
-        Alert.alert('OTP Sent', 'Check your email for the 6-digit code.');
+        Alert.alert('OTP Sent', 'Check your email for the 6-digit code. (Use 123456 for verification)');
         setStep(2);
       } else {
         Alert.alert('Error', response.data.message || 'Unable to send OTP. Please try again.');
@@ -148,13 +148,13 @@ export default function ForgotPasswordScreen() {
               </>
             ) : (
               <>
-                <Text style={styles.subtitle}>Enter the 6-digit code sent to your email and choose a new password.</Text>
+                <Text style={styles.subtitle}>Enter the 6-digit code sent to your email (Use 123456 for verification) and choose a new password.</Text>
                 
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>Verification Code (OTP)</Text>
                   <TextInput
                     style={[styles.input, focusedField === 'otp' && styles.inputFocused]}
-                    placeholder="Enter 6-digit OTP"
+                    placeholder="Enter 6-digit OTP (Use 123456)"
                     placeholderTextColor={COLORS.placeholder}
                     keyboardType="number-pad"
                     maxLength={6}
@@ -163,6 +163,9 @@ export default function ForgotPasswordScreen() {
                     onBlur={() => setFocusedField(null)}
                     onChangeText={setOtp}
                   />
+                  <Text style={{ color: COLORS.primary, fontSize: 13, fontWeight: '700', marginTop: 4 }}>
+                    💡 Use 123456 for verification
+                  </Text>
                 </View>
 
                 <View style={styles.inputGroup}>

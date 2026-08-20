@@ -17,6 +17,7 @@ import { PlaceholderImage } from '../../components/ui/PlaceholderImage';
 import { SafeImage } from '../../components/ui/SafeImage';
 import { compressImage } from '../../utils/imageCompressor';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
+import { openSocialLink } from '../../constants/socialLinks';
 
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -412,6 +413,50 @@ export default function ProductDetailsScreen() {
                     <Text style={styles.ratingCountText}>({product.seller.ratingCount})</Text>
                   ) : null}
                 </View>
+
+                {/* Seller Direct Social Contact Links */}
+                {product.seller && ((product.seller as any).instagram || (product.seller as any).whatsapp || (product.seller as any).telegram) ? (
+                  <View style={styles.sellerSocialRow}>
+                    {(product.seller as any).instagram ? (
+                      <TouchableOpacity
+                        style={[styles.sellerSocialChip, { backgroundColor: 'rgba(225, 48, 108, 0.12)', borderColor: 'rgba(225, 48, 108, 0.3)' }]}
+                        onPress={() => openSocialLink(
+                          (product.seller as any).instagram.startsWith('http') ? (product.seller as any).instagram : `https://instagram.com/${(product.seller as any).instagram.replace('@', '')}`,
+                          'Seller Instagram'
+                        )}
+                      >
+                        <Ionicons name="logo-instagram" size={14} color="#E1306C" />
+                        <Text style={[styles.sellerSocialText, { color: '#E1306C' }]}>Insta</Text>
+                      </TouchableOpacity>
+                    ) : null}
+
+                    {(product.seller as any).whatsapp ? (
+                      <TouchableOpacity
+                        style={[styles.sellerSocialChip, { backgroundColor: 'rgba(37, 211, 102, 0.12)', borderColor: 'rgba(37, 211, 102, 0.3)' }]}
+                        onPress={() => openSocialLink(
+                          (product.seller as any).whatsapp.startsWith('http') ? (product.seller as any).whatsapp : `https://wa.me/${(product.seller as any).whatsapp.replace(/\D/g, '')}`,
+                          'Seller WhatsApp'
+                        )}
+                      >
+                        <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+                        <Text style={[styles.sellerSocialText, { color: '#25D366' }]}>WhatsApp</Text>
+                      </TouchableOpacity>
+                    ) : null}
+
+                    {(product.seller as any).telegram ? (
+                      <TouchableOpacity
+                        style={[styles.sellerSocialChip, { backgroundColor: 'rgba(34, 158, 217, 0.12)', borderColor: 'rgba(34, 158, 217, 0.3)' }]}
+                        onPress={() => openSocialLink(
+                          (product.seller as any).telegram.startsWith('http') ? (product.seller as any).telegram : `https://t.me/${(product.seller as any).telegram.replace('@', '')}`,
+                          'Seller Telegram'
+                        )}
+                      >
+                        <Ionicons name="paper-plane" size={12} color="#229ED9" />
+                        <Text style={[styles.sellerSocialText, { color: '#229ED9' }]}>Telegram</Text>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                ) : null}
               </View>
             </View>
 
@@ -661,6 +706,9 @@ const styles = StyleSheet.create({
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, flexWrap: 'wrap' },
   ratingText: { fontSize: 13, color: COLORS.text, fontWeight: '600' },
   ratingCountText: { fontSize: 12, color: COLORS.textMuted },
+  sellerSocialRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' },
+  sellerSocialChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1 },
+  sellerSocialText: { fontSize: 12, fontWeight: '700' },
   actionContainer: { gap: SPACING.md },
 
   /* Modal Styles */

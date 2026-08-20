@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDim
 import Footer from '../components/layout/Footer';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { COLORS, RADIUS, SPACING } from '../theme/colors';
+import { SOCIAL_LINKS, openSocialLink } from '../constants/socialLinks';
 
 export default function Contact() {
   const scrollRef = useRef<ScrollView>(null);
@@ -27,27 +28,77 @@ export default function Contact() {
       <View style={[styles.content, isMobile && styles.contentMobile, isTiny && styles.contentTiny]}>
 
         <View style={[styles.hero, isMobile && styles.heroMobile]}>
-          {/* 1. TOP: Left Column (Text & Heading) */}
+          {/* 1. TOP: Left Column (Text & Heading & Official Channels) */}
           <View style={[styles.heroTextBlock, isDesktop && styles.heroTextBlockDesktop]}>
             <Text style={styles.kicker}>Contact Us</Text>
             <Text style={[styles.title, isMobile && styles.titleMobile, isTiny && styles.titleTiny]}>
               Get in touch with Ooplabdh.
             </Text>
             <Text style={styles.body}>
-              Have a question, feedback, or partnership idea? Send us a message and we will get back to you.
+              Have a question, feedback, or partnership idea? Send us a message or join our official campus community channels!
             </Text>
+
+            {/* Official Social Channels Card */}
+            <View style={styles.socialCardContainer}>
+              <Text style={styles.socialCardHeader}>Connect on Social & Channels</Text>
+              
+              <TouchableOpacity
+                style={[styles.socialChannelBtn, styles.instagramBtn]}
+                activeOpacity={0.8}
+                onPress={() => openSocialLink(SOCIAL_LINKS.instagram, 'Instagram')}
+              >
+                <View style={styles.channelIconContainer}>
+                  <Ionicons name="logo-instagram" size={20} color="#FFFFFF" />
+                </View>
+                <View style={styles.channelTextCol}>
+                  <Text style={styles.channelBtnTitle}>Instagram</Text>
+                  <Text style={styles.channelBtnSub}>Follow for updates & campus highlights</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.socialChannelBtn, styles.whatsappBtn]}
+                activeOpacity={0.8}
+                onPress={() => openSocialLink(SOCIAL_LINKS.whatsapp, 'WhatsApp Group/Channel')}
+              >
+                <View style={styles.channelIconContainer}>
+                  <Ionicons name="logo-whatsapp" size={20} color="#FFFFFF" />
+                </View>
+                <View style={styles.channelTextCol}>
+                  <Text style={styles.channelBtnTitle}>WhatsApp Channel</Text>
+                  <Text style={styles.channelBtnSub}>Join student group & instant updates</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.socialChannelBtn, styles.telegramBtn]}
+                activeOpacity={0.8}
+                onPress={() => openSocialLink(SOCIAL_LINKS.telegram, 'Telegram Channel')}
+              >
+                <View style={styles.channelIconContainer}>
+                  <Ionicons name="paper-plane" size={18} color="#FFFFFF" />
+                </View>
+                <View style={styles.channelTextCol}>
+                  <Text style={styles.channelBtnTitle}>Telegram Channel</Text>
+                  <Text style={styles.channelBtnSub}>Get PYQs, notes & study materials</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* 2. DOWN: Right Column (Contact Form) */}
           <View style={[styles.formCard, isDesktop && styles.formCardDesktop, isMobile && styles.formCardMobile, isTiny && styles.formCardTiny]}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Name</Text>
-              <TextInput 
-                style={styles.input} 
-                placeholder="Your name" 
-                placeholderTextColor="#CBD5E1" 
-                value={name} 
-                onChangeText={setName} 
+              <TextInput
+                style={styles.input}
+                placeholder="Your name"
+                placeholderTextColor="#CBD5E1"
+                value={name}
+                onChangeText={setName}
               />
             </View>
 
@@ -77,9 +128,9 @@ export default function Contact() {
               />
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               testID="sell-btn"
-              style={styles.primaryButton} 
+              style={styles.primaryButton}
               activeOpacity={0.8}
               onPress={async () => {
                 if (!name || !email || !message) {
@@ -289,5 +340,64 @@ const styles = StyleSheet.create({
     color: '#09090b',
     fontSize: 14.5,
     fontWeight: '800',
+  },
+  // Social Channels Card Styles
+  socialCardContainer: {
+    marginTop: 16,
+    gap: 12,
+    backgroundColor: 'rgba(24, 24, 27, 0.6)',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  socialCardHeader: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#F8FAFC',
+    marginBottom: 4,
+  },
+  socialChannelBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 14,
+    gap: 12,
+  },
+  instagramBtn: {
+    backgroundColor: 'rgba(225, 48, 108, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(225, 48, 108, 0.3)',
+  },
+  whatsappBtn: {
+    backgroundColor: 'rgba(37, 211, 102, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 211, 102, 0.3)',
+  },
+  telegramBtn: {
+    backgroundColor: 'rgba(34, 158, 217, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 158, 217, 0.3)',
+  },
+  channelIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  channelTextCol: {
+    flex: 1,
+  },
+  channelBtnTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  channelBtnSub: {
+    fontSize: 12,
+    color: '#CBD5E1',
+    marginTop: 2,
   },
 });

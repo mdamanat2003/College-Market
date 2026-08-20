@@ -547,6 +547,9 @@ export const updateProfile = asyncHandler(async (req: any, res: Response) => {
   if (req.body.phone) user.phone = req.body.phone.trim();
   if (req.body.college) user.college = req.body.college.trim();
   if (avatarUrl !== undefined) user.avatar = avatarUrl;
+  if (req.body.instagram !== undefined) user.instagram = req.body.instagram.trim();
+  if (req.body.whatsapp !== undefined) user.whatsapp = req.body.whatsapp.trim();
+  if (req.body.telegram !== undefined) user.telegram = req.body.telegram.trim();
 
   await user.save();
 
@@ -561,6 +564,9 @@ export const updateProfile = asyncHandler(async (req: any, res: Response) => {
       phone: user.phone,
       college: user.college,
       avatar: user.avatar,
+      instagram: user.instagram,
+      whatsapp: user.whatsapp,
+      telegram: user.telegram,
       role: user.role,
       rating: (user as any).rating,
       ratingCount: (user as any).ratingCount,

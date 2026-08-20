@@ -14,6 +14,9 @@ interface User {
   ratingCount?: number;
   isDemo?: boolean;
   avatar?: string;
+  instagram?: string;
+  whatsapp?: string;
+  telegram?: string;
   isVerified?: boolean;
   collegeIdProof?: string;
 }

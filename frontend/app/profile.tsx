@@ -27,6 +27,7 @@ import { Button } from '../components/ui/Button';
 import { PlaceholderImage } from '../components/ui/PlaceholderImage';
 import { SafeImage } from '../components/ui/SafeImage';
 import { COLORS, SPACING, RADIUS } from '../theme/colors';
+import { openSocialLink } from '../constants/socialLinks';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -43,6 +44,9 @@ export default function ProfileScreen() {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editCollege, setEditCollege] = useState('');
+  const [editInstagram, setEditInstagram] = useState('');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editTelegram, setEditTelegram] = useState('');
   const [editAvatarUri, setEditAvatarUri] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -74,6 +78,9 @@ export default function ProfileScreen() {
     setEditName(user?.name || '');
     setEditPhone(user?.phone || '');
     setEditCollege(user?.college || '');
+    setEditInstagram(user?.instagram || '');
+    setEditWhatsapp(user?.whatsapp || '');
+    setEditTelegram(user?.telegram || '');
     setEditAvatarUri(user?.avatar || null);
     setIsEditModalVisible(true);
   };
@@ -109,6 +116,9 @@ export default function ProfileScreen() {
       formData.append('name', editName.trim());
       formData.append('phone', editPhone.trim());
       formData.append('college', editCollege.trim());
+      formData.append('instagram', editInstagram.trim());
+      formData.append('whatsapp', editWhatsapp.trim());
+      formData.append('telegram', editTelegram.trim());
 
       if (editAvatarUri && editAvatarUri !== user?.avatar) {
         let filename = editAvatarUri.split('/').pop() || 'avatar.jpg';
@@ -245,6 +255,47 @@ export default function ProfileScreen() {
               <Ionicons name="school-outline" size={12} color={COLORS.primary} />
               <Text style={styles.collegeText} numberOfLines={1}>{user?.college || 'My University'}</Text>
             </View>
+
+            {/* User Social Links */}
+            {(user?.instagram || user?.whatsapp || user?.telegram) ? (
+              <View style={styles.userSocialRow}>
+                {user?.instagram ? (
+                  <TouchableOpacity
+                    style={[styles.userSocialChip, { backgroundColor: 'rgba(225, 48, 108, 0.15)', borderColor: 'rgba(225, 48, 108, 0.35)' }]}
+                    onPress={() => openSocialLink(
+                      user.instagram!.startsWith('http') ? user.instagram! : `https://instagram.com/${user.instagram!.replace('@', '')}`,
+                      'Instagram'
+                    )}
+                  >
+                    <Ionicons name="logo-instagram" size={14} color="#E1306C" />
+                  </TouchableOpacity>
+                ) : null}
+
+                {user?.whatsapp ? (
+                  <TouchableOpacity
+                    style={[styles.userSocialChip, { backgroundColor: 'rgba(37, 211, 102, 0.15)', borderColor: 'rgba(37, 211, 102, 0.35)' }]}
+                    onPress={() => openSocialLink(
+                      user.whatsapp!.startsWith('http') ? user.whatsapp! : `https://wa.me/${user.whatsapp!.replace(/\D/g, '')}`,
+                      'WhatsApp'
+                    )}
+                  >
+                    <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+                  </TouchableOpacity>
+                ) : null}
+
+                {user?.telegram ? (
+                  <TouchableOpacity
+                    style={[styles.userSocialChip, { backgroundColor: 'rgba(34, 158, 217, 0.15)', borderColor: 'rgba(34, 158, 217, 0.35)' }]}
+                    onPress={() => openSocialLink(
+                      user.telegram!.startsWith('http') ? user.telegram! : `https://t.me/${user.telegram!.replace('@', '')}`,
+                      'Telegram'
+                    )}
+                  >
+                    <Ionicons name="paper-plane" size={12} color="#229ED9" />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         </View>
 
@@ -395,6 +446,42 @@ export default function ProfileScreen() {
               />
             </View>
 
+            <View style={styles.inputGroup}>
+              <Text style={styles.modalLabel}>Instagram Profile / Handle</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g. @yourname or instagram.com/..."
+                placeholderTextColor={COLORS.textMuted}
+                value={editInstagram}
+                onChangeText={setEditInstagram}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.modalLabel}>WhatsApp Number / Link</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g. 9876543210 or wa.me/..."
+                placeholderTextColor={COLORS.textMuted}
+                value={editWhatsapp}
+                onChangeText={setEditWhatsapp}
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.modalLabel}>Telegram Handle / Link</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g. @username or t.me/..."
+                placeholderTextColor={COLORS.textMuted}
+                value={editTelegram}
+                onChangeText={setEditTelegram}
+                autoCapitalize="none"
+              />
+            </View>
+
             <View style={styles.modalActions}>
               <TouchableOpacity 
                 onPress={() => setIsEditModalVisible(false)} 
@@ -445,6 +532,8 @@ const styles = StyleSheet.create({
   email: { fontSize: 14, color: COLORS.textMuted, marginBottom: 4 },
   collegeBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.round, alignSelf: 'flex-start' },
   collegeText: { fontSize: 12, color: COLORS.primary, marginLeft: 4, fontWeight: '500' },
+  userSocialRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  userSocialChip: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   
   tabContainer: { flexDirection: 'row', marginBottom: SPACING.lg, backgroundColor: COLORS.card, borderRadius: RADIUS.md, padding: 4, borderWidth: 1, borderColor: COLORS.border },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: RADIUS.sm },

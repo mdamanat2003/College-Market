@@ -4,11 +4,11 @@
 node_modules
 frontend/node_modules
 backend/node_modules
-campuscart-web/node_modules
 
-# Expo
+# Expo & Web Build
 .expo/
 dist/
+public/
 web-build/
 expo-env.d.ts
 
@@ -24,10 +24,11 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
-# debug
+# debug & logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
@@ -48,5 +49,6 @@ app-example
 !backend/uploads/app-release.apk
 backend/uploads/*
 !backend/uploads/app-release.apk
+
 
 

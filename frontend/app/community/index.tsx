@@ -20,6 +20,7 @@ import { useCommunityStore, CommunityPost } from '../../store/communityStore';
 import { useAuthStore } from '../../store/authStore';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
+import { SOCIAL_LINKS, openSocialLink } from '../../constants/socialLinks';
 
 const CATEGORIES = [
   'All',
@@ -214,6 +215,36 @@ export default function CommunityFeedScreen() {
             <Ionicons name="create-outline" size={20} color="#09090b" />
             <Text style={styles.askBtnText}>+ Ask Question / Share Thought</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Official Channels Quick Bar */}
+        <View style={styles.communityChannelBar}>
+          <Text style={styles.channelBarTitle}>Join Official Channels:</Text>
+          <View style={styles.channelChipRow}>
+            <TouchableOpacity
+              style={[styles.channelChip, { backgroundColor: 'rgba(225, 48, 108, 0.15)', borderColor: 'rgba(225, 48, 108, 0.35)' }]}
+              onPress={() => openSocialLink(SOCIAL_LINKS.instagram, 'Instagram')}
+            >
+              <Ionicons name="logo-instagram" size={16} color="#E1306C" />
+              <Text style={[styles.channelChipText, { color: '#E1306C' }]}>Instagram</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.channelChip, { backgroundColor: 'rgba(37, 211, 102, 0.15)', borderColor: 'rgba(37, 211, 102, 0.35)' }]}
+              onPress={() => openSocialLink(SOCIAL_LINKS.whatsapp, 'WhatsApp Group/Channel')}
+            >
+              <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
+              <Text style={[styles.channelChipText, { color: '#25D366' }]}>WhatsApp</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.channelChip, { backgroundColor: 'rgba(34, 158, 217, 0.15)', borderColor: 'rgba(34, 158, 217, 0.35)' }]}
+              onPress={() => openSocialLink(SOCIAL_LINKS.telegram, 'Telegram Channel')}
+            >
+              <Ionicons name="paper-plane" size={14} color="#229ED9" />
+              <Text style={[styles.channelChipText, { color: '#229ED9' }]}>Telegram</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search & Sort Controls */}
@@ -676,5 +707,44 @@ const styles = StyleSheet.create({
   emptyAskBtnText: {
     color: '#09090b',
     fontWeight: '800',
+  },
+  // Official Channels Bar Styles
+  communityChannelBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    backgroundColor: 'rgba(24, 24, 27, 0.7)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 20,
+  },
+  channelBarTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#F8FAFC',
+  },
+  channelChipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  channelChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  channelChipText: {
+    fontSize: 12.5,
+    fontWeight: '700',
   },
 });

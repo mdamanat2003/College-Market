@@ -19,6 +19,9 @@ export interface IUser extends Document {
   resetOtpExpires?: Date | null;
   isBlocked?: boolean;
   isDemo?: boolean;
+  instagram?: string;
+  whatsapp?: string;
+  telegram?: string;
   
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
@@ -35,6 +38,9 @@ const userSchema: Schema = new Schema(
     collegeIdProof: { type: String, default: "" },
     isVerified: { type: Boolean, default: false },
     isDemo: { type: Boolean, default: false },
+    instagram: { type: String, default: "" },
+    whatsapp: { type: String, default: "" },
+    telegram: { type: String, default: "" },
     role: { type: String, enum: ["student", "admin"], default: "student" },
     rating: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },

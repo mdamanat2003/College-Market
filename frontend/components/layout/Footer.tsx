@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { api, SOCKET_URL } from '../../services/api';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
+import { SOCIAL_LINKS, openSocialLink } from '../../constants/socialLinks';
 
 type FooterProps = {
   onBackToTop?: () => void;
@@ -182,24 +183,17 @@ export default function Footer({ onBackToTop }: FooterProps) {
 
           {/* Column 1: Logo, Tagline, Social Icons */}
           <View style={[styles.column, styles.columnBrand]}>
-            <OoplabdhLogo size="sm" style={styles.logoStyle} />
+            <TouchableOpacity onPress={() => router.push('/home')} activeOpacity={0.8}>
+              <OoplabdhLogo size="sm" style={styles.logoStyle} />
+            </TouchableOpacity>
             <Text style={styles.tagline}>
               The ultimate peer-to-peer campus marketplace & academic resource hub. Buy, sell, share notes, find lost items, and catch up on campus events.
             </Text>
             <View style={styles.socialRow}>
               <TouchableOpacity
-                style={[styles.socialIcon, hoveredLink === 'fb' && styles.socialIconHovered]}
-                activeOpacity={0.7}
-                {...{
-                  onMouseEnter: () => setHoveredLink('fb'),
-                  onMouseLeave: () => setHoveredLink(null)
-                } as any}
-              >
-                <Ionicons name="logo-facebook" size={20} color={hoveredLink === 'fb' ? COLORS.primary : COLORS.textMuted} />
-              </TouchableOpacity>
-              <TouchableOpacity
                 style={[styles.socialIcon, hoveredLink === 'ig' && styles.socialIconHovered]}
                 activeOpacity={0.7}
+                onPress={() => openSocialLink(SOCIAL_LINKS.instagram, 'Instagram')}
                 {...{
                   onMouseEnter: () => setHoveredLink('ig'),
                   onMouseLeave: () => setHoveredLink(null)
@@ -208,24 +202,59 @@ export default function Footer({ onBackToTop }: FooterProps) {
                 <Ionicons name="logo-instagram" size={20} color={hoveredLink === 'ig' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.socialIcon, hoveredLink === 'tw' && styles.socialIconHovered]}
+                style={[styles.socialIcon, hoveredLink === 'wa' && styles.socialIconHovered]}
                 activeOpacity={0.7}
+                onPress={() => openSocialLink(SOCIAL_LINKS.whatsapp, 'WhatsApp Group/Channel')}
                 {...{
-                  onMouseEnter: () => setHoveredLink('tw'),
+                  onMouseEnter: () => setHoveredLink('wa'),
                   onMouseLeave: () => setHoveredLink(null)
                 } as any}
               >
-                <Ionicons name="logo-twitter" size={20} color={hoveredLink === 'tw' ? COLORS.primary : COLORS.textMuted} />
+                <Ionicons name="logo-whatsapp" size={20} color={hoveredLink === 'wa' ? COLORS.primary : COLORS.textMuted} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.socialIcon, hoveredLink === 'tg' && styles.socialIconHovered]}
+                activeOpacity={0.7}
+                onPress={() => openSocialLink(SOCIAL_LINKS.telegram, 'Telegram Channel')}
+                {...{
+                  onMouseEnter: () => setHoveredLink('tg'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="paper-plane" size={18} color={hoveredLink === 'tg' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.socialIcon, hoveredLink === 'git' && styles.socialIconHovered]}
                 activeOpacity={0.7}
+                onPress={() => openSocialLink(SOCIAL_LINKS.github, 'GitHub')}
                 {...{
                   onMouseEnter: () => setHoveredLink('git'),
                   onMouseLeave: () => setHoveredLink(null)
                 } as any}
               >
                 <Ionicons name="logo-github" size={20} color={hoveredLink === 'git' ? COLORS.primary : COLORS.textMuted} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.socialIcon, hoveredLink === 'fb' && styles.socialIconHovered]}
+                activeOpacity={0.7}
+                onPress={() => openSocialLink(SOCIAL_LINKS.facebook, 'Facebook')}
+                {...{
+                  onMouseEnter: () => setHoveredLink('fb'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="logo-facebook" size={20} color={hoveredLink === 'fb' ? COLORS.primary : COLORS.textMuted} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.socialIcon, hoveredLink === 'tw' && styles.socialIconHovered]}
+                activeOpacity={0.7}
+                onPress={() => openSocialLink(SOCIAL_LINKS.twitter, 'Twitter')}
+                {...{
+                  onMouseEnter: () => setHoveredLink('tw'),
+                  onMouseLeave: () => setHoveredLink(null)
+                } as any}
+              >
+                <Ionicons name="logo-twitter" size={20} color={hoveredLink === 'tw' ? COLORS.primary : COLORS.textMuted} />
               </TouchableOpacity>
             </View>
           </View>

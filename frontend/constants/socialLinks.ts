@@ -5,6 +5,8 @@ export const SOCIAL_LINKS = {
   whatsapp: process.env.EXPO_PUBLIC_WHATSAPP_URL || 'https://whatsapp.com/channel/0029VbDLPdA5PO0vpqzBbY1q',
   telegram: process.env.EXPO_PUBLIC_TELEGRAM_URL || 'https://t.me/gotham_city_telegram',
   github: process.env.EXPO_PUBLIC_GITHUB_URL || 'https://github.com',
+  facebook: process.env.EXPO_PUBLIC_FACEBOOK_URL || 'https://facebook.com',
+  twitter: process.env.EXPO_PUBLIC_TWITTER_URL || 'https://x.com',
 };
 
 export const openSocialLink = async (url: string, platformName: string = 'Link') => {

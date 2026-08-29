@@ -19,6 +19,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
+import { PdfViewerModal } from '../../components/ui/PdfViewerModal';
 import { useAcademicStore } from '../../store/academicStore';
 import { useAuthStore } from '../../store/authStore';
 import { api } from '../../services/api';
@@ -35,7 +36,7 @@ const AcademicCard = React.memo(({
   onDelete,
 }: {
   item: any;
-  handleDownload: (url: string) => void;
+  handleDownload: (item: any) => void;
   currentUser?: any;
   onEdit?: (item: any) => void;
   onDelete?: (item: any) => void;
@@ -113,7 +114,7 @@ const AcademicCard = React.memo(({
         <TouchableOpacity
           testID="buy-btn"
           style={styles.viewDocBtn}
-          onPress={() => handleDownload(item.fileUrl)}
+          onPress={() => handleDownload(item)}
           activeOpacity={0.8}
         >
           <Text style={styles.viewDocBtnText}>View Document</Text>
@@ -310,6 +311,10 @@ export default function AcademicHub() {
   const [editDescription, setEditDescription] = useState('');
   const [editFile, setEditFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [updating, setUpdating] = useState(false);
+
+  // PDF Viewer Modal State
+  const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
+  const [activePdfItem, setActivePdfItem] = useState<any>(null);
 
   const toggleEditBranch = (b: string) => {
     setEditBranches((prev) => {
@@ -535,8 +540,13 @@ Details: ${requestDetails || 'None provided'}`;
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  const handleDownload = React.useCallback((url: string) => {
-    Linking.openURL(url).catch((err) => console.error("Couldn't load page", err));
+  const handleDownload = React.useCallback((item: any) => {
+    if (typeof item === 'string') {
+      setActivePdfItem({ fileUrl: item, title: 'Academic Resource' });
+    } else {
+      setActivePdfItem(item);
+    }
+    setIsPdfModalVisible(true);
   }, []);
 
   const handleResetFilters = React.useCallback(() => {
@@ -833,6 +843,26 @@ Details: ${requestDetails || 'None provided'}`;
           </View>
         </View>
       </Modal>
+
+      {/* In-App PDF Viewer Modal */}
+      <PdfViewerModal
+        visible={isPdfModalVisible}
+        onClose={() => {
+          setIsPdfModalVisible(false);
+          setActivePdfItem(null);
+        }}
+        fileUrl={activePdfItem?.fileUrl || ''}
+        title={activePdfItem?.title || 'Academic Resource'}
+        subject={activePdfItem?.subject}
+        branch={
+          Array.isArray(activePdfItem?.branch)
+            ? activePdfItem.branch.join(', ')
+            : typeof activePdfItem?.branch === 'string' && activePdfItem.branch.startsWith('[')
+            ? (() => { try { return JSON.parse(activePdfItem.branch).join(', '); } catch (e) { return activePdfItem.branch; } })()
+            : activePdfItem?.branch
+        }
+        semester={activePdfItem?.semester}
+      />
     </View>
   );
 }

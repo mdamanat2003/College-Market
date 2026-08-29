@@ -22,6 +22,7 @@ export interface IUser extends Document {
   instagram?: string;
   whatsapp?: string;
   telegram?: string;
+  pushToken?: string;
   
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
@@ -41,6 +42,7 @@ const userSchema: Schema = new Schema(
     instagram: { type: String, default: "" },
     whatsapp: { type: String, default: "" },
     telegram: { type: String, default: "" },
+    pushToken: { type: String, default: "" },
     role: { type: String, enum: ["student", "admin"], default: "student" },
     rating: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },

@@ -154,7 +154,7 @@ export const seedTransactions = async () => {
 
     // Create notifications for admin and participants so admin UI shows history
     try {
-      const admin = await User.findOne({ email: 'admin@ooplabdh.com' });
+      const admin = await User.findOne({ email: 'admin@ooplabdh.shop' });
       if (admin) {
         const createdOrders = Array.isArray(created) ? created : [created];
         const notifBatch: any[] = [];

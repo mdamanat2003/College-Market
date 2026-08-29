@@ -180,3 +180,12 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const updatePushToken = async (pushToken: string) => {
+  try {
+    const res = await api.post('/auth/push-token', { pushToken });
+    return res.data;
+  } catch (error) {
+    console.error('[api] Error updating push token:', error);
+  }
+};

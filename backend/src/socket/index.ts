@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import Message from '../models/Message';
 import Conversation from '../models/Conversation';
+import { sendPushNotificationToUser, sendPushNotificationToUsers } from '../utils/pushNotification';
 
 // User tracking: user_id map to socket_id
 const onlineUsers = new Map<string, string>();
@@ -17,6 +18,10 @@ export const notifyUser = (userId: string, payload: any) => {
   } catch (err) {
     console.error('notifyUser emit error', err);
   }
+  // Send background push notification as well
+  if (payload?.title && payload?.message) {
+    sendPushNotificationToUser(userId, payload.title, payload.message, { relatedId: payload.relatedId, type: payload.type });
+  }
 };
 
 export const notifyUsers = (userIds: string[], payload: any) => {
@@ -25,6 +30,10 @@ export const notifyUsers = (userIds: string[], payload: any) => {
     userIds.forEach((uid) => ioServer?.to(uid).emit('new_notification', payload));
   } catch (err) {
     console.error('notifyUsers emit error', err);
+  }
+  // Send background push notification as well
+  if (payload?.title && payload?.message) {
+    sendPushNotificationToUsers(userIds, payload.title, payload.message, { relatedId: payload.relatedId, type: payload.type });
   }
 };
 
@@ -79,10 +88,14 @@ export const setupSocket = (io: Server) => {
 
         if (receiverId) {
           io.to(receiverId).emit('new_notification');
+          // Send mobile push notification to receiver
+          sendPushNotificationToUser(
+            receiverId,
+            'New Message',
+            text.trim().length > 50 ? `${text.trim().slice(0, 50)}...` : text.trim(),
+            { conversationId, type: 'Chat' }
+          );
         }
-        
-        // Receiver ko notification bhejein agar wo room me nahi hai
-        // Notification system hum aage build karenge
 
       } catch (error) {
         console.error('Message Send Error:', error);

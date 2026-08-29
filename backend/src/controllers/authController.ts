@@ -8,6 +8,12 @@ import User from '../models/User';
 import RegistrationOtp from '../models/RegistrationOtp';
 import { asyncHandler } from '../utils/asyncHandler';
 
+interface AuthRequest extends Request {
+  user?: any;
+  file?: any;
+  files?: any;
+}
+
 // Global DNS Override to strictly use IPv4 and prevent Render/Network Timeouts
 dns.setDefaultResultOrder('ipv4first');
 
@@ -573,3 +579,30 @@ export const updateProfile = asyncHandler(async (req: any, res: Response) => {
     }
   });
 });
+
+// @desc    Save / Update User Push Token for Expo Push Notifications
+// @route   POST /api/auth/push-token
+// @access  Private
+export const updatePushToken = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { pushToken } = req.body;
+
+  if (!pushToken || typeof pushToken !== 'string') {
+    res.status(400);
+    throw new Error('Please provide a valid pushToken string');
+  }
+
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  user.pushToken = pushToken.trim();
+  await user.save();
+
+  res.json({
+    success: true,
+    message: 'Push token updated successfully',
+    pushToken: user.pushToken,
+  });
+});

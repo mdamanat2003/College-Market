@@ -14,7 +14,8 @@ import {
   refreshAccessToken,
   sendRegistrationOtp,
   verifyRegistrationOtp,
-  updateProfile
+  updateProfile,
+  updatePushToken
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 
@@ -95,6 +96,7 @@ router.post('/reset-password', resetPassword);
 router.post('/send-registration-otp', sendRegistrationOtp);
 router.post('/verify-registration-otp', verifyRegistrationOtp);
 router.put('/update-profile', protect, uploadSingleAvatar, updateProfile);
+router.post('/push-token', protect, updatePushToken);
 
 // Ye line miss hone par app.use() crash hota hai!
 export default router;

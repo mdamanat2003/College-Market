@@ -15,6 +15,7 @@ import { InstallAppBanner } from '../components/layout/InstallAppBanner';
 import { NotificationToast } from '../components/ui/NotificationToast';
 import { OfflineBanner } from '../components/ui/OfflineBanner';
 import { BrandSpinner } from '../components/ui/BrandSpinner';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -22,6 +23,8 @@ export const unstable_settings = {
 
 
 export default function RootLayout() {
+  usePushNotifications();
+
   const [fontsLoaded] = useFonts({
     ...Ionicons.font,
   });

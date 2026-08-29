@@ -105,7 +105,6 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               style={styles.iconBtn}
               onPress={handleCopyLink}
               activeOpacity={0.7}
-              title="Copy PDF Link"
             >
               <Ionicons
                 name={copied ? 'checkmark' : 'link-outline'}
@@ -118,7 +117,6 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               style={[styles.iconBtn, styles.externalBtn]}
               onPress={handleOpenExternal}
               activeOpacity={0.7}
-              title="Open Externally"
             >
               <Ionicons name="open-outline" size={18} color="#38BDF8" />
               {!isPhone && <Text style={styles.externalBtnText}>External</Text>}

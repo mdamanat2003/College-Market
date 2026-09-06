@@ -37,14 +37,15 @@ const team: TeamMember[] = [
     text: '#2563EB',
     photo: require('../assets/images/team/amanat.png'),
   },
-  // {
-  //   name: 'Md Adnan Karim',
-  //   role: 'Co-Founder & Lead UI/UX Designer',
-  //   desc: 'Crafting the premium, intuitive experience across the product.',
-  //   initials: 'AK',
-  //   accent: '#F5F3FF',
-  //   text: '#7C3AED',
-  // },
+  {
+    name: 'Md Adnan Karim',
+    role: 'Co-Founder & Lead UI/UX Designer',
+    desc: 'Crafting the premium, intuitive experience across the product.',
+    initials: 'AK',
+    accent: '#F5F3FF',
+    text: '#7C3AED',
+    photo: require('../assets/images/team/adnan.jpeg'),
+  },
   {
     name: 'Aftab Mansoori',
     role: 'Chief Technology Officer (CTO)',
@@ -54,14 +55,15 @@ const team: TeamMember[] = [
     text: '#059669',
     photo: require('../assets/images/team/aftab.jpeg'),
   },
-  // {
-  //   name: 'Masab Mallick',
-  //   role: 'Co-Founder & Software Engineer',
-  //   desc: 'Focusing on robust structures and complex campus-level features.',
-  //   initials: 'MM',
-  //   accent: '#FFFBEB',
-  //   text: '#D97706',
-  // },
+  {
+    name: 'Masab Mallick',
+    role: 'Co-Founder & Software Engineer',
+    desc: 'Focusing on robust structures and complex campus-level features.',
+    initials: 'MM',
+    accent: '#FFFBEB',
+    text: '#D97706',
+    photo: require('../assets/images/team/masab.jpeg'),
+  },
   {
     name: 'Yasir Jamal Noori',
     role: 'Chief Operating Officer (COO)',
@@ -162,7 +164,7 @@ export default function About() {
               <Text style={styles.heroStatLabel}>Verified Campus Network</Text>
             </View>
             <View style={styles.heroStatCardAlt}>
-              <Text style={[styles.heroStatValue, { color: '#fff' }]}>3</Text>
+              <Text style={[styles.heroStatValue, { color: '#fff' }]}>5</Text>
               <Text style={[styles.heroStatLabel, { color: '#94A3B8' }]}>Founders Building Trust</Text>
             </View>
           </View>
@@ -213,31 +215,8 @@ export default function About() {
           </Text>
         </View>
 
-        <View style={styles.founderWrap}>
-          <Pressable
-            //@ts-ignore - React Native Web hover props
-            onHoverIn={() => setHoveredMember(team[0].name)}
-            onHoverOut={() => setHoveredMember(null)}
-            style={({ pressed }) => [
-              styles.founderCard,
-              (hoveredMember === team[0].name || pressed) && styles.teamCardActive
-            ]}
-          >
-            <View style={[styles.avatar, { backgroundColor: team[0].accent }]}>
-              {team[0].photo ? (
-                <Image source={team[0].photo} style={[styles.memberPhoto, styles.amanatPhoto]} />
-              ) : (
-                <Text style={[styles.avatarText, { color: team[0].text }]}>{team[0].initials}</Text>
-              )}
-            </View>
-            <Text style={styles.memberName}>{team[0].name}</Text>
-            <Text style={styles.memberRole}>{team[0].role}</Text>
-            <Text style={styles.memberDesc}>{team[0].desc}</Text>
-          </Pressable>
-        </View>
-
         <View style={[styles.teamGrid, isTablet && styles.teamGridWide, isWide && styles.teamGridDesktop]}>
-          {team.slice(1).map((member) => (
+          {team.map((member) => (
             <Pressable
               key={member.name}
               //@ts-ignore
@@ -256,16 +235,21 @@ export default function About() {
                     source={member.photo}
                     style={[
                       styles.memberPhoto,
-                      member.name.includes('Aftab') ? styles.aftabPhoto : styles.yasirPhoto
+                      member.name.includes('AMANAT')
+                        ? styles.amanatPhoto
+                        : member.name.includes('Aftab')
+                        ? styles.aftabPhoto
+                        : member.name.includes('Yasir')
+                        ? styles.yasirPhoto
+                        : member.name.includes('Adnan')
+                        ? styles.adnanPhoto
+                        : styles.masabPhoto,
                     ]}
                   />
                 ) : (
                   <Text style={[styles.avatarTextSmall, { color: member.text }]}>{member.initials}</Text>
                 )}
               </View>
-              <Text style={styles.memberNameSmall}>{member.name}</Text>
-              <Text style={styles.memberRoleSmall}>{member.role}</Text>
-              <Text style={styles.memberDescSmall}>{member.desc}</Text>
             </Pressable>
           ))}
         </View>
@@ -644,24 +628,25 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
   teamGrid: {
-    gap: 20,
+    gap: 16,
   },
   teamGridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    gap: 16,
   },
   teamGridDesktop: {
-    gap: 24,
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'center',
+    gap: 14,
   },
   teamCard: {
-    width: '100%',
-    minHeight: 280,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 28,
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+    borderRadius: 24,
+    padding: 16,
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -679,14 +664,11 @@ const styles = StyleSheet.create({
     }),
   },
   teamCardWide: {
-    flexBasis: '46%',
-    flexGrow: 1,
-    maxWidth: 380,
+    flexGrow: 0,
   },
   teamCardDesktop: {
-    flexBasis: '22%',
     flexGrow: 0,
-    maxWidth: 280,
+    padding: 16,
   },
   teamCardActive: {
     borderColor: COLORS.accent,
@@ -702,7 +684,7 @@ const styles = StyleSheet.create({
     borderRadius: 60, // Half of 120 for perfect circle
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 0,
     overflow: 'hidden',
     backgroundColor: COLORS.surface,
   },
@@ -718,22 +700,34 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   amanatPhoto: {
-    width: 180,
-    height: 259,
-    top: -12,
-    left: -20,
+    width: 160,
+    height: 230,
+    top: -10,
+    left: -18,
   },
   aftabPhoto: {
-    width: 150,
-    height: 150,
-    top: -12,
-    left: -15,
+    width: 140,
+    height: 140,
+    top: -10,
+    left: -10,
   },
   yasirPhoto: {
-    width: 150,
-    height: 193,
+    width: 140,
+    height: 180,
     top: -8,
-    left: -15,
+    left: -10,
+  },
+  adnanPhoto: {
+    width: 140,
+    height: 175,
+    top: -8,
+    left: -10,
+  },
+  masabPhoto: {
+    width: 140,
+    height: 180,
+    top: -14,
+    left: -10,
   },
   memberNameSmall: {
     textAlign: 'center',

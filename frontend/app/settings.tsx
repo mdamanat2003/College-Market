@@ -22,6 +22,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuthStore } from '../store/authStore';
 import { useToastStore } from '../store/toastStore';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
 // Storage Keys
@@ -599,9 +600,18 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* Section 4: Appearance */}
-        <Text style={[styles.sectionHeader, { color: themeSubText }]}>APPEARANCE</Text>
+        {/* Section 4: Appearance & Language */}
+        <Text style={[styles.sectionHeader, { color: themeSubText }]}>APPEARANCE & LANGUAGE</Text>
         <View style={[styles.cardGroup, { backgroundColor: themeCardBg, borderColor: themeBorder }]}>
+          <SettingRow
+            iconName="language-outline"
+            iconColor="#38BDF8"
+            title="App Language"
+            subtitle="English, Hindi (हिन्दी), Arabic (العربية)"
+            showChevron={false}
+            rightComponent={<LanguageSelector compact />}
+          />
+          <View style={[styles.divider, { backgroundColor: themeBorder }]} />
           <SettingRow
             iconName={darkMode ? 'moon-outline' : 'sunny-outline'}
             iconColor="#38BDF8"

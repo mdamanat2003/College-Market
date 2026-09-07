@@ -264,9 +264,9 @@ export default function LandingPage() {
 
   return (
     <>
-      <ScrollView 
-        ref={scrollRef} 
-        style={styles.page} 
+      <ScrollView
+        ref={scrollRef}
+        style={styles.page}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -369,7 +369,7 @@ export default function LandingPage() {
                   </View>
                   <View style={[styles.onlinePill, isMockupCompact && styles.onlinePillCompact]}>
                     <Ionicons name="people-outline" size={12} color="#a7f3d0" />
-                    <Text style={styles.onlineText}>247 online</Text>
+                    <Text style={styles.onlineText}>24/7 online</Text>
                   </View>
                 </View>
                 <View style={[styles.mockupGrid, isMobile && styles.mockupGridMobile]}>

@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore'; // <-- Chat Store import
+import { useLanguageStore } from '../store/languageStore';
 import { COLORS } from '../theme/colors';
 import { InstallAppBanner } from '../components/layout/InstallAppBanner';
 import { NotificationToast } from '../components/ui/NotificationToast';
@@ -24,6 +25,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   usePushNotifications();
+  useLanguageStore();
 
   const [fontsLoaded] = useFonts({
     ...Ionicons.font,

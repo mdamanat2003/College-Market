@@ -23,6 +23,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as ImagePicker from 'expo-image-picker';
 import { COLLEGES } from '../../constants/colleges';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { useTranslation } from '../../store/languageStore';
 
 const COLORS = {
   background: '#09090b',
@@ -110,6 +112,7 @@ const getPasswordStrength = (password: string): { label: string, color: string, 
 };
 
 export default function Register() {
+  const { t, isRTL } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCollegeList, setShowCollegeList] = useState(false);
@@ -328,9 +331,12 @@ export default function Register() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={[styles.container, isDesktop && styles.containerDesktop]} showsVerticalScrollIndicator={false}>
           <View style={styles.pageShell}>
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <LanguageSelector />
+            </View>
             <View style={styles.hero}>
-              <Text style={styles.heroTitle}>Create Your Account</Text>
-              <Text style={styles.heroSubtitle}>Join Ooplabdh and start trading with your campus community.</Text>
+              <Text style={styles.heroTitle}>{t('createAccount')}</Text>
+              <Text style={styles.heroSubtitle}>{t('joinOoplabdh')}</Text>
             </View>
 
             {serverError ? (

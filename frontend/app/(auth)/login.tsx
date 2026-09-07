@@ -14,6 +14,8 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { useTranslation } from '../../store/languageStore';
 
 const COLORS = {
   background: '#09090b',
@@ -33,6 +35,7 @@ const COLORS = {
 type LoginFieldName = 'email' | 'password';
 
 export default function Login() {
+  const { t, isRTL } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +49,7 @@ export default function Login() {
 
   const inputStyle = (field: LoginFieldName, hasError: boolean) => [
     styles.input,
+    isRTL && styles.inputRTL,
     focusedField === field && styles.inputFocused,
     hasError && styles.inputError,
   ];
@@ -67,11 +71,11 @@ export default function Login() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      setFieldError('email', 'Email is required.');
+      setFieldError('email', t('emailRequired'));
     }
 
     if (!password) {
-      setFieldError('password', 'Password is required.');
+      setFieldError('password', t('passwordRequired'));
     }
 
     if (!normalizedEmail || !password) {
@@ -85,31 +89,34 @@ export default function Login() {
 
         if (currentUser?.role === 'admin') {
           useAuthStore.getState().logout();
-          setFieldError('email', 'Admin login is not allowed from here. Please use the Admin Portal.');
+          setFieldError('email', t('adminLoginNotAllowed'));
           return;
         }
 
-        Alert.alert('Welcome back!', `Hi ${normalizedEmail}`);
+        Alert.alert(t('welcomeMessage'), `${t('hiUser')} ${normalizedEmail}`);
         router.replace('/(tabs)');
       } else {
-        setFieldErrors(mapLoginError(useAuthStore.getState().error || 'Login failed'));
+        setFieldErrors(mapLoginError(useAuthStore.getState().error || t('loginFailed')));
       }
     } catch (err) {
       console.error('Login error:', err);
-      setFieldError('password', 'Server error. Is the backend running?');
+      setFieldError('password', t('serverError'));
     }
   };
-
-
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
           <View style={styles.pageShell}>
+            {/* Instagram Style Top Bar Language Picker */}
+            <View style={styles.topBar}>
+              <LanguageSelector />
+            </View>
+
             <View style={styles.hero}>
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Sign in to continue to Ooplabdh</Text>
+              <Text style={styles.title}>{t('welcomeBack')}</Text>
+              <Text style={styles.subtitle}>{t('signInSubtitle')}</Text>
             </View>
 
             <View style={styles.card}>
@@ -121,17 +128,18 @@ export default function Login() {
                     router.replace('/home');
                   }
                 }} 
-                style={styles.backToHomeBtn}
+                style={[styles.backToHomeBtn, isRTL && styles.backToHomeBtnRTL]}
               >
-                <Ionicons name="arrow-back" size={16} color={COLORS.link} />
-                <Text style={styles.backToHomeText}>Back to Home</Text>
+                <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={16} color={COLORS.link} />
+                <Text style={styles.backToHomeText}>{t('backToHome')}</Text>
               </TouchableOpacity>
+
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Email Address</Text>
+                  <Text style={[styles.label, isRTL && styles.textRTL]}>{t('emailAddress')}</Text>
                   <TextInput
                     style={inputStyle('email', Boolean(fieldErrors.email))}
-                    placeholder="you@college.edu"
+                    placeholder={t('emailPlaceholder')}
                     placeholderTextColor={COLORS.placeholder}
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -144,15 +152,23 @@ export default function Login() {
                       if (fieldErrors.email) setFieldErrors((current) => ({ ...current, email: undefined }));
                     }}
                   />
-                  {fieldErrors.email ? <Text style={styles.fieldErrorText}>{fieldErrors.email}</Text> : null}
+                  {fieldErrors.email ? (
+                    <Text style={[styles.fieldErrorText, isRTL && styles.textRTL]}>
+                      {fieldErrors.email}
+                    </Text>
+                  ) : null}
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Password</Text>
+                  <Text style={[styles.label, isRTL && styles.textRTL]}>{t('password')}</Text>
                   <View style={styles.passwordInputWrap}>
                     <TextInput
-                      style={[...inputStyle('password', Boolean(fieldErrors.password)), styles.passwordInput]}
-                      placeholder="Enter your password"
+                      style={[
+                        ...inputStyle('password', Boolean(fieldErrors.password)),
+                        styles.passwordInput,
+                        isRTL ? { paddingLeft: 52, paddingRight: 16 } : { paddingRight: 52, paddingLeft: 16 },
+                      ]}
+                      placeholder={t('passwordPlaceholder')}
                       placeholderTextColor={COLORS.placeholder}
                       secureTextEntry={!showPassword}
                       value={password}
@@ -164,50 +180,56 @@ export default function Login() {
                       }}
                     />
                     <TouchableOpacity
-                      style={styles.eyeButton}
+                      style={[styles.eyeButton, isRTL ? { left: 12 } : { right: 12 }]}
                       onPress={() => setShowPassword((current) => !current)}
                       accessibilityRole="button"
-                      accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                      accessibilityLabel={showPassword ? t('hidePassword') : t('showPassword')}
                     >
                       <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={COLORS.helper} />
                     </TouchableOpacity>
                   </View>
-                  {fieldErrors.password ? <Text style={styles.fieldErrorText}>{fieldErrors.password}</Text> : null}
+                  {fieldErrors.password ? (
+                    <Text style={[styles.fieldErrorText, isRTL && styles.textRTL]}>
+                      {fieldErrors.password}
+                    </Text>
+                  ) : null}
                 </View>
 
                 <TouchableOpacity
-  style={styles.forgotPassword}
-  onPress={() => router.push('/forgot-password')}
-  {...{ 
-    onHoverIn: () => setForgotHovered(true), 
-    onHoverOut: () => setForgotHovered(false) 
-  } as any}
->
-                  <Text style={[styles.forgotPasswordText, forgotHovered && styles.linkHovered]}>Forgot password?</Text>
+                  style={[styles.forgotPassword, isRTL && { alignSelf: 'flex-start' }]}
+                  onPress={() => router.push('/forgot-password')}
+                  {...({ 
+                    onHoverIn: () => setForgotHovered(true), 
+                    onHoverOut: () => setForgotHovered(false) 
+                  } as any)}
+                >
+                  <Text style={[styles.forgotPasswordText, forgotHovered && styles.linkHovered]}>
+                    {t('forgotPassword')}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.button, isButtonHovered && styles.buttonHovered]}
                   onPress={handleLogin}
-                  {...{ 
+                  {...({ 
                     onHoverIn: () => setIsButtonHovered(true), 
                     onHoverOut: () => setIsButtonHovered(false) 
-                  } as any}
+                  } as any)}
                   activeOpacity={0.86}
                 >
-                  <Text style={styles.buttonText}>Sign In</Text>
+                  <Text style={styles.buttonText}>{t('signIn')}</Text>
                 </TouchableOpacity>
 
-
-
-                <View style={styles.footer}>
-                  <Text style={styles.footerText}>Don't have an account? </Text>
+                <View style={[styles.footer, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <Text style={styles.footerText}>{t('dontHaveAccount')} </Text>
                   <Link href="/register" asChild>
-                    <TouchableOpacity {...{ 
+                    <TouchableOpacity {...({ 
                       onHoverIn: () => setFooterHovered(true), 
                       onHoverOut: () => setFooterHovered(false) 
-                    } as any  }>
-                      <Text style={[styles.footerLink, footerHovered && styles.linkHovered]}>Sign Up</Text>
+                    } as any)}>
+                      <Text style={[styles.footerLink, footerHovered && styles.linkHovered]}>
+                        {t('signUp')}
+                      </Text>
                     </TouchableOpacity>
                   </Link>
                 </View>
@@ -234,6 +256,10 @@ const styles = StyleSheet.create({
   pageShell: {
     width: '100%',
     maxWidth: 500,
+  },
+  topBar: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
   hero: {
     alignItems: 'center',
@@ -273,44 +299,15 @@ const styles = StyleSheet.create({
     }),
   },
   form: { gap: 16 },
-  userTypeRow: {
-    flexDirection: 'row',
-    gap: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 999,
-    padding: 4,
-  },
-  userTypePill: {
-    flex: 1,
-    minHeight: 40,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    backgroundColor: COLORS.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userTypePillActive: {
-    backgroundColor: COLORS.signIn,
-    borderColor: COLORS.signIn,
-  },
-  userTypeText: {
-    color: COLORS.label,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  userTypeTextActive: {
-    color: '#09090b',
-    fontWeight: '800',
-  },
   inputGroup: { gap: 8 },
   label: {
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '700',
     color: COLORS.label,
+  },
+  textRTL: {
+    textAlign: 'right',
   },
   input: {
     minHeight: 54,
@@ -329,6 +326,9 @@ const styles = StyleSheet.create({
       } as any,
       default: {},
     }),
+  },
+  inputRTL: {
+    textAlign: 'right',
   },
   inputFocused: {
     borderColor: '#38BDF8',
@@ -349,12 +349,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
   },
-  passwordInput: {
-    paddingRight: 52,
-  },
+  passwordInput: {},
   eyeButton: {
     position: 'absolute',
-    right: 12,
     height: 44,
     width: 40,
     alignItems: 'center',
@@ -438,6 +435,10 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 18,
     alignSelf: 'flex-start',
+  },
+  backToHomeBtnRTL: {
+    flexDirection: 'row-reverse',
+    alignSelf: 'flex-end',
   },
   backToHomeText: {
     color: COLORS.link,

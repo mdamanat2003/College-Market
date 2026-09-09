@@ -5,6 +5,7 @@ import {
   Modal, TextInput, Image
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -320,6 +321,36 @@ export default function ProductDetailsScreen() {
 
   return (
     <View style={styles.container}>
+      <Head>
+        <title>{product?.title ? `${product.title} - Ooplabdh College Marketplace` : 'Product Details - Ooplabdh'}</title>
+        <meta name="description" content={product?.description ? product.description.substring(0, 150) : 'Buy second-hand items from verified college students on Ooplabdh.'} />
+        <meta property="og:title" content={product?.title || 'Product Details'} />
+        <meta property="og:description" content={product?.description || 'College campus marketplace listing.'} />
+        {product?.images?.[0] && <meta property="og:image" content={product.images[0]} />}
+        <link rel="canonical" href={`https://ooplabdh.shop/product/${id}`} />
+        {product && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": product.title,
+                "description": product.description,
+                "category": product.category,
+                "image": product.images || [],
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "INR",
+                  "price": product.price,
+                  "itemCondition": product.condition === 'New' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
+                  "availability": product.status === 'Available' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+                }
+              })
+            }}
+          />
+        )}
+      </Head>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />

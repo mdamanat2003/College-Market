@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { useEventStore } from '../../store/eventStore';
@@ -200,6 +201,13 @@ export default function EventsList() {
 
   return (
     <View style={styles.container}>
+      <Head>
+        <title>Campus Events & Workshops - Ooplabdh</title>
+        <meta name="description" content="Discover upcoming college fests, technical workshops, cultural events, sports tournaments, and hackathons across campus." />
+        <meta property="og:title" content="Campus Events & Workshops - Ooplabdh" />
+        <meta property="og:description" content="Discover upcoming college fests, technical workshops, cultural events, and hackathons." />
+        <link rel="canonical" href="https://ooplabdh.shop/events" />
+      </Head>
       <Navbar />
       
       <View style={styles.mainContent}>

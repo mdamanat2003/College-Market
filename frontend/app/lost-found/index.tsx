@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { useLostFoundStore } from '../../store/lostFoundStore';
@@ -383,6 +384,13 @@ export default function LostFoundList() {
 
   return (
     <View style={styles.container}>
+      <Head>
+        <title>Campus Lost & Found Portal - Ooplabdh</title>
+        <meta name="description" content="Report or search for lost keys, IDs, wallets, water bottles, earphones, and personal items across campus." />
+        <meta property="og:title" content="Campus Lost & Found Portal - Ooplabdh" />
+        <meta property="og:description" content="Report or search for lost and found items across your campus." />
+        <link rel="canonical" href="https://ooplabdh.shop/lost-found" />
+      </Head>
       <Navbar />
 
       <View style={styles.mainContent}>

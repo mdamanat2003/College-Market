@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions, Platform, RefreshControl } from 'react-native';
+import Head from 'expo-router/head';
 import Footer from '../../components/layout/Footer';
 import { Navbar } from '../../components/layout/Navbar';
 import { ProductCard } from '../../components/cards/ProductCard';
@@ -73,6 +74,13 @@ export default function MarketplaceHome() {
 
   return (
     <View style={styles.container}>
+      <Head>
+        <title>Campus Marketplace - Buy & Sell College Gear | Ooplabdh</title>
+        <meta name="description" content="Browse second-hand textbooks, engineering gadgets, furniture, cycles, and student essentials from verified campus sellers." />
+        <meta property="og:title" content="Campus Marketplace - Ooplabdh" />
+        <meta property="og:description" content="Browse second-hand textbooks, electronics, and college essentials." />
+        <link rel="canonical" href="https://ooplabdh.shop/marketplace" />
+      </Head>
       <Navbar />
 
       <View style={styles.mainContent}>

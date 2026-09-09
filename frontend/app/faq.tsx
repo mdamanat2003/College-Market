@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import {
   ScrollView,
   StyleSheet,
@@ -141,6 +142,40 @@ export default function FAQ() {
 
   return (
     <ScrollView ref={scrollRef} style={styles.page} showsVerticalScrollIndicator={false}>
+      <Head>
+        <title>Frequently Asked Questions (FAQ) - Ooplabdh</title>
+        <meta name="description" content="Find answers to common questions about buying & selling on Ooplabdh, escrow safety, account verification, PYQs & notes downloads, and campus guidelines." />
+        <meta property="og:title" content="FAQ - Ooplabdh Help Center" />
+        <meta property="og:description" content="Find answers to common questions about buying & selling on Ooplabdh, escrow safety, and PYQs." />
+        <link rel="canonical" href="https://ooplabdh.shop/faq" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "How does buying & selling work on Ooplabdh?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Buyers can browse products listed by students in their college, chat directly via in-app live chat, and arrange safe campus handovers."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How do I download PYQs & study notes?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Go to the Academic Resources tab, select your branch and semester, and preview or download study materials directly."
+                  }
+                }
+              ]
+            })
+          }}
+        />
+      </Head>
       {/* Ambient background glows */}
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />

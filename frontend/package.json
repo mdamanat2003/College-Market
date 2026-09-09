@@ -6,7 +6,7 @@
   "scripts": {
     "start": "expo start --web",
     "build": "expo export --platform web",
-    "postbuild": "node scripts/fix-html.js",
+    "postbuild": "node scripts/fix-html.js && node scripts/generate-seo.js",
     "serve": "npx serve dist",
     "reset-project": "node ./scripts/reset-project.cjs",
     "android": "expo run:android",

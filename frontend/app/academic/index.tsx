@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import Head from 'expo-router/head';
 import * as DocumentPicker from 'expo-document-picker';
 import { Navbar } from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
@@ -579,6 +580,13 @@ Details: ${requestDetails || 'None provided'}`;
 
   return (
     <View style={styles.container}>
+      <Head>
+        <title>Academic Resources - PYQs, Study Notes & Syllabus | Ooplabdh</title>
+        <meta name="description" content="Download free previous year question papers (PYQs), engineering study notes, lab manuals, and syllabus for CSE, ECE, EE, ME, and more." />
+        <meta property="og:title" content="Academic Resources - PYQs & Notes | Ooplabdh" />
+        <meta property="og:description" content="Download free previous year question papers (PYQs), engineering study notes, and lab manuals." />
+        <link rel="canonical" href="https://ooplabdh.shop/academic" />
+      </Head>
       <Navbar />
 
       <View style={styles.mainContent}>

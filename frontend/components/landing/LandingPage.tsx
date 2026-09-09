@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView, Alert, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 
@@ -264,6 +265,13 @@ export default function LandingPage() {
 
   return (
     <>
+      <Head>
+        <title>Ooplabdh - College Marketplace, Books, Notes & Campus Hub</title>
+        <meta name="description" content="Ooplabdh is India's leading college student marketplace and campus hub. Buy & sell textbooks, PYQs, study notes, electronics, report lost & found items, and discover campus events." />
+        <meta property="og:title" content="Ooplabdh - College Marketplace & Campus Hub" />
+        <meta property="og:description" content="Buy & sell textbooks, PYQs, study notes, electronics, report lost & found items, and discover campus events." />
+        <link rel="canonical" href="https://ooplabdh.shop/" />
+      </Head>
       <ScrollView
         ref={scrollRef}
         style={styles.page}

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import {
   Image,
   ImageSourcePropType,
@@ -114,6 +115,13 @@ export default function About() {
   return (
     // 👇 ScrollView se restricted contentContainerStyle hata diya 👇
     <ScrollView ref={scrollRef} style={styles.page} showsVerticalScrollIndicator={false}>
+      <Head>
+        <title>About Us - Ooplabdh | Our Campus Marketplace Story</title>
+        <meta name="description" content="Learn how Ooplabdh is empowering college students with a safe, verified marketplace for buying and selling textbooks, study notes, and campus gear." />
+        <meta property="og:title" content="About Us - Ooplabdh" />
+        <meta property="og:description" content="Empowering college students with a safe, verified campus marketplace." />
+        <link rel="canonical" href="https://ooplabdh.shop/about" />
+      </Head>
       {/* Background Ambient Glows */}
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />

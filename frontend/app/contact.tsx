@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View, Platform } from 'react-native';
+import Head from 'expo-router/head';
 
 import Footer from '../components/layout/Footer';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
@@ -20,6 +21,13 @@ export default function Contact() {
 
   return (
     <ScrollView ref={scrollRef} style={styles.page} showsVerticalScrollIndicator={false}>
+      <Head>
+        <title>Contact Us & Support - Ooplabdh</title>
+        <meta name="description" content="Have questions, feedback, or need help? Contact the Ooplabdh support team for campus marketplace assistance." />
+        <meta property="og:title" content="Contact Us - Ooplabdh" />
+        <meta property="og:description" content="Reach out to Ooplabdh support team for assistance or feedback." />
+        <link rel="canonical" href="https://ooplabdh.shop/contact" />
+      </Head>
       <View style={styles.glowBlue} />
       <View style={styles.glowMint} />
 

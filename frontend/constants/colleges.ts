@@ -1,5 +1,6 @@
 export const COLLEGES = [
   'Budge Budge Institute of Technology (BBIT)',
+  'Faculty of Medicine, Qena, Egypt',
   'Jadavpur University',
   'University of Calcutta',
   'Heritage Institute of Technology (HIT)',

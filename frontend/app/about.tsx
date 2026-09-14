@@ -31,7 +31,7 @@ type TeamMember = {
 const team: TeamMember[] = [
   {
     name: 'MD AMANAT ULLAH',
-    role: 'Chief Executive Officer (CEO)',
+    role: 'Founder (CEO)',
     desc: 'Leading the technical vision and full-stack architecture for Ooplabdh.',
     initials: 'MA',
     accent: '#5bb0ff', // Matches the image's sky blue background
@@ -39,7 +39,7 @@ const team: TeamMember[] = [
     photo: require('../assets/images/team/amanat.png'),
   },
   {
-    name: 'Md Adnan Karim',
+    name: 'Sadat Ahmad',
     role: 'Co-Founder & Lead UI/UX Designer',
     desc: 'Crafting the premium, intuitive experience across the product.',
     initials: 'AK',
@@ -49,7 +49,7 @@ const team: TeamMember[] = [
   },
   {
     name: 'Aftab Mansoori',
-    role: 'Chief Technology Officer (CTO)',
+    role: 'Co-Founder & (CTO)',
     desc: 'Building scalable application features and student workflows.',
     initials: 'AM',
     accent: '#ECFDF5',
@@ -57,7 +57,7 @@ const team: TeamMember[] = [
     photo: require('../assets/images/team/aftab.jpeg'),
   },
   {
-    name: 'Masab Mallick',
+    name: 'Sohan Ahmad',
     role: 'Co-Founder & Software Engineer',
     desc: 'Focusing on robust structures and complex campus-level features.',
     initials: 'MM',
@@ -67,7 +67,7 @@ const team: TeamMember[] = [
   },
   {
     name: 'Yasir Jamal Noori',
-    role: 'Chief Operating Officer (COO)',
+    role: 'Co-Founder &  (COO)',
     desc: 'Testing the marketplace so transactions and chats stay reliable.',
     initials: 'YN',
     accent: '#FFF1F2',
@@ -246,18 +246,20 @@ export default function About() {
                       member.name.includes('AMANAT')
                         ? styles.amanatPhoto
                         : member.name.includes('Aftab')
-                        ? styles.aftabPhoto
-                        : member.name.includes('Yasir')
-                        ? styles.yasirPhoto
-                        : member.name.includes('Adnan')
-                        ? styles.adnanPhoto
-                        : styles.masabPhoto,
+                          ? styles.aftabPhoto
+                          : member.name.includes('Yasir')
+                            ? styles.yasirPhoto
+                            : member.name.includes('Adnan')
+                              ? styles.adnanPhoto
+                              : styles.masabPhoto,
                     ]}
                   />
                 ) : (
                   <Text style={[styles.avatarTextSmall, { color: member.text }]}>{member.initials}</Text>
                 )}
               </View>
+              <Text style={styles.memberNameSmall}>{member.name}</Text>
+              <Text style={styles.memberRoleSmall}>{member.role}</Text>
             </Pressable>
           ))}
         </View>
@@ -738,17 +740,19 @@ const styles = StyleSheet.create({
     left: -10,
   },
   memberNameSmall: {
+    marginTop: 12,
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: COLORS.heading,
   },
   memberRoleSmall: {
     marginTop: 4,
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.accent,
+    maxWidth: 180,
   },
   memberDescSmall: {
     marginTop: 12,

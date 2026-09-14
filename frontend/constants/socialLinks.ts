@@ -7,6 +7,8 @@ export const SOCIAL_LINKS = {
   github: process.env.EXPO_PUBLIC_GITHUB_URL || 'https://github.com',
   facebook: process.env.EXPO_PUBLIC_FACEBOOK_URL || 'https://facebook.com',
   twitter: process.env.EXPO_PUBLIC_TWITTER_URL || 'https://x.com',
+  founderLinkedin: process.env.EXPO_PUBLIC_FOUNDER_LINKEDIN_URL || 'https://www.linkedin.com/in/mdamanatullah',
+  linkedinCompany: process.env.EXPO_PUBLIC_COMPANY_LINKEDIN_URL || 'https://linkedin.com/company/ooplabdh',
 };
 
 export const openSocialLink = async (url: string, platformName: string = 'Link') => {

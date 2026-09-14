@@ -17,6 +17,7 @@ import {
 import Footer from '../components/layout/Footer';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { COLORS, SPACING } from '../theme/colors';
+import { SOCIAL_LINKS, openSocialLink } from '../constants/socialLinks';
 
 type TeamMember = {
   name: string;
@@ -26,6 +27,7 @@ type TeamMember = {
   accent: string;
   text: string;
   photo?: ImageSourcePropType;
+  linkedinUrl?: string;
 };
 
 const team: TeamMember[] = [
@@ -37,6 +39,7 @@ const team: TeamMember[] = [
     accent: '#5bb0ff', // Matches the image's sky blue background
     text: '#2563EB',
     photo: require('../assets/images/team/amanat.png'),
+    linkedinUrl: SOCIAL_LINKS.founderLinkedin,
   },
   {
     name: 'Sadat Ahmad',
@@ -116,11 +119,68 @@ export default function About() {
     // 👇 ScrollView se restricted contentContainerStyle hata diya 👇
     <ScrollView ref={scrollRef} style={styles.page} showsVerticalScrollIndicator={false}>
       <Head>
-        <title>About Us - Ooplabdh | Our Campus Marketplace Story</title>
-        <meta name="description" content="Learn how Ooplabdh is empowering college students with a safe, verified marketplace for buying and selling textbooks, study notes, and campus gear." />
-        <meta property="og:title" content="About Us - Ooplabdh" />
-        <meta property="og:description" content="Empowering college students with a safe, verified campus marketplace." />
+        <title>MD AMANAT ULLAH - Founder & CEO of Ooplabdh | About Us</title>
+        <meta name="description" content="MD AMANAT ULLAH is the Founder & CEO of Ooplabdh, empowering college students with a safe, verified marketplace for buying and selling textbooks, study notes, and campus gear." />
+        <meta name="keywords" content="MD AMANAT ULLAH, Founder of Ooplabdh, Ooplabdh Founder, MD AMANAT ULLAH LinkedIn, MD AMANAT ULLAH CEO, college marketplace founder" />
+        <meta name="author" content="MD AMANAT ULLAH" />
+        <meta property="og:title" content="MD AMANAT ULLAH - Founder & CEO of Ooplabdh" />
+        <meta property="og:description" content="MD AMANAT ULLAH is the Founder & CEO of Ooplabdh, the premier campus marketplace for college students." />
+        <meta property="og:url" content="https://ooplabdh.shop/about" />
+        <meta property="og:type" content="profile" />
+        <meta property="profile:first_name" content="MD AMANAT" />
+        <meta property="profile:last_name" content="ULLAH" />
+        <meta property="profile:username" content="mdamanatullah" />
         <link rel="canonical" href="https://ooplabdh.shop/about" />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Person",
+                "@id": "https://ooplabdh.shop/#founder",
+                "name": "MD AMANAT ULLAH",
+                "givenName": "MD AMANAT",
+                "familyName": "ULLAH",
+                "jobTitle": "Founder & CEO",
+                "worksFor": {
+                  "@type": "Organization",
+                  "name": "Ooplabdh",
+                  "url": "https://ooplabdh.shop"
+                },
+                "sameAs": [
+                  "https://www.linkedin.com/in/mdamanatullah"
+                ],
+                "url": "https://ooplabdh.shop/about",
+                "image": "https://ooplabdh.shop/assets/images/team/amanat.png",
+                "description": "MD AMANAT ULLAH is the Founder and CEO of Ooplabdh, leading technical vision and full-stack architecture."
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": "https://ooplabdh.shop/#organization",
+                "name": "Ooplabdh",
+                "url": "https://ooplabdh.shop",
+                "logo": "https://ooplabdh.shop/assets/images/icon.png",
+                "founder": {
+                  "@type": "Person",
+                  "@id": "https://ooplabdh.shop/#founder",
+                  "name": "MD AMANAT ULLAH",
+                  "jobTitle": "Founder & CEO",
+                  "sameAs": [
+                    "https://www.linkedin.com/in/mdamanatullah"
+                  ]
+                },
+                "sameAs": [
+                  "https://instagram.com/ooplabdh",
+                  "https://linkedin.com/company/ooplabdh",
+                  "https://www.linkedin.com/in/mdamanatullah"
+                ]
+              }
+            ])
+          }}
+        />
       </Head>
       {/* Background Ambient Glows */}
       <View style={styles.glowBlue} />
@@ -230,12 +290,14 @@ export default function About() {
               //@ts-ignore
               onHoverIn={() => setHoveredMember(member.name)}
               onHoverOut={() => setHoveredMember(null)}
+              onPress={() => member.linkedinUrl && openSocialLink(member.linkedinUrl, `${member.name} LinkedIn`)}
               style={({ pressed }) => [
                 styles.teamCard,
                 isTablet && styles.teamCardWide,
                 isWide && styles.teamCardDesktop,
                 (hoveredMember === member.name || pressed) && styles.teamCardActive,
               ]}
+              {...(Platform.OS === 'web' ? { itemScope: true, itemType: 'https://schema.org/Person', itemProp: member.name.includes('AMANAT') ? 'founder' : undefined } : {})}
             >
               <View style={[styles.avatarSmall, { backgroundColor: member.accent }]}>
                 {member.photo ? (
@@ -260,6 +322,16 @@ export default function About() {
               </View>
               <Text style={styles.memberNameSmall}>{member.name}</Text>
               <Text style={styles.memberRoleSmall}>{member.role}</Text>
+
+              {member.linkedinUrl && (
+                <Pressable
+                  style={styles.linkedinBadge}
+                  onPress={() => openSocialLink(member.linkedinUrl!, `${member.name} LinkedIn`)}
+                >
+                  <Ionicons name="logo-linkedin" size={14} color="#0A66C2" />
+                  <Text style={styles.linkedinBadgeText}>LinkedIn Profile</Text>
+                </Pressable>
+              )}
             </Pressable>
           ))}
         </View>
@@ -833,5 +905,22 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontSize: 16,
     fontWeight: '800',
+  },
+  linkedinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(10, 102, 194, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(10, 102, 194, 0.3)',
+  },
+  linkedinBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0A66C2',
   },
 });

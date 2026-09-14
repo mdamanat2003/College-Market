@@ -136,20 +136,50 @@ const seoMap = {
     canonical: `${DOMAIN}/lost-found`
   },
   'about': {
-    title: 'About Us - Ooplabdh | Our Campus Marketplace Story',
-    description: 'Learn how Ooplabdh is empowering college students with a safe, verified marketplace for buying and selling textbooks, study notes, and campus gear.',
+    title: 'MD AMANAT ULLAH - Founder & CEO of Ooplabdh | About Us',
+    description: 'MD AMANAT ULLAH is the Founder & CEO of Ooplabdh, leading the premier college marketplace and student community hub.',
     canonical: `${DOMAIN}/about`,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Ooplabdh",
-      "url": DOMAIN,
-      "logo": `${DOMAIN}/assets/images/icon.png`,
-      "sameAs": [
-        "https://instagram.com/ooplabdh",
-        "https://linkedin.com/company/ooplabdh"
-      ]
-    }
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "@id": `${DOMAIN}/#founder`,
+        "name": "MD AMANAT ULLAH",
+        "jobTitle": "Founder & CEO",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Ooplabdh",
+          "url": DOMAIN
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/mdamanatullah"
+        ],
+        "url": `${DOMAIN}/about`,
+        "image": `${DOMAIN}/assets/images/team/amanat.png`
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": `${DOMAIN}/#organization`,
+        "name": "Ooplabdh",
+        "url": DOMAIN,
+        "logo": `${DOMAIN}/assets/images/icon.png`,
+        "founder": {
+          "@type": "Person",
+          "@id": `${DOMAIN}/#founder`,
+          "name": "MD AMANAT ULLAH",
+          "jobTitle": "Founder & CEO",
+          "sameAs": [
+            "https://www.linkedin.com/in/mdamanatullah"
+          ]
+        },
+        "sameAs": [
+          "https://instagram.com/ooplabdh",
+          "https://linkedin.com/company/ooplabdh",
+          "https://www.linkedin.com/in/mdamanatullah"
+        ]
+      }
+    ]
   },
   'contact': {
     title: 'Contact Us & Support - Ooplabdh',
@@ -217,7 +247,8 @@ function injectSEOIntoHTML(filePath, baseDir) {
     <title>${seo.title}</title>
     <meta name="title" content="${seo.title}" />
     <meta name="description" content="${seo.description}" />
-    <meta name="keywords" content="college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
+    <meta name="keywords" content="MD AMANAT ULLAH, Founder of Ooplabdh, Ooplabdh Founder, MD AMANAT ULLAH LinkedIn, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
+    <meta name="author" content="MD AMANAT ULLAH" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#4F46E5" />
     <link rel="canonical" href="${seo.canonical}" />

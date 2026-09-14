@@ -56,20 +56,61 @@ Sitemap: ${DOMAIN}/sitemap.xml
 const seoMap = {
   default: {
     title: 'Ooplabdh - College Student Marketplace & Campus Community Hub',
-    description: 'Ooplabdh is the ultimate college marketplace and campus hub. Buy & sell used books, PYQs, study notes, electronics, report lost & found items, and discover campus events.',
+    description: 'Ooplabdh is the ultimate college marketplace and campus hub. Founded by MD AMANAT ULLAH - Buy & sell used books, PYQs, study notes, electronics, report lost & found items, and discover campus events.',
     canonical: `${DOMAIN}/`,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Ooplabdh",
-      "url": DOMAIN,
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": `${DOMAIN}/?search={search_term_string}`,
-        "query-input": "required name=search_term_string"
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Ooplabdh",
+        "url": DOMAIN,
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": `${DOMAIN}/?search={search_term_string}`,
+          "query-input": "required name=search_term_string"
+        },
+        "description": "College marketplace & student community hub for buying/selling books, notes, PYQs, events, and lost & found items."
       },
-      "description": "College marketplace & student community hub for buying/selling books, notes, PYQs, events, and lost & found items."
-    }
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": `${DOMAIN}/#organization`,
+        "name": "Ooplabdh",
+        "url": DOMAIN,
+        "logo": `${DOMAIN}/assets/images/icon.png`,
+        "founder": {
+          "@type": "Person",
+          "@id": `${DOMAIN}/#founder`,
+          "name": "MD AMANAT ULLAH",
+          "jobTitle": "Founder & CEO",
+          "sameAs": [
+            "https://www.linkedin.com/in/mdamanatullah"
+          ]
+        },
+        "sameAs": [
+          "https://instagram.com/ooplabdh",
+          "https://linkedin.com/company/ooplabdh",
+          "https://www.linkedin.com/in/mdamanatullah"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "@id": `${DOMAIN}/#founder`,
+        "name": "MD AMANAT ULLAH",
+        "jobTitle": "Founder & CEO",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Ooplabdh",
+          "url": DOMAIN
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/mdamanatullah"
+        ],
+        "url": `${DOMAIN}/about`,
+        "image": `${DOMAIN}/assets/images/team/amanat.png`
+      }
+    ]
   },
   'faq': {
     title: 'Frequently Asked Questions (FAQ) - Ooplabdh',
@@ -240,8 +281,13 @@ function injectSEOIntoHTML(filePath, baseDir) {
   const relPath = path.relative(baseDir, filePath);
   const seo = getSEOForFile(relPath);
 
-  // Strip existing data-rh title or empty title
+  // Strip existing meta/title/og/twitter tags & json-ld scripts to prevent duplicates
   content = content.replace(/<title[^>]*>.*?<\/title>/gi, '');
+  content = content.replace(/<meta name="(title|description|keywords|author|robots|theme-color)"[^>]*\/?>/gi, '');
+  content = content.replace(/<meta property="og:[^"]+"[^>]*\/?>/gi, '');
+  content = content.replace(/<meta name="twitter:[^"]+"[^>]*\/?>/gi, '');
+  content = content.replace(/<link rel="canonical"[^>]*\/?>/gi, '');
+  content = content.replace(/<script type="application\/ld\+json">.*?<\/script>/gi, '');
 
   const headTags = `
     <title>${seo.title}</title>

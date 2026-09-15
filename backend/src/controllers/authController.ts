@@ -416,112 +416,28 @@ export const getMe = asyncHandler(async (req: any, res: Response) => {
 });
 
 // ==========================================
-// FORGOT PASSWORD & OTP FUNCTIONS
+// FORGOT PASSWORD & OTP FUNCTIONS (DISABLED)
 // ==========================================
 
-// @desc    Generate OTP and send to Email
+// @desc    Generate OTP and send to Email (Disabled)
 // @route   POST /api/auth/forgot-password
 export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
-  const { email } = req.body;
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    res.status(404);
-    throw new Error("User with this email does not exist");
-  }
-
-  // OTP Cooldown check
-  if ((user as any).resetOtpExpires && new Date((user as any).resetOtpExpires).getTime() > Date.now() + 9 * 60 * 1000) { // If requested within last 1 minute
-    res.status(429);
-    throw new Error("Please wait a minute before requesting a new OTP.");
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  (user as any).resetOtp = otp;
-  (user as any).resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
-  await user.save();
-
-  let emailSentSuccessfully = false;
-  if (process.env.RESEND_API_KEY) {
-    try {
-      await sendEmail({
-        to: email,
-        subject: 'Ooplabdh - Password Reset OTP',
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-            <h2>Password Reset Request</h2>
-            <p>Your 6-digit OTP for resetting your password is:</p>
-            <h1 style="color: #2563EB; letter-spacing: 5px;">${otp}</h1>
-            <p style="color: #666; font-size: 12px;">This OTP is valid for 10 minutes only. Do not share it with anyone.</p>
-          </div>
-        `
-      });
-      emailSentSuccessfully = true;
-    } catch (err: any) {
-      console.error('Failed to send password reset OTP email:', err);
-    }
-  } else {
-    console.warn('RESEND_API_KEY is not configured on the server. Bypassing email send.');
-  }
-
-  res.json({ 
-    success: true, 
-    message: "OTP sent to your email successfully (Use 123456 for verification)" 
-  });
+  res.status(403);
+  throw new Error("Password reset feature is temporarily disabled. Please contact support or admin for assistance.");
 });
 
-// @desc    Verify the 6-Digit OTP
+// @desc    Verify the 6-Digit OTP (Disabled)
 // @route   POST /api/auth/verify-otp
 export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
-  const { email, otp } = req.body;
-
-  if (otp === '123456' || otp === '000000') {
-    res.json({ success: true, message: "OTP verified successfully. You can now reset your password." });
-    return;
-  }
-
-  const user = await User.findOne({
-    email,
-    resetOtp: otp,
-    resetOtpExpires: { $gt: new Date() }
-  });
-
-  if (!user) {
-    res.status(400);
-    throw new Error("Invalid or expired OTP");
-  }
-
-  res.json({ success: true, message: "OTP verified successfully. You can now reset your password." });
+  res.status(403);
+  throw new Error("Password reset feature is temporarily disabled. Please contact support or admin for assistance.");
 });
 
-// @desc    Reset password after OTP verification
+// @desc    Reset password after OTP verification (Disabled)
 // @route   POST /api/auth/reset-password
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
-  const { email, otp, newPassword } = req.body;
-
-  let user;
-  if (otp === '123456' || otp === '000000') {
-    user = await User.findOne({ email });
-  } else {
-    user = await User.findOne({
-      email,
-      resetOtp: otp,
-      resetOtpExpires: { $gt: new Date() }
-    });
-  }
-
-  if (!user) {
-    res.status(400);
-    throw new Error("Session expired or Invalid OTP. Please request OTP again.");
-  }
-
-  user.password = newPassword;
-  (user as any).resetOtp = undefined;
-  (user as any).resetOtpExpires = undefined;
-  await user.save();
-
-  res.json({ success: true, message: "Password updated successfully. You can now login with your new password." });
+  res.status(403);
+  throw new Error("Password reset feature is temporarily disabled. Please contact support or admin for assistance.");
 });
 
 // @desc    Update user profile & avatar

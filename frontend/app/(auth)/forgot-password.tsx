@@ -1,104 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { api } from '../../services/api';
 
 const COLORS = {
   background: '#09090b',
   card: '#18181b',
-  primary: '#38BDF8', // Sky 400
+  primary: '#38BDF8',
   primaryHover: '#0ea5e9',
-  focus: '#7dd3fc',
   heading: '#F8FAFC',
   label: '#E2E8F0',
   placeholder: '#64748B',
   border: '#27272a',
   link: '#38BDF8',
   error: '#EF4444',
-  success: '#10B981',
+  warning: '#F59E0B',
+  warningBg: 'rgba(245, 158, 11, 0.1)',
+  warningBorder: 'rgba(245, 158, 11, 0.25)',
   helper: '#94A3B8',
 };
 
 export default function ForgotPasswordScreen() {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [isButtonHovered, setIsButtonHovered] = useState(false);
-
   const router = useRouter();
-
-  const handleSendOTP = async () => {
-    if (!email) {
-      Alert.alert('Enter email', 'Please enter your registered email address.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await api.post('/auth/forgot-password', { email: email.trim().toLowerCase() });
-      if (response.data.success) {
-        Alert.alert('OTP Sent', 'Check your email for the 6-digit code. (Use 123456 for verification)');
-        setStep(2);
-      } else {
-        Alert.alert('Error', response.data.message || 'Unable to send OTP. Please try again.');
-      }
-    } catch (err: any) {
-      console.error('Send OTP failed', err);
-      Alert.alert('Error', err.response?.data?.message || 'Unable to send OTP. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!otp) {
-      Alert.alert('Enter OTP', 'Please enter the 6-digit verification code.');
-      return;
-    }
-    if (!newPassword) {
-      Alert.alert('Enter Password', 'Please enter your new password.');
-      return;
-    }
-    if (newPassword.length < 8 || newPassword.length > 12) {
-      Alert.alert('Weak Password', 'Password must be between 8 and 12 characters.');
-      return;
-    }
-    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword) || !/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
-      Alert.alert('Invalid Password', 'Password must include uppercase, lowercase, number, and special character.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      Alert.alert('Mismatch', 'Passwords do not match.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await api.post('/auth/reset-password', {
-        email: email.trim().toLowerCase(),
-        otp: otp.trim(),
-        newPassword: newPassword.trim(),
-      });
-      if (response.data.success) {
-        Alert.alert('Success', 'Password has been reset successfully! You can now log in.');
-        router.replace('/login');
-      } else {
-        Alert.alert('Error', response.data.message || 'Reset password failed. Please try again.');
-      }
-    } catch (err: any) {
-      console.error('Reset password failed', err);
-      Alert.alert('Error', err.response?.data?.message || 'Unable to reset password. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -108,129 +32,49 @@ export default function ForgotPasswordScreen() {
       >
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
           <View style={styles.formWrapper}>
-            <TouchableOpacity onPress={() => router.push('/login')} style={styles.backToHomeBtn}>
+            <TouchableOpacity onPress={() => router.replace('/login')} style={styles.backToHomeBtn}>
               <Ionicons name="arrow-back" size={16} color={COLORS.link} />
               <Text style={styles.backToHomeText}>Back to Login</Text>
             </TouchableOpacity>
+
+            <View style={styles.iconHeaderContainer}>
+              <View style={styles.iconCircle}>
+                <Ionicons name="lock-closed" size={32} color={COLORS.warning} />
+              </View>
+            </View>
+
+            <Text style={styles.title}>Password Reset Disabled</Text>
             
-            <Text style={styles.title}>Reset Password 🔒</Text>
-            
-            {step === 1 ? (
-              <>
-                <Text style={styles.subtitle}>Enter your registered email address and we will send you a 6-digit OTP.</Text>
-                
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Email Address</Text>
-                  <TextInput
-                    style={[styles.input, focusedField === 'email' && styles.inputFocused]}
-                    placeholder="you@college.edu"
-                    placeholderTextColor={COLORS.placeholder}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    value={email}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={setEmail}
-                  />
-                </View>
+            <View style={styles.noticeBox}>
+              <View style={styles.noticeHeader}>
+                <Ionicons name="warning-outline" size={20} color={COLORS.warning} />
+                <Text style={styles.noticeTitle}>Feature Unavailable</Text>
+              </View>
+              <Text style={styles.noticeText}>
+                Because OTP verification is currently disabled in system settings, password reset has been deactivated to prevent unauthorized account access.
+              </Text>
+              <Text style={[styles.noticeText, { marginTop: 8 }]}>
+                OTP वेरिफिकेशन बंद होने के कारण, सुरक्षा कारणों से पासवर्ड रिसेट की सुविधा अस्थायी रूप से बंद कर दी गई है।
+              </Text>
+            </View>
 
-                <TouchableOpacity 
-                  style={[styles.button, isButtonHovered && styles.buttonHovered]} 
-                  onPress={handleSendOTP} 
-                  disabled={loading}
-                  {...{
-                    onHoverIn: () => setIsButtonHovered(true),
-                    onHoverOut: () => setIsButtonHovered(false),
-                  } as any}
-                >
-                  {loading ? <ActivityIndicator color="#09090b" /> : <Text style={styles.buttonText}>Send OTP</Text>}
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <Text style={styles.subtitle}>Enter the 6-digit code sent to your email (Use 123456 for verification) and choose a new password.</Text>
-                
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Verification Code (OTP)</Text>
-                  <TextInput
-                    style={[styles.input, focusedField === 'otp' && styles.inputFocused]}
-                    placeholder="Enter 6-digit OTP (Use 123456)"
-                    placeholderTextColor={COLORS.placeholder}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    value={otp}
-                    onFocus={() => setFocusedField('otp')}
-                    onBlur={() => setFocusedField(null)}
-                    onChangeText={setOtp}
-                  />
-                  <Text style={{ color: COLORS.primary, fontSize: 13, fontWeight: '700', marginTop: 4 }}>
-                    💡 Use 123456 for verification
-                  </Text>
-                </View>
+            <View style={styles.supportBox}>
+              <Text style={styles.supportTitle}>Need Help Accessing Your Account?</Text>
+              <Text style={styles.supportText}>
+                Please reach out directly to the college marketplace admin or support team for account assistance.
+              </Text>
+            </View>
 
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>New Password</Text>
-                  <View style={styles.passwordInputWrap}>
-                    <TextInput
-                      style={[styles.input, styles.passwordInput, focusedField === 'newPassword' && styles.inputFocused]}
-                      placeholder="8-12 chars, e.g. Campus@12"
-                      placeholderTextColor={COLORS.placeholder}
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      value={newPassword}
-                      onFocus={() => setFocusedField('newPassword')}
-                      onBlur={() => setFocusedField(null)}
-                      onChangeText={setNewPassword}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButton}
-                      onPress={() => setShowPassword((current) => !current)}
-                    >
-                      <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={COLORS.helper} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Confirm New Password</Text>
-                  <View style={styles.passwordInputWrap}>
-                    <TextInput
-                      style={[styles.input, styles.passwordInput, focusedField === 'confirmPassword' && styles.inputFocused]}
-                      placeholder="Retype new password"
-                      placeholderTextColor={COLORS.placeholder}
-                      secureTextEntry={!showConfirmPassword}
-                      autoCapitalize="none"
-                      value={confirmPassword}
-                      onFocus={() => setFocusedField('confirmPassword')}
-                      onBlur={() => setFocusedField(null)}
-                      onChangeText={setConfirmPassword}
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButton}
-                      onPress={() => setShowConfirmPassword((current) => !current)}
-                    >
-                      <Ionicons name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={COLORS.helper} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <TouchableOpacity 
-                  style={[styles.button, isButtonHovered && styles.buttonHovered]} 
-                  onPress={handleResetPassword} 
-                  disabled={loading}
-                  {...{
-                    onHoverIn: () => setIsButtonHovered(true),
-                    onHoverOut: () => setIsButtonHovered(false),
-                  } as any}
-                >
-                  {loading ? <ActivityIndicator color="#09090b" /> : <Text style={styles.buttonText}>Reset Password</Text>}
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.resendBtn} onPress={() => setStep(1)} disabled={loading}>
-                  <Text style={styles.resendText}>← Change Email / Request New OTP</Text>
-                </TouchableOpacity>
-              </>
-            )}
+            <TouchableOpacity 
+              style={[styles.button, isButtonHovered && styles.buttonHovered]} 
+              onPress={() => router.replace('/login')} 
+              {...{
+                onHoverIn: () => setIsButtonHovered(true),
+                onHoverOut: () => setIsButtonHovered(false),
+              } as any}
+            >
+              <Text style={styles.buttonText}>Return to Login</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -254,7 +98,7 @@ const styles = StyleSheet.create({
   },
   formWrapper: {
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 480,
     backgroundColor: COLORS.card,
     padding: 28,
     borderRadius: 24,
@@ -262,7 +106,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     ...Platform.select({
       web: {
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.04)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(245, 158, 11, 0.05)',
       } as any,
       default: {
         shadowColor: '#000',
@@ -273,81 +117,78 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: '800', 
-    color: COLORS.heading, 
-    marginBottom: 8 
+  iconHeaderContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 8,
   },
-  subtitle: { 
-    fontSize: 15, 
-    color: COLORS.helper, 
-    marginBottom: 25, 
-    lineHeight: 22 
-  },
-  inputGroup: { 
-    gap: 8,
-    marginBottom: 16
-  },
-  label: {
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '700',
-    color: COLORS.label,
-  },
-  input: { 
-    minHeight: 54,
-    borderWidth: 1, 
-    borderColor: COLORS.border, 
-    paddingVertical: 14,
-    paddingHorizontal: 16, 
-    borderRadius: 14, 
-    fontSize: 16, 
-    backgroundColor: COLORS.card,
-    color: COLORS.heading,
-    ...Platform.select({
-      web: {
-        transitionProperty: 'all',
-        transitionDuration: '200ms',
-      } as any,
-      default: {},
-    }),
-  },
-  inputFocused: {
-    borderColor: '#38BDF8',
-    backgroundColor: '#09090b',
-    ...Platform.select({
-      web: { 
-        boxShadow: '0 0 0 4px rgba(56, 189, 248, 0.2)',
-        outline: 'none',
-      } as any,
-      default: {},
-    }),
-  },
-  passwordInputWrap: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  passwordInput: {
-    paddingRight: 52,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 12,
-    height: 44,
-    width: 40,
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.warningBg,
+    borderWidth: 1,
+    borderColor: COLORS.warningBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
+  },
+  title: { 
+    fontSize: 24, 
+    fontWeight: '800', 
+    color: COLORS.heading, 
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  noticeBox: {
+    backgroundColor: COLORS.warningBg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.warningBorder,
+    padding: 18,
+    marginBottom: 20,
+  },
+  noticeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  noticeTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.warning,
+  },
+  noticeText: {
+    fontSize: 14,
+    color: COLORS.label,
+    lineHeight: 20,
+  },
+  supportBox: {
+    backgroundColor: '#09090b',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 24,
+  },
+  supportTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.heading,
+    marginBottom: 6,
+  },
+  supportText: {
+    fontSize: 13,
+    color: COLORS.helper,
+    lineHeight: 18,
   },
   button: { 
     width: '100%',
-    minHeight: 56,
+    minHeight: 52,
     backgroundColor: COLORS.primary, 
     borderRadius: 14, 
     alignItems: 'center', 
     justifyContent: 'center',
-    marginTop: 10,
     shadowColor: 'rgba(56, 189, 248, 0.26)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
@@ -377,21 +218,11 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     fontWeight: '800',
   },
-  resendBtn: {
-    marginTop: 20,
-    alignSelf: 'center',
-    padding: 5,
-  },
-  resendText: {
-    color: COLORS.link,
-    fontSize: 14,
-    fontWeight: '700',
-  },
   backToHomeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 18,
+    marginBottom: 16,
     alignSelf: 'flex-start',
   },
   backToHomeText: {

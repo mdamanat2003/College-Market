@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         boxShadow: '0 0 0 4px rgba(56, 189, 248, 0.2)',
-        outline: 'none',
+        outlineStyle: 'none',
       } as any,
       default: {},
     }),

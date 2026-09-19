@@ -14,29 +14,29 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         
         {/* Primary Meta Tags */}
-        <title>Ooplabdh - College Student Marketplace & Campus Community Hub</title>
-        <meta name="title" content="Ooplabdh - College Student Marketplace & Campus Community Hub" />
-        <meta name="description" content="Ooplabdh is the ultimate college marketplace and campus hub. Buy & sell used books, PYQs, study notes, electronics, report lost & found items, and discover campus events." />
-        <meta name="keywords" content="MD AMANAT ULLAH, Founder of Ooplabdh, Ooplabdh Founder, MD AMANAT ULLAH LinkedIn, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
-        <meta name="author" content="MD AMANAT ULLAH" />
+        <title>OOPLABDH | Official Platform</title>
+        <meta name="title" content="OOPLABDH | Official Platform" />
+        <meta name="description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
+        <meta name="keywords" content="OOPLABDH, ooplabdh.shop, MD AMANAT ULLAH, Founder of OOPLABDH, OOPLABDH Founder, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
+        <meta name="author" content="OOPLABDH" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
         <meta name="theme-color" content="#4F46E5" />
-        <link rel="canonical" href="https://ooplabdh.shop" />
+        <link rel="canonical" href="https://ooplabdh.shop/" />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://ooplabdh.shop" />
-        <meta property="og:title" content="Ooplabdh - College Student Marketplace & Campus Community Hub" />
-        <meta property="og:description" content="Founded by MD AMANAT ULLAH - Ooplabdh is the ultimate college marketplace and student community hub." />
+        <meta property="og:url" content="https://ooplabdh.shop/" />
+        <meta property="og:title" content="OOPLABDH" />
+        <meta property="og:description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
         <meta property="og:image" content="https://ooplabdh.shop/assets/images/og-banner.png" />
-        <meta property="og:site_name" content="Ooplabdh" />
+        <meta property="og:site_name" content="OOPLABDH" />
         <meta property="og:locale" content="en_US" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://ooplabdh.shop" />
-        <meta name="twitter:title" content="Ooplabdh - College Student Marketplace & Campus Community Hub" />
-        <meta name="twitter:description" content="Founded by MD AMANAT ULLAH - Ooplabdh is the ultimate college marketplace and student community hub." />
+        <meta name="twitter:url" content="https://ooplabdh.shop/" />
+        <meta name="twitter:title" content="OOPLABDH" />
+        <meta name="twitter:description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
         <meta name="twitter:image" content="https://ooplabdh.shop/assets/images/og-banner.png" />
 
         {/* Mobile Web App Capable */}
@@ -50,37 +50,23 @@ export default function Root({ children }: PropsWithChildren) {
             __html: JSON.stringify([
               {
                 "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "OOPLABDH",
+                "alternateName": "Ooplabdh Shop",
+                "url": "https://ooplabdh.shop",
+                "logo": "https://ooplabdh.shop/logo.png"
+              },
+              {
+                "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "Ooplabdh",
+                "name": "OOPLABDH",
                 "url": "https://ooplabdh.shop",
                 "potentialAction": {
                   "@type": "SearchAction",
                   "target": "https://ooplabdh.shop/?search={search_term_string}",
                   "query-input": "required name=search_term_string"
                 },
-                "description": "College marketplace & student community hub for buying/selling books, notes, PYQs, events, and lost & found items."
-              },
-              {
-                "@context": "https://schema.org",
-                "@type": "Organization",
-                "@id": "https://ooplabdh.shop/#organization",
-                "name": "Ooplabdh",
-                "url": "https://ooplabdh.shop",
-                "logo": "https://ooplabdh.shop/assets/images/icon.png",
-                "founder": {
-                  "@type": "Person",
-                  "@id": "https://ooplabdh.shop/#founder",
-                  "name": "MD AMANAT ULLAH",
-                  "jobTitle": "Founder & CEO",
-                  "sameAs": [
-                    "https://www.linkedin.com/in/mdamanatullah"
-                  ]
-                },
-                "sameAs": [
-                  "https://instagram.com/ooplabdh",
-                  "https://linkedin.com/company/ooplabdh",
-                  "https://www.linkedin.com/in/mdamanatullah"
-                ]
+                "description": "Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services."
               },
               {
                 "@context": "https://schema.org",
@@ -90,7 +76,7 @@ export default function Root({ children }: PropsWithChildren) {
                 "jobTitle": "Founder & CEO",
                 "worksFor": {
                   "@type": "Organization",
-                  "name": "Ooplabdh",
+                  "name": "OOPLABDH",
                   "url": "https://ooplabdh.shop"
                 },
                 "sameAs": [

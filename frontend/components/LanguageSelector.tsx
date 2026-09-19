@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     }),
   },
   modalCardRTL: {
-    direction: 'rtl',
+    writingDirection: 'rtl',
   },
   modalHeader: {
     flexDirection: 'row',

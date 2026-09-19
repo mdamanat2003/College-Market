@@ -55,43 +55,29 @@ Sitemap: ${DOMAIN}/sitemap.xml
 // Map of route paths to specific SEO metadata & JSON-LD schemas
 const seoMap = {
   default: {
-    title: 'Ooplabdh - College Student Marketplace & Campus Community Hub',
-    description: 'Ooplabdh is the ultimate college marketplace and campus hub. Founded by MD AMANAT ULLAH - Buy & sell used books, PYQs, study notes, electronics, report lost & found items, and discover campus events.',
+    title: 'OOPLABDH | Official Platform',
+    description: 'Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services.',
     canonical: `${DOMAIN}/`,
     jsonLd: [
       {
         "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "OOPLABDH",
+        "alternateName": "Ooplabdh Shop",
+        "url": DOMAIN,
+        "logo": `${DOMAIN}/logo.png`
+      },
+      {
+        "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "Ooplabdh",
+        "name": "OOPLABDH",
         "url": DOMAIN,
         "potentialAction": {
           "@type": "SearchAction",
           "target": `${DOMAIN}/?search={search_term_string}`,
           "query-input": "required name=search_term_string"
         },
-        "description": "College marketplace & student community hub for buying/selling books, notes, PYQs, events, and lost & found items."
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "@id": `${DOMAIN}/#organization`,
-        "name": "Ooplabdh",
-        "url": DOMAIN,
-        "logo": `${DOMAIN}/assets/images/icon.png`,
-        "founder": {
-          "@type": "Person",
-          "@id": `${DOMAIN}/#founder`,
-          "name": "MD AMANAT ULLAH",
-          "jobTitle": "Founder & CEO",
-          "sameAs": [
-            "https://www.linkedin.com/in/mdamanatullah"
-          ]
-        },
-        "sameAs": [
-          "https://instagram.com/ooplabdh",
-          "https://linkedin.com/company/ooplabdh",
-          "https://www.linkedin.com/in/mdamanatullah"
-        ]
+        "description": "Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services."
       },
       {
         "@context": "https://schema.org",
@@ -101,7 +87,7 @@ const seoMap = {
         "jobTitle": "Founder & CEO",
         "worksFor": {
           "@type": "Organization",
-          "name": "Ooplabdh",
+          "name": "OOPLABDH",
           "url": DOMAIN
         },
         "sameAs": [
@@ -279,6 +265,7 @@ function injectSEOIntoHTML(filePath, baseDir) {
   let content = fs.readFileSync(filePath, 'utf8');
 
   const relPath = path.relative(baseDir, filePath);
+  const norm = relPath.replace(/\\/g, '/').replace(/^\//, '').replace(/\.html$/, '');
   const seo = getSEOForFile(relPath);
 
   // Strip existing meta/title/og/twitter tags & json-ld scripts to prevent duplicates
@@ -289,12 +276,16 @@ function injectSEOIntoHTML(filePath, baseDir) {
   content = content.replace(/<link rel="canonical"[^>]*\/?>/gi, '');
   content = content.replace(/<script type="application\/ld\+json">.*?<\/script>/gi, '');
 
+  const isDefault = norm === 'index' || norm === 'home' || norm === '' || norm === 'marketplace' || norm === '(tabs)/index' || norm === '(tabs)/marketplace';
+  const ogTitle = isDefault ? 'OOPLABDH' : seo.title;
+  const twitterTitle = isDefault ? 'OOPLABDH' : seo.title;
+
   const headTags = `
     <title>${seo.title}</title>
     <meta name="title" content="${seo.title}" />
     <meta name="description" content="${seo.description}" />
-    <meta name="keywords" content="MD AMANAT ULLAH, Founder of Ooplabdh, Ooplabdh Founder, MD AMANAT ULLAH LinkedIn, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
-    <meta name="author" content="MD AMANAT ULLAH" />
+    <meta name="keywords" content="OOPLABDH, ooplabdh.shop, MD AMANAT ULLAH, Founder of OOPLABDH, OOPLABDH Founder, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
+    <meta name="author" content="OOPLABDH" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#4F46E5" />
     <link rel="canonical" href="${seo.canonical}" />
@@ -302,15 +293,15 @@ function injectSEOIntoHTML(filePath, baseDir) {
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${seo.canonical}" />
-    <meta property="og:title" content="${seo.title}" />
+    <meta property="og:title" content="${ogTitle}" />
     <meta property="og:description" content="${seo.description}" />
     <meta property="og:image" content="${DOMAIN}/assets/images/og-banner.png" />
-    <meta property="og:site_name" content="Ooplabdh" />
+    <meta property="og:site_name" content="OOPLABDH" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="${seo.canonical}" />
-    <meta name="twitter:title" content="${seo.title}" />
+    <meta name="twitter:title" content="${twitterTitle}" />
     <meta name="twitter:description" content="${seo.description}" />
     <meta name="twitter:image" content="${DOMAIN}/assets/images/og-banner.png" />
 

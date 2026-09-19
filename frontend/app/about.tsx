@@ -113,6 +113,7 @@ export default function About() {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const isTablet = width >= 640;
+  const isMobile = width < 640;
   const isTiny = width < 390;
 
   return (
@@ -193,13 +194,13 @@ export default function About() {
 
         {/* Hero Section */}
         <View style={[styles.hero, isWide && styles.heroWide]}>
-          <View style={styles.heroCopy}>
+          <View style={[styles.heroCopy, isWide && styles.heroCopyWide]}>
             <View style={styles.pill}>
               <Ionicons name="sparkles" size={14} color="#38BDF8" />
               <Text style={styles.pillText}>Built for students, by students</Text>
             </View>
 
-            <Text style={[styles.heroTitle, isTiny && styles.heroTitleTiny]}>
+            <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile, isTiny && styles.heroTitleTiny]}>
               Redefining Campus{'\n'}Commerce.
             </Text>
             <Text style={styles.heroBody}>
@@ -226,7 +227,7 @@ export default function About() {
             </View>
           </View>
 
-          <View style={styles.heroPanel}>
+          <View style={[styles.heroPanel, isWide && styles.heroPanelWide]}>
             <View style={styles.heroStatCard}>
               <Text style={styles.heroStatValue}>100%</Text>
               <Text style={styles.heroStatLabel}>Verified Campus Network</Text>
@@ -243,7 +244,12 @@ export default function About() {
           {pillars.map((item) => (
             <View
               key={item.title}
-              style={[styles.pillarCard, item.tone === 'solution' ? styles.solutionCard : styles.problemCard]}
+              style={[
+                styles.pillarCard,
+                isWide && styles.pillarCardWide,
+                isMobile && styles.pillarCardMobile,
+                item.tone === 'solution' ? styles.solutionCard : styles.problemCard
+              ]}
             >
               <View style={styles.pillarHeader}>
                 <View style={[styles.pillarIconWrap, item.tone === 'solution' ? styles.solutionIcon : styles.problemIcon]}>
@@ -337,7 +343,7 @@ export default function About() {
         </View>
 
         {/* Deep Dark CTA Banner */}
-        <View style={styles.ctaPanel}>
+        <View style={[styles.ctaPanel, isMobile && styles.ctaPanelMobile]}>
           {/* Decorative background circles */}
           <View style={styles.ctaCircle1} />
           <View style={styles.ctaCircle2} />
@@ -410,8 +416,10 @@ const styles = StyleSheet.create({
     gap: 60,
   },
   heroCopy: {
-    flex: 1.2,
     gap: 20,
+  },
+  heroCopyWide: {
+    flex: 1.2,
   },
   pill: {
     alignSelf: 'flex-start',
@@ -436,6 +444,10 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: COLORS.heading,
     letterSpacing: -1, // Startup style typography
+  },
+  heroTitleMobile: {
+    fontSize: 32,
+    lineHeight: 38,
   },
   heroTitleTiny: {
     fontSize: 34,
@@ -498,9 +510,11 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   heroPanel: {
-    flex: 0.8,
     gap: 16,
     minWidth: 280,
+  },
+  heroPanelWide: {
+    flex: 0.8,
   },
   heroStatCard: {
     borderRadius: 24,
@@ -545,9 +559,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   pillarCard: {
-    flex: 1,
+    width: '100%',
     borderRadius: 24,
-    padding: 28,
+    padding: 24,
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -556,6 +570,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 16,
     elevation: 2,
+  },
+  pillarCardWide: {
+    flex: 1,
+  },
+  pillarCardMobile: {
+    padding: 18,
   },
   problemCard: {
     borderColor: 'rgba(239, 68, 68, 0.2)',
@@ -843,6 +863,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     overflow: 'hidden', // Contains the decorative circles
     position: 'relative',
+  },
+  ctaPanelMobile: {
+    padding: 20,
+    borderRadius: 24,
   },
   ctaCircle1: {
     position: 'absolute',

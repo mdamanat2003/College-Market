@@ -266,10 +266,15 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>Ooplabdh - College Marketplace, Books, Notes & Campus Hub</title>
-        <meta name="description" content="Ooplabdh is India's leading college student marketplace and campus hub. Buy & sell textbooks, PYQs, study notes, electronics, report lost & found items, and discover campus events." />
-        <meta property="og:title" content="Ooplabdh - College Marketplace & Campus Hub" />
-        <meta property="og:description" content="Buy & sell textbooks, PYQs, study notes, electronics, report lost & found items, and discover campus events." />
+        <title>OOPLABDH | Official Platform</title>
+        <meta name="description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
+        <meta property="og:title" content="OOPLABDH" />
+        <meta property="og:site_name" content="OOPLABDH" />
+        <meta property="og:description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
+        <meta property="og:url" content="https://ooplabdh.shop/" />
+        <meta name="twitter:title" content="OOPLABDH" />
+        <meta name="twitter:description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
+        <meta name="twitter:url" content="https://ooplabdh.shop/" />
         <link rel="canonical" href="https://ooplabdh.shop/" />
       </Head>
       <ScrollView
@@ -300,9 +305,17 @@ export default function LandingPage() {
               <View style={styles.welcomeSheen} />
 
               <View style={styles.heroContentInside}>
-                <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
-                  {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
-                </Animated.Text>
+                {Platform.OS === 'web' ? (
+                  <h1 style={{ margin: 0, padding: 0, fontSize: 'inherit', fontWeight: 'inherit', color: 'inherit', textAlign: 'inherit', textTransform: 'inherit' }}>
+                    <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
+                      {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
+                    </Animated.Text>
+                  </h1>
+                ) : (
+                  <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
+                    {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
+                  </Animated.Text>
+                )}
 
                 <Text style={[styles.welcomeSubtitle, isMobile && styles.welcomeSubtitleMobile]}>
                   Your secure college marketplace. Buy, sell, and request notes with confidence.

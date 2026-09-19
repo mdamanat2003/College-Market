@@ -177,7 +177,7 @@ export default function CreateEvent() {
               {Platform.OS === 'web' ? (
                 <input
                   type="date"
-                  style={{...styles.input, width: '100%', outline: 'none'} as any}
+                  style={{...styles.input, width: '100%', outlineStyle: 'none'} as any}
                   value={date.toISOString().split('T')[0]}
                   onChange={(e: any) => {
                     const newDate = new Date(e.target.value);
@@ -203,7 +203,7 @@ export default function CreateEvent() {
               {Platform.OS === 'web' ? (
                 <input
                   type="time"
-                  style={{...styles.input, width: '100%', outline: 'none'} as any}
+                  style={{...styles.input, width: '100%', outlineStyle: 'none'} as any}
                   value={`${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`}
                   onChange={(e: any) => {
                     if (e.target.value) {

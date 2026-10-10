@@ -117,7 +117,7 @@ export default function UploadAcademic() {
             'Bhai, upload karne ke liye aapko account se login karna padega.',
             [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
+              { text: 'Login Now', onPress: () => router.push('/(auth)/login?redirect=/academic/upload') }
             ]
           );
         } else {
@@ -134,7 +134,7 @@ export default function UploadAcademic() {
           'Bhai, upload karne ke liye aapko account se login karna padega.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login?redirect=/academic/upload') }
           ]
         );
       } else {

@@ -14,20 +14,25 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         
         {/* Primary Meta Tags */}
-        <title>OOPLABDH | Official Platform</title>
-        <meta name="title" content="OOPLABDH | Official Platform" />
-        <meta name="description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
-        <meta name="keywords" content="OOPLABDH, ooplabdh.shop, MD AMANAT ULLAH, Founder of OOPLABDH, OOPLABDH Founder, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events" />
+        <title>OOPLABDH | College Marketplace & Academic Resources</title>
+        <meta name="title" content="OOPLABDH | College Marketplace & Academic Resources" />
+        <meta name="description" content="Ooplabdh is the verified college campus marketplace for students. Buy & sell pre-owned engineering books, lab gear, dorm essentials, and download free previous year question papers (PYQs) & notes." />
+        <meta name="keywords" content="OOPLABDH, ooplabdh.shop, college marketplace, campus store, buy sell used books, college pyq notes, student marketplace, campus lost and found, college events, engineering study notes" />
         <meta name="author" content="OOPLABDH" />
         <meta name="robots" content="index, follow, max-image-preview:large" />
-        <meta name="theme-color" content="#4F46E5" />
+        <meta name="theme-color" content="#09090b" />
         <link rel="canonical" href="https://ooplabdh.shop/" />
+
+        {/* Preconnect Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://ooplabdh.shop/" />
-        <meta property="og:title" content="OOPLABDH" />
-        <meta property="og:description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
+        <meta property="og:title" content="OOPLABDH | College Marketplace & PYQs" />
+        <meta property="og:description" content="Buy & sell pre-owned college essentials and download previous year question papers (PYQs) and study notes from verified peers." />
         <meta property="og:image" content="https://ooplabdh.shop/assets/images/og-banner.png" />
         <meta property="og:site_name" content="OOPLABDH" />
         <meta property="og:locale" content="en_US" />
@@ -35,8 +40,8 @@ export default function Root({ children }: PropsWithChildren) {
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="https://ooplabdh.shop/" />
-        <meta name="twitter:title" content="OOPLABDH" />
-        <meta name="twitter:description" content="Welcome to OOPLABDH (ooplabdh.shop). Discover our latest resources, tools, and services." />
+        <meta name="twitter:title" content="OOPLABDH | College Marketplace & PYQs" />
+        <meta name="twitter:description" content="Buy & sell pre-owned college essentials and download previous year question papers (PYQs) and study notes from verified peers." />
         <meta name="twitter:image" content="https://ooplabdh.shop/assets/images/og-banner.png" />
 
         {/* Mobile Web App Capable */}

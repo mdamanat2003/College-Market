@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Image, Platform, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -36,7 +36,7 @@ export default function CheckoutScreen() {
 
   useEffect(() => {
     if (!user) {
-      router.replace('/(auth)/login');
+      router.replace(`/(auth)/login?redirect=/checkout/${id}` as any);
       return;
     }
 
@@ -54,7 +54,7 @@ export default function CheckoutScreen() {
     // 1. Load Script
     const isScriptLoaded = await loadRazorpayScript();
     if (!isScriptLoaded && Platform.OS === 'web') {
-      alert('Failed to load Razorpay. Please check your internet connection.');
+      Alert.alert('Payment Error', 'Failed to load Razorpay. Please check your internet connection.');
       return;
     }
 
@@ -64,8 +64,8 @@ export default function CheckoutScreen() {
 
     // 3. Setup Razorpay Options
     const options = {
-      key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID, // .env se uthaya
-      amount: order.amount, // Paise me (paise backend se aayega)
+      key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID,
+      amount: order.amount,
       currency: "INR",
       name: "Ooplabdh Escrow",
       description: `Payment for ${product.title}`,
@@ -80,7 +80,7 @@ export default function CheckoutScreen() {
       },
       handler: async function (response: any) {
         try {
-          // 4. Verify Payment on Backend (fire-and-forget so UI can navigate instantly)
+          // 4. Verify Payment on Backend
           verifyPayment({
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
@@ -90,27 +90,25 @@ export default function CheckoutScreen() {
             if (!success) console.error('Payment verification failed in background');
           }).catch((err) => console.error('VerifyPayment error', err));
 
-          // Immediate navigation to Home (no blocking alerts)
-          router.replace('/(tabs)');
+          Alert.alert('Payment Successful', 'Your escrow order has been placed. Meet with the seller to collect your item!');
+          router.replace('/(tabs)/marketplace');
           
         } catch (error) {
           console.error(error);
-          alert('Something went wrong during verification.');
-          window.location.reload();
+          Alert.alert('Verification Issue', 'Something went wrong during payment verification. Please check your orders.');
         }
       }
-    }; // <--- YE BRACKET MISSING THA!
+    };
 
     // 5. Open Razorpay Modal
     if (Platform.OS === 'web') {
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any) {
-        alert(`Payment Failed: ${response.error.description}`);
+        Alert.alert('Payment Failed', response.error?.description || 'Transaction could not be completed.');
       });
       rzp.open();
     } else {
-      // Future me React Native Mobile ke liye react-native-razorpay yahan aayega
-      alert('Mobile payment integration coming soon!');
+      Alert.alert('Notice', 'Mobile native payment integration coming soon! Please use the web platform.');
     }
   };
 

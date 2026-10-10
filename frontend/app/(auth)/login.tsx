@@ -226,7 +226,7 @@ export default function Login() {
 
                 <View style={[styles.footer, isRTL && { flexDirection: 'row-reverse' }]}>
                   <Text style={styles.footerText}>{t('dontHaveAccount')} </Text>
-                  <Link href="/register" asChild>
+                  <Link href={redirect ? `/(auth)/register?redirect=${encodeURIComponent(String(redirect))}` : "/(auth)/register"} asChild>
                     <TouchableOpacity {...({ 
                       onHoverIn: () => setFooterHovered(true), 
                       onHoverOut: () => setFooterHovered(false) 

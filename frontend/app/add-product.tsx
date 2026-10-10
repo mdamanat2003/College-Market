@@ -101,6 +101,11 @@ export default function AddItemScreen() {
   // 👇 VALIDATION LOGIC INCLUDED 👇
   // 👇 API CALL TO SERVER 👇
   const handleSubmit = async () => {
+    if (!user) {
+      router.push('/(auth)/login?redirect=/add-product');
+      return;
+    }
+
     if (user && !user.isVerified) {
       Alert.alert('Verification Required', 'Your student account is not verified yet. Please wait for an admin to verify your College ID card.');
       return;
@@ -204,7 +209,7 @@ export default function AddItemScreen() {
         setDescription('');
         setCategory('');
         setImages([]);
-        router.push('/(tabs)');
+        router.replace('/(tabs)/marketplace');
       } else {
         Alert.alert('Failed', data.message || 'Something went wrong');
       }

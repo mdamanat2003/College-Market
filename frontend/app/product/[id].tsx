@@ -109,7 +109,7 @@ export default function ProductDetailsScreen() {
   const handleWishlist = async () => {
     if (!checkRestriction('Wishlist')) return;
     if (!user) {
-      router.push('/(auth)/login');
+      router.push(`/(auth)/login?redirect=/product/${product._id}`);
       return;
     }
 
@@ -136,7 +136,7 @@ export default function ProductDetailsScreen() {
     }
     if (!checkRestriction('Seller se chat')) return;
     if (!user) {
-      router.push('/(auth)/login');
+      router.push(`/(auth)/login?redirect=/product/${product._id}`);
       return;
     }
     if (!sellerId) return;
@@ -159,7 +159,7 @@ export default function ProductDetailsScreen() {
     }
     if (!checkRestriction('Product buy')) return;
     if (!user) {
-      router.push('/(auth)/login');
+      router.push(`/(auth)/login?redirect=/checkout/${product._id}`);
       return;
     }
     router.push(`/checkout/${product._id}`);

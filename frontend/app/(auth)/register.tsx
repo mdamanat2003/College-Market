@@ -15,7 +15,7 @@ import {
   DimensionValue,
   Image,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -128,6 +128,7 @@ export default function Register() {
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === 'web' && width >= 900;
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const registerStore = useAuthStore((s) => s.register);
   const sendOtpStore = useAuthStore((s) => s.sendRegistrationOtp);
   const verifyOtpStore = useAuthStore((s) => s.verifyRegistrationOtp);
@@ -309,7 +310,8 @@ export default function Register() {
 
       if (ok) {
         Alert.alert('Success!', 'Your account has been created.');
-        router.replace('/login');
+        const targetLogin = redirect ? `/(auth)/login?redirect=${encodeURIComponent(String(redirect))}` : '/(auth)/login';
+        router.replace(targetLogin as any);
       } else {
         const message = authError || 'Registration failed.';
         const field = mapServerErrorToField(message);
@@ -773,7 +775,7 @@ export default function Register() {
 
                 <View style={styles.footer}>
                   <Text style={styles.footerText}>Already have an account? </Text>
-                  <Link href="/login" asChild>
+                  <Link href={redirect ? `/(auth)/login?redirect=${encodeURIComponent(String(redirect))}` : "/(auth)/login"} asChild>
                     <TouchableOpacity>
                       <Text style={styles.footerLink}>Sign In</Text>
                     </TouchableOpacity>

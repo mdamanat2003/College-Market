@@ -241,12 +241,11 @@ export default function RootLayout() {
     if (!isReady) return;
 
     const currentSegment = (segments[0] || '').toLowerCase();
+    const nextSegment = (segments[1] || '').toLowerCase();
     const inAuthGroup = currentSegment === '(auth)';
     const inAdminRoute = currentSegment === 'admin' || currentSegment === 'opadmin';
     const normalizedPath = (pathname || '').toLowerCase();
     const isAdminLoginPage = normalizedPath === '/admin/login' || normalizedPath === '/opadmin/login' || normalizedPath === '/opadmin';
-    const inTabsGroup = currentSegment === '(tabs)';
-    const isPublicRoute = (pathname === '/' || pathname === '/home' || pathname === '/about' || pathname === '/contact' || pathname === '/faq' || pathname === '/privacy' || pathname === '/terms' || pathname === '/safety') && !inTabsGroup;
 
     if (inAdminRoute) {
       if (isAdminLoginPage) {
@@ -257,7 +256,7 @@ export default function RootLayout() {
       }
       if (!user || user.role !== 'admin') {
         if (user && user.role !== 'admin') {
-          router.replace('/(tabs)');
+          router.replace('/(tabs)/marketplace');
         } else {
           router.replace('/Opadmin/login' as any);
         }
@@ -265,13 +264,37 @@ export default function RootLayout() {
       }
     }
 
+    // Explicitly protected routes that require an authenticated account
+    const isExplicitlyProtected =
+      normalizedPath.startsWith('/checkout') ||
+      currentSegment === 'checkout' ||
+      normalizedPath.startsWith('/add-product') ||
+      currentSegment === 'add-product' ||
+      normalizedPath === '/academic/upload' ||
+      (currentSegment === 'academic' && nextSegment === 'upload') ||
+      normalizedPath.startsWith('/messages') ||
+      currentSegment === 'messages' ||
+      normalizedPath.startsWith('/chat') ||
+      currentSegment === 'chat' ||
+      normalizedPath.startsWith('/profile') ||
+      currentSegment === 'profile' ||
+      normalizedPath.startsWith('/settings') ||
+      currentSegment === 'settings' ||
+      normalizedPath.startsWith('/notifications') ||
+      currentSegment === 'notifications' ||
+      normalizedPath === '/lost-found/report' ||
+      (currentSegment === 'lost-found' && nextSegment === 'report') ||
+      normalizedPath === '/community/create' ||
+      (currentSegment === 'community' && nextSegment === 'create') ||
+      normalizedPath === '/events/create' ||
+      (currentSegment === 'events' && nextSegment === 'create');
+
     if (!user && !inAuthGroup) {
-      if (isPublicRoute || isAdminLoginPage) {
-        return;
+      if (isExplicitlyProtected) {
+        router.replace('/(auth)/login');
       }
-      router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/marketplace');
     }
   }, [user, segments, pathname, isReady, router]);
 

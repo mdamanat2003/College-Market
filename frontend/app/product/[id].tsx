@@ -107,7 +107,7 @@ export default function ProductDetailsScreen() {
   const images = product.images || [];
 
   const handleWishlist = async () => {
-    if (!checkRestriction('wishlist')) return;
+    if (!checkRestriction('Wishlist')) return;
     if (!user) {
       router.push('/(auth)/login');
       return;
@@ -134,7 +134,7 @@ export default function ProductDetailsScreen() {
       Alert.alert('Verification Required', 'Your student account is not verified yet. Please wait for an admin to verify your College ID card.');
       return;
     }
-    if (!checkRestriction('chat')) return;
+    if (!checkRestriction('Seller se chat')) return;
     if (!user) {
       router.push('/(auth)/login');
       return;
@@ -157,7 +157,7 @@ export default function ProductDetailsScreen() {
       Alert.alert('Verification Required', 'Your student account is not verified yet. Please wait for an admin to verify your College ID card.');
       return;
     }
-    if (!checkRestriction('buy now')) return;
+    if (!checkRestriction('Product buy')) return;
     if (!user) {
       router.push('/(auth)/login');
       return;

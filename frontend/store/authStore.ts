@@ -12,7 +12,6 @@ interface User {
   college?: string;
   rating?: number;
   ratingCount?: number;
-  isDemo?: boolean;
   avatar?: string;
   instagram?: string;
   whatsapp?: string;
@@ -34,7 +33,6 @@ interface AuthState {
   updateProfile: (formData: FormData) => Promise<boolean>;
   logout: () => void;
   checkAuth: () => Promise<void>;
-  loginAsDemo: () => void;
   ensureRealUser: () => boolean;
 }
 
@@ -65,35 +63,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  loginAsDemo: () => {
-    const demoUser: User = {
-      _id: 'demo_user_id',
-      name: 'Demo User',
-      username: 'demouser',
-      email: 'demo@example.com',
-      phone: '0000000000',
-      role: 'student',
-      college: 'Demo College',
-      isDemo: true,
-    };
-    AsyncStorage.setItem('userData', JSON.stringify(demoUser)).catch(() => {});
-    AsyncStorage.setItem('userAccessToken', 'demo_token').catch(() => {});
-    AsyncStorage.setItem('userRefreshToken', 'demo_refresh_token').catch(() => {});
-    set({ 
-      user: demoUser, 
-      accessToken: 'demo_token', 
-      refreshToken: 'demo_refresh_token',
-      isLoading: false, 
-      error: null 
-    });
-  },
-
   ensureRealUser: () => {
     const { user, accessToken } = get();
-    if (!user || user.isDemo || !accessToken) {
-      return false;
-    }
-    return true;
+    return !!(user && accessToken && user._id !== 'demo_user_id');
   },
 
   register: async (userData) => {
@@ -184,6 +156,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (cachedUserData) {
       try {
         const parsedUser = JSON.parse(cachedUserData);
+        if (parsedUser?.isDemo || parsedUser?._id === 'demo_user_id' || accessToken === 'demo_token') {
+          await AsyncStorage.removeItem('userAccessToken');
+          await AsyncStorage.removeItem('userRefreshToken');
+          await AsyncStorage.removeItem('userData');
+          set({ user: null, accessToken: null, refreshToken: null });
+          return;
+        }
         set({ user: parsedUser, accessToken, refreshToken });
       } catch (e) {
         console.error('Error parsing cached user:', e);

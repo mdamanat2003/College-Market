@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Pressable, Animated, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Pressable, Animated, Platform, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../../theme/colors';
 import { useRouter } from 'expo-router';
 import { SafeImage } from '../ui/SafeImage';
+import { useAuthStore } from '../../store/authStore';
 
 interface ProductCardProps {
   product: any;
@@ -58,6 +59,27 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
     if (Platform.OS === 'web' && e && typeof e.stopPropagation === 'function') {
       e.stopPropagation();
     }
+
+    const { ensureRealUser } = useAuthStore.getState();
+    if (!ensureRealUser()) {
+      if (Platform.OS === 'web') {
+        const wantsLogin = window.confirm('Product buy karne ke liye pehle login karna hoga. Login karein?');
+        if (wantsLogin) {
+          router.push('/(auth)/login');
+        }
+      } else {
+        Alert.alert(
+          'Login Required',
+          'Product buy karne ke liye pehle login karna hoga.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login') },
+          ]
+        );
+      }
+      return;
+    }
+
     router.push(`/checkout/${product._id}`);
   };
 

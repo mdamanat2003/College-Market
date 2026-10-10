@@ -542,13 +542,33 @@ Details: ${requestDetails || 'None provided'}`;
   };
 
   const handleDownload = React.useCallback((item: any) => {
+    const { ensureRealUser } = useAuthStore.getState();
+    if (!ensureRealUser()) {
+      if (Platform.OS === 'web') {
+        const wantsLogin = window.confirm('Previous year question papers aur notes preview karne ke liye pehle login karna hoga. Login now?');
+        if (wantsLogin) {
+          router.push('/(auth)/login');
+        }
+      } else {
+        Alert.alert(
+          'Login Required',
+          'Previous year question papers aur notes preview karne ke liye pehle login karna hoga.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login') },
+          ]
+        );
+      }
+      return;
+    }
+
     if (typeof item === 'string') {
       setActivePdfItem({ fileUrl: item, title: 'Academic Resource' });
     } else {
       setActivePdfItem(item);
     }
     setIsPdfModalVisible(true);
-  }, []);
+  }, [router]);
 
   const handleResetFilters = React.useCallback(() => {
     setSelectedBranch('All');
@@ -557,6 +577,25 @@ Details: ${requestDetails || 'None provided'}`;
   }, []);
 
   const handleUploadPress = React.useCallback(() => {
+    const { ensureRealUser } = useAuthStore.getState();
+    if (!ensureRealUser()) {
+      if (Platform.OS === 'web') {
+        const wantsLogin = window.confirm('Notes upload karne ke liye pehle login karna hoga. Login now?');
+        if (wantsLogin) {
+          router.push('/(auth)/login');
+        }
+      } else {
+        Alert.alert(
+          'Login Required',
+          'Notes upload karne ke liye pehle login karna hoga.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login') },
+          ]
+        );
+      }
+      return;
+    }
     router.push('/academic/upload');
   }, [router]);
 
@@ -632,7 +671,22 @@ Details: ${requestDetails || 'None provided'}`;
                 <Text style={styles.emptyText}>We couldn't find any study materials matching your current search or filter criteria.</Text>
                 <TouchableOpacity
                   style={styles.requestBtn}
-                  onPress={() => setIsRequestModalVisible(true)}
+                  onPress={() => {
+                    const { ensureRealUser } = useAuthStore.getState();
+                    if (!ensureRealUser()) {
+                      if (Platform.OS === 'web') {
+                        const wantsLogin = window.confirm('Material request karne ke liye pehle login karna hoga. Login now?');
+                        if (wantsLogin) router.push('/(auth)/login');
+                      } else {
+                        Alert.alert('Login Required', 'Material request karne ke liye pehle login karna hoga.', [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
+                        ]);
+                      }
+                      return;
+                    }
+                    setIsRequestModalVisible(true);
+                  }}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="help-circle-outline" size={18} color="#38BDF8" style={{ marginRight: 6 }} />

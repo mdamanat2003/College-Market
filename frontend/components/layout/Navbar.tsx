@@ -104,7 +104,7 @@ export const Navbar = () => {
               <TouchableOpacity
                 testID="sell-btn"
                 style={styles.sellBtn}
-                onPress={() => router.push('/add-product')}
+                onPress={() => router.push(user ? '/add-product' : '/(auth)/login')}
                 activeOpacity={0.8}
               >
                 <Ionicons name="add" size={18} color="#09090b" />
@@ -114,7 +114,7 @@ export const Navbar = () => {
               <TouchableOpacity 
                 testID="icon-btn" 
                 style={styles.iconButton} 
-                onPress={() => router.push('/messages')}
+                onPress={() => router.push(user ? '/messages' : '/(auth)/login')}
               >
                 <Ionicons name="chatbubble-ellipses-outline" size={19} color={COLORS.text} />
               </TouchableOpacity>
@@ -125,7 +125,7 @@ export const Navbar = () => {
           <TouchableOpacity 
             testID="icon-btn" 
             style={[styles.iconButton, isPhone && styles.phoneIconButton]} 
-            onPress={() => router.push('/notifications')}
+            onPress={() => router.push(user ? '/notifications' : '/(auth)/login')}
           >
             <Ionicons name="notifications-outline" size={19} color={COLORS.text} />
             {unreadNotifications > 0 && (
@@ -136,17 +136,29 @@ export const Navbar = () => {
           </TouchableOpacity>
 
           {!isMobile && (
-            <TouchableOpacity 
-              testID="icon-btn" 
-              style={styles.profileBtn} 
-              onPress={() => router.push('/profile')}
-            >
-              {user?.avatar ? (
-                <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />
-              ) : (
-                <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
-              )}
-            </TouchableOpacity>
+            user ? (
+              <TouchableOpacity 
+                testID="icon-btn" 
+                style={styles.profileBtn} 
+                onPress={() => router.push('/profile')}
+              >
+                {user?.avatar ? (
+                  <Image source={{ uri: user.avatar }} style={styles.profileAvatarImg} />
+                ) : (
+                  <Text style={styles.profileInitial}>{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</Text>
+                )}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                testID="login-btn"
+                style={styles.navbarLoginBtn}
+                onPress={() => router.push('/(auth)/login')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="log-in-outline" size={16} color="#38BDF8" />
+                <Text style={styles.navbarLoginBtnText}>Log In</Text>
+              </TouchableOpacity>
+            )
           )}
 
           {/* Toggle Hamburger Button (Shown ONLY on Mobile) */}
@@ -241,9 +253,11 @@ export const Navbar = () => {
         <View style={styles.mobileDropdownMenu}>
           {[
             ...NAV_ITEMS,
-            { id: 'sell', name: 'Sell Item (+)', path: '/add-product', icon: 'add-circle-outline', activeIcon: 'add-circle' },
-            { id: 'messages', name: 'Messages & Chats', path: '/messages', icon: 'chatbubble-ellipses-outline', activeIcon: 'chatbubble-ellipses' },
-            { id: 'profile', name: 'My Profile & Account', path: '/profile', icon: 'person-outline', activeIcon: 'person' },
+            { id: 'sell', name: 'Sell Item (+)', path: user ? '/add-product' : '/(auth)/login', icon: 'add-circle-outline', activeIcon: 'add-circle' },
+            { id: 'messages', name: 'Messages & Chats', path: user ? '/messages' : '/(auth)/login', icon: 'chatbubble-ellipses-outline', activeIcon: 'chatbubble-ellipses' },
+            user
+              ? { id: 'profile', name: 'My Profile & Account', path: '/profile', icon: 'person-outline', activeIcon: 'person' }
+              : { id: 'login', name: 'Log In / Register', path: '/(auth)/login', icon: 'log-in-outline', activeIcon: 'log-in' },
           ].map((item) => {
             const isActive = currentPath === item.path || currentPath.startsWith(`${item.path}/`);
 
@@ -588,5 +602,21 @@ const styles = StyleSheet.create({
   activeMobileMenuText: {
     color: '#F8FAFC',
     fontWeight: '800',
+  },
+  navbarLoginBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.35)',
+  },
+  navbarLoginBtnText: {
+    color: '#38BDF8',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

@@ -18,7 +18,6 @@ export interface IUser extends Document {
   resetOtp?: string | null;
   resetOtpExpires?: Date | null;
   isBlocked?: boolean;
-  isDemo?: boolean;
   instagram?: string;
   whatsapp?: string;
   telegram?: string;
@@ -38,7 +37,6 @@ const userSchema: Schema = new Schema(
     avatar: { type: String, default: "" },
     collegeIdProof: { type: String, default: "" },
     isVerified: { type: Boolean, default: false },
-    isDemo: { type: Boolean, default: false },
     instagram: { type: String, default: "" },
     whatsapp: { type: String, default: "" },
     telegram: { type: String, default: "" },

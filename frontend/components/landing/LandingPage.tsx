@@ -66,7 +66,6 @@ function FeatureCardItem({ item, isTablet, isDesktop }: { item: any, isTablet: b
 export default function LandingPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const loginAsDemo = useAuthStore((s) => s.loginAsDemo);
   const scrollRef = useRef<ScrollView>(null);
   const reviewsScrollRef = useRef<ScrollView>(null);
   const scrollOffset = useRef(0);
@@ -325,7 +324,7 @@ export default function LandingPage() {
                   <TouchableOpacity
                     testID="hero-primary"
                     style={styles.heroPrimaryBtn}
-                    onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}
+                    onPress={() => router.push('/(tabs)/marketplace')}
                   >
                     <Text style={styles.heroPrimaryText}>Explore Market</Text>
                     <Ionicons name="cart-outline" size={16} color="#09090b" />
@@ -357,17 +356,13 @@ export default function LandingPage() {
                 Ooplabdh is the premium marketplace for college communities, combining escrow-backed safety, verified profiles, and instant messaging in one polished experience.
               </Text>
               <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
-                <TouchableOpacity testID="btn-primary" style={styles.primaryButton} onPress={() => router.push(user ? '/(tabs)/marketplace' : '/(auth)/register')}>
-                  <Text style={styles.primaryButtonText}>Get Started</Text>
-                  <Ionicons name="arrow-forward" size={16} color="#0a0a0a" />
+                <TouchableOpacity testID="btn-primary" style={styles.primaryButton} onPress={() => router.push('/(tabs)/marketplace')}>
+                  <Text style={styles.primaryButtonText}>Explore Marketplace</Text>
+                  <Ionicons name="cart-outline" size={16} color="#0a0a0a" />
                 </TouchableOpacity>
-                <TouchableOpacity testID="btn-secondary" style={styles.secondaryButton} onPress={() => {
-                  loginAsDemo();
-                  Alert.alert('Demo Mode', 'You are logged in as a guest. Real actions will require a real login.');
-                  router.push('/(tabs)/marketplace');
-                }}>
-                  <Ionicons name="phone-portrait-outline" size={16} color="#e5e7eb" />
-                  <Text style={styles.secondaryButtonText}>View Demo</Text>
+                <TouchableOpacity testID="btn-secondary" style={styles.secondaryButton} onPress={() => router.push('/academic')}>
+                  <Ionicons name="book-outline" size={16} color="#e5e7eb" />
+                  <Text style={styles.secondaryButtonText}>PyQ & Notes</Text>
                 </TouchableOpacity>
               </View>
               <View style={[styles.statsRow, isMobile && styles.statsRowMobile]}>

@@ -35,6 +35,11 @@ export default function CheckoutScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      router.replace('/(auth)/login');
+      return;
+    }
+
     const loadData = async () => {
       if (id) {
         const data = await fetchProductById(id as string);
@@ -43,7 +48,7 @@ export default function CheckoutScreen() {
       setLoading(false);
     };
     loadData();
-  }, [id]);
+  }, [id, user, router]);
 
   const handlePayment = async () => {
     // 1. Load Script

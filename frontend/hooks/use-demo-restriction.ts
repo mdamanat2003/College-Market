@@ -2,22 +2,22 @@ import { Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../store/authStore';
 
-export const useDemoRestriction = () => {
+export const useAuthRestriction = () => {
   const router = useRouter();
-  const { ensureRealUser, logout } = useAuthStore();
+  const { ensureRealUser } = useAuthStore();
 
   const checkRestriction = (actionName: string = 'this action') => {
     if (!ensureRealUser()) {
+      const message = `${actionName} karne ke liye aapko pehle login karna hoga.`;
       if (Platform.OS === 'web') {
-        const wantsLogin = window.confirm(`Bhai, ${actionName} karne ke liye aapko login karna padega. Demo mode mein ye allow nahi hai. Login now?`);
+        const wantsLogin = window.confirm(`${message} Login now?`);
         if (wantsLogin) {
-          logout();
-          router.replace('/(auth)/login');
+          router.push('/(auth)/login');
         }
       } else {
         Alert.alert(
           'Login Required',
-          `Bhai, ${actionName} karne ke liye aapko login karna padega. Demo mode mein ye allow nahi hai.`,
+          message,
           [
             {
               text: 'Cancel',
@@ -26,8 +26,7 @@ export const useDemoRestriction = () => {
             {
               text: 'Login Now',
               onPress: () => {
-                logout(); // Logout demo user
-                router.replace('/(auth)/login');
+                router.push('/(auth)/login');
               },
             },
           ]
@@ -40,3 +39,5 @@ export const useDemoRestriction = () => {
 
   return { checkRestriction };
 };
+
+export const useDemoRestriction = useAuthRestriction;

@@ -547,7 +547,7 @@ Details: ${requestDetails || 'None provided'}`;
       if (Platform.OS === 'web') {
         const wantsLogin = window.confirm('Previous year question papers aur notes preview karne ke liye pehle login karna hoga. Login now?');
         if (wantsLogin) {
-          router.push('/(auth)/login');
+          router.push('/(auth)/login?redirect=/academic');
         }
       } else {
         Alert.alert(
@@ -555,7 +555,7 @@ Details: ${requestDetails || 'None provided'}`;
           'Previous year question papers aur notes preview karne ke liye pehle login karna hoga.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Login Now', onPress: () => router.push('/(auth)/login') },
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login?redirect=/academic') },
           ]
         );
       }
@@ -582,7 +582,7 @@ Details: ${requestDetails || 'None provided'}`;
       if (Platform.OS === 'web') {
         const wantsLogin = window.confirm('Notes upload karne ke liye pehle login karna hoga. Login now?');
         if (wantsLogin) {
-          router.push('/(auth)/login');
+          router.push('/(auth)/login?redirect=/academic/upload');
         }
       } else {
         Alert.alert(
@@ -590,7 +590,7 @@ Details: ${requestDetails || 'None provided'}`;
           'Notes upload karne ke liye pehle login karna hoga.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Login Now', onPress: () => router.push('/(auth)/login') },
+            { text: 'Login Now', onPress: () => router.push('/(auth)/login?redirect=/academic/upload') },
           ]
         );
       }
@@ -676,11 +676,11 @@ Details: ${requestDetails || 'None provided'}`;
                     if (!ensureRealUser()) {
                       if (Platform.OS === 'web') {
                         const wantsLogin = window.confirm('Material request karne ke liye pehle login karna hoga. Login now?');
-                        if (wantsLogin) router.push('/(auth)/login');
+                        if (wantsLogin) router.push('/(auth)/login?redirect=/academic');
                       } else {
                         Alert.alert('Login Required', 'Material request karne ke liye pehle login karna hoga.', [
                           { text: 'Cancel', style: 'cancel' },
-                          { text: 'Login Now', onPress: () => router.push('/(auth)/login') }
+                          { text: 'Login Now', onPress: () => router.push('/(auth)/login?redirect=/academic') }
                         ]);
                       }
                       return;

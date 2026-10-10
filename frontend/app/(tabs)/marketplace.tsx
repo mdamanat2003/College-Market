@@ -1,21 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions, Platform, RefreshControl } from 'react-native';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, ScrollView, TouchableOpacity, useWindowDimensions, Platform, RefreshControl, Modal, TextInput } from 'react-native';
 import Head from 'expo-router/head';
+import { useRouter } from 'expo-router';
 import Footer from '../../components/layout/Footer';
 import { Navbar } from '../../components/layout/Navbar';
 import { ProductCard } from '../../components/cards/ProductCard';
 import { useProductStore } from '../../store/productStore';
 import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
+import { COLLEGES } from '../../constants/colleges';
 import { COLORS, SPACING, RADIUS } from '../../theme/colors';
 
 const CATEGORIES = ['All', 'Electronics', 'Books', 'Furniture', 'Vehicles', 'Others'];
 
 export default function MarketplaceHome() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const { products, fetchProducts, isLoading, searchQuery } = useProductStore();
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeCollege, setActiveCollege] = useState<string>(user?.college || 'All Colleges'); 
+  const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
+  const [collegeSearch, setCollegeSearch] = useState('');
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<any>>(null);
 
@@ -28,6 +33,13 @@ export default function MarketplaceHome() {
   const cardWidth = numColumns === 1 
     ? Math.min(effectiveWidth - H_PADDING, 480)
     : Math.floor((effectiveWidth - H_PADDING - (CARD_GAP * (numColumns - 1))) / numColumns);
+
+  const filteredColleges = useMemo(() => {
+    if (!collegeSearch.trim()) return ['All Colleges', ...COLLEGES];
+    const q = collegeSearch.toLowerCase().trim();
+    const matches = COLLEGES.filter((c) => c.toLowerCase().includes(q));
+    return ['All Colleges', ...matches];
+  }, [collegeSearch]);
 
   const handleBackToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -93,7 +105,39 @@ export default function MarketplaceHome() {
           </View>
         )}
 
-        {/* --- Segmented College Filter Chips (24px gap from Menu) --- */}
+        {/* --- Top Compact Campus Resource Banner --- */}
+        <View style={[styles.topResourceBanner, isPhone && styles.phoneTopResourceBanner]}>
+          <View style={styles.topResourceLeft}>
+            <View style={styles.topResourceBadge}>
+              <Ionicons name="sparkles" size={13} color="#38BDF8" />
+              <Text style={styles.topResourceBadgeText}>Campus Study Portal</Text>
+            </View>
+            <Text style={[styles.topResourceTitle, isPhone && styles.phoneTopResourceTitle]}>
+              Looking for exam papers or notes? Access verified PYQs across branches.
+            </Text>
+          </View>
+          <View style={[styles.topResourceButtons, isPhone && styles.phoneTopResourceButtons]}>
+            <TouchableOpacity
+              style={styles.resourcePyqBtn}
+              onPress={() => router.push('/academic')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="book-outline" size={15} color="#09090b" />
+              <Text style={styles.resourcePyqBtnText}>PYQ & Notes</Text>
+              <Ionicons name="arrow-forward" size={13} color="#09090b" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.resourceSellBtn}
+              onPress={() => router.push(user ? '/add-product' : '/(auth)/login')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={16} color="#F8FAFC" />
+              <Text style={styles.resourceSellBtnText}>Sell Gear</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* --- Segmented College Filter Chips --- */}
         <View style={styles.filterSection}>
           <ScrollView 
             horizontal 
@@ -125,31 +169,61 @@ export default function MarketplaceHome() {
               </Text>
             </TouchableOpacity>
 
-            {/* 2. My College Chip */}
+            {/* 2. My College Chip (if logged in) */}
+            {user?.college && (
+              <TouchableOpacity 
+                testID="category-chip"
+                style={[
+                  styles.categoryPill, 
+                  isPhone && styles.phoneCategoryPill, 
+                  styles.collegeChipRow,
+                  activeCollege === user.college && styles.activePill
+                ]} 
+                onPress={() => setActiveCollege(user.college || 'All Colleges')}
+                activeOpacity={0.75}
+              >
+                <Ionicons 
+                  name="school-outline" 
+                  size={16} 
+                  color={activeCollege === user.college ? '#09090b' : '#38BDF8'} 
+                />
+                <Text 
+                  numberOfLines={1}
+                  style={[
+                    styles.categoryText, 
+                    activeCollege === user.college && styles.activeText
+                  ]}
+                >
+                  My College ({user.college})
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* 3. Custom College Picker Chip */}
             <TouchableOpacity 
               testID="category-chip"
               style={[
                 styles.categoryPill, 
                 isPhone && styles.phoneCategoryPill, 
                 styles.collegeChipRow,
-                activeCollege !== 'All Colleges' && styles.activePill
+                activeCollege !== 'All Colleges' && activeCollege !== user?.college && styles.activePill
               ]} 
-              onPress={() => setActiveCollege(user?.college || 'My College')}
+              onPress={() => setIsCollegeModalOpen(true)}
               activeOpacity={0.75}
             >
               <Ionicons 
-                name="school-outline" 
+                name="business-outline" 
                 size={16} 
-                color={activeCollege !== 'All Colleges' ? '#09090b' : '#38BDF8'} 
+                color={activeCollege !== 'All Colleges' && activeCollege !== user?.college ? '#09090b' : '#38BDF8'} 
               />
               <Text 
                 numberOfLines={1}
                 style={[
                   styles.categoryText, 
-                  activeCollege !== 'All Colleges' && styles.activeText
+                  activeCollege !== 'All Colleges' && activeCollege !== user?.college && styles.activeText
                 ]}
               >
-                {user?.college ? `My College (${user.college})` : 'My College'}
+                {activeCollege !== 'All Colleges' && activeCollege !== user?.college ? activeCollege : 'Select College ▾'}
               </Text>
             </TouchableOpacity>
           </ScrollView>
@@ -214,6 +288,71 @@ export default function MarketplaceHome() {
           />
         )}
       </View>
+
+      {/* College Selection Modal */}
+      <Modal
+        visible={isCollegeModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsCollegeModalOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, isPhone && styles.phoneModalBox]}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="school-outline" size={20} color="#38BDF8" />
+                <Text style={styles.modalTitle}>Select Campus / College</Text>
+              </View>
+              <TouchableOpacity onPress={() => setIsCollegeModalOpen(false)}>
+                <Ionicons name="close" size={22} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalSearchRow}>
+              <Ionicons name="search" size={16} color="#94A3B8" />
+              <TextInput
+                style={styles.modalSearchInput}
+                placeholder="Search college (e.g. BBIT, IIT, Jadavpur...)"
+                placeholderTextColor="#64748B"
+                value={collegeSearch}
+                onChangeText={setCollegeSearch}
+              />
+              {collegeSearch ? (
+                <TouchableOpacity onPress={() => setCollegeSearch('')}>
+                  <Ionicons name="close-circle" size={16} color="#94A3B8" />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            <ScrollView style={styles.collegeListScroll} showsVerticalScrollIndicator={false}>
+              {filteredColleges.map((col) => {
+                const isSelected = activeCollege === col;
+                return (
+                  <TouchableOpacity
+                    key={col}
+                    style={[styles.collegeListItem, isSelected && styles.collegeListItemActive]}
+                    onPress={() => {
+                      setActiveCollege(col);
+                      setIsCollegeModalOpen(false);
+                      setCollegeSearch('');
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={isSelected ? "checkmark-circle" : "ellipse-outline"}
+                      size={18}
+                      color={isSelected ? "#38BDF8" : "#64748B"}
+                    />
+                    <Text style={[styles.collegeListText, isSelected && styles.collegeListTextActive]}>
+                      {col}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -388,5 +527,179 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     flex: 1,
+  },
+  topResourceBanner: {
+    marginHorizontal: 28,
+    marginTop: 16,
+    marginBottom: 4,
+    maxWidth: 1440,
+    alignSelf: 'center',
+    width: '100%',
+    backgroundColor: 'rgba(24, 24, 27, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
+      } as any,
+      default: {},
+    }),
+  },
+  phoneTopResourceBanner: {
+    marginHorizontal: 16,
+    width: 'auto',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  topResourceLeft: {
+    flex: 1,
+  },
+  topResourceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 4,
+  },
+  topResourceBadgeText: {
+    color: '#38BDF8',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  topResourceTitle: {
+    color: '#F1F5F9',
+    fontSize: 13.5,
+    fontWeight: '600',
+    lineHeight: 19,
+  },
+  phoneTopResourceTitle: {
+    fontSize: 12.5,
+  },
+  topResourceButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  phoneTopResourceButtons: {
+    width: '100%',
+    justifyContent: 'flex-start',
+  },
+  resourcePyqBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#38BDF8',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  resourcePyqBtnText: {
+    color: '#09090b',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  resourceSellBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  resourceSellBtnText: {
+    color: '#F8FAFC',
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalBox: {
+    width: '100%',
+    maxWidth: 500,
+    maxHeight: '75%',
+    backgroundColor: '#18181b',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    padding: 20,
+  },
+  phoneModalBox: {
+    maxWidth: '100%',
+    maxHeight: '85%',
+    padding: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    color: '#F8FAFC',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  modalSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 14,
+    gap: 8,
+  },
+  modalSearchInput: {
+    flex: 1,
+    color: '#F8FAFC',
+    fontSize: 14,
+  },
+  collegeListScroll: {
+    flexGrow: 0,
+  },
+  collegeListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  collegeListItemActive: {
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderBottomColor: 'transparent',
+  },
+  collegeListText: {
+    color: '#94A3B8',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  collegeListTextActive: {
+    color: '#38BDF8',
+    fontWeight: '700',
   },
 });

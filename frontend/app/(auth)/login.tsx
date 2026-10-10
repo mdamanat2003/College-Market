@@ -11,7 +11,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
 import { LanguageSelector } from '../../components/LanguageSelector';
@@ -36,6 +36,7 @@ type LoginFieldName = 'email' | 'password';
 
 export default function Login() {
   const { t, isRTL } = useTranslation();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -94,7 +95,10 @@ export default function Login() {
         }
 
         Alert.alert(t('welcomeMessage'), `${t('hiUser')} ${normalizedEmail}`);
-        router.replace('/(tabs)');
+        const targetPath = redirect && typeof redirect === 'string' && redirect.startsWith('/')
+          ? redirect
+          : '/(tabs)/marketplace';
+        router.replace(targetPath as any);
       } else {
         setFieldErrors(mapLoginError(useAuthStore.getState().error || t('loginFailed')));
       }

@@ -62,10 +62,11 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
 
     const { ensureRealUser } = useAuthStore.getState();
     if (!ensureRealUser()) {
+      const redirectUrl = `/(auth)/login?redirect=${encodeURIComponent(`/checkout/${product._id}`)}` as any;
       if (Platform.OS === 'web') {
         const wantsLogin = window.confirm('Product buy karne ke liye pehle login karna hoga. Login karein?');
         if (wantsLogin) {
-          router.push('/(auth)/login');
+          router.push(redirectUrl);
         }
       } else {
         Alert.alert(
@@ -73,7 +74,7 @@ export const ProductCard = React.memo(({ product }: ProductCardProps) => {
           'Product buy karne ke liye pehle login karna hoga.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Login Now', onPress: () => router.push('/(auth)/login') },
+            { text: 'Login Now', onPress: () => router.push(redirectUrl) },
           ]
         );
       }

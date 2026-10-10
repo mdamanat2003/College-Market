@@ -20,7 +20,6 @@ import { useProductStore } from '../../store/productStore';
 import { OoplabdhLogo } from '../brand/OoplabdhLogo';
 
 const NAV_ITEMS = [
-  { id: 'home', name: 'Home', path: '/home', icon: 'home-outline', activeIcon: 'home' },
   { id: 'market', name: 'Marketplace', path: '/marketplace', icon: 'cart-outline', activeIcon: 'cart' },
   { id: 'academic', name: 'PyQ & Notes', path: '/academic', icon: 'book-outline', activeIcon: 'book' },
   { id: 'community', name: 'Community', path: '/community', icon: 'people-outline', activeIcon: 'people' },
@@ -55,7 +54,7 @@ export const Navbar = () => {
     <View style={[styles.wrapper, { paddingTop: insets.top }]}>
       {/* --- UPPER BAR --- */}
       <View style={[styles.header, isPhone && styles.phoneHeader]}>
-        <TouchableOpacity testID="logo-btn" style={styles.brandContainer} onPress={() => router.push('/home')}>
+        <TouchableOpacity testID="logo-btn" style={styles.brandContainer} onPress={() => router.push('/marketplace')}>
           <OoplabdhLogo size="sm" markOnly={isTiny} compact={isPhone} />
         </TouchableOpacity>
 

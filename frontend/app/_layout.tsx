@@ -13,6 +13,7 @@ import { useChatStore } from '../store/chatStore'; // <-- Chat Store import
 import { useLanguageStore } from '../store/languageStore';
 import { COLORS } from '../theme/colors';
 import { InstallAppBanner } from '../components/layout/InstallAppBanner';
+import { MobileBottomNav } from '../components/layout/MobileBottomNav';
 import { NotificationToast } from '../components/ui/NotificationToast';
 import { OfflineBanner } from '../components/ui/OfflineBanner';
 import { BrandSpinner } from '../components/ui/BrandSpinner';
@@ -330,6 +331,7 @@ export default function RootLayout() {
         <InstallAppBanner />
         <NotificationToast />
         <OfflineBanner />
+        <MobileBottomNav />
       </View>
       <StatusBar style="auto" />
     </ThemeProvider>

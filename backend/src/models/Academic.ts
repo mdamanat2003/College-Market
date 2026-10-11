@@ -10,9 +10,12 @@ const academicSchema = new mongoose.Schema(
     semester: { type: String, required: true },
     subject: { type: String, required: true },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    college: { type: String, default: "" },
     downloads: { type: Number, default: 0 }
   },
   { timestamps: true }
 );
+
+academicSchema.index({ college: 1 });
 
 export default mongoose.models.Academic || mongoose.model('Academic', academicSchema);

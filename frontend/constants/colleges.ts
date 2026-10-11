@@ -1,4 +1,6 @@
 export const COLLEGES = [
+  'Integral University',
+  'Dr. A.P.J. Abdul Kalam Technical University (AKTU)',
   'Budge Budge Institute of Technology (BBIT)',
   'Faculty of Medicine, Qena, Egypt',
   'Jadavpur University',
@@ -44,5 +46,20 @@ export const COLLEGES = [
   'Anna University',
   'Other'
 ];
+
+export const getCollegeSlug = (college: string): string => {
+  if (!college || college === 'All Colleges') return '/all-campuses';
+  if (college === 'Integral University') return '/integral-university';
+  if (college.includes('Abdul Kalam') || college.includes('AKTU')) {
+    return '/dr-apj-abdul-kalam-technical-university-aktu';
+  }
+  const clean = college
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `/${clean}`;
+};
 
 export default COLLEGES;

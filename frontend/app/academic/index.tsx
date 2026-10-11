@@ -138,6 +138,8 @@ const AcademicHeader = React.memo(({
   stats,
   onResetFilters,
   onUploadPress,
+  selectedCollege,
+  onCollegeChange,
 }: {
   searchQuery: string;
   onSearchChange: (text: string) => void;
@@ -150,6 +152,8 @@ const AcademicHeader = React.memo(({
   stats: { total: number; subjects: number; contributors: number };
   onResetFilters: () => void;
   onUploadPress: () => void;
+  selectedCollege?: string;
+  onCollegeChange?: (college: string) => void;
 }) => {
   const { width } = useWindowDimensions();
   const isPhone = width <= 560;
@@ -164,6 +168,30 @@ const AcademicHeader = React.memo(({
           <Text style={styles.subtitle}>
             Access verified lecture notes, previous year question papers, and syllabus resources shared by campus peers.
           </Text>
+
+          {selectedCollege && selectedCollege !== 'All Colleges' && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8, flexWrap: 'wrap' }}>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                borderColor: 'rgba(56, 189, 248, 0.3)',
+                borderWidth: 1,
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 5,
+                gap: 6
+              }}>
+                <Ionicons name="school-outline" size={14} color="#38BDF8" />
+                <Text style={{ color: '#38BDF8', fontSize: 12, fontWeight: '700' }}>Campus: {selectedCollege}</Text>
+                {onCollegeChange && (
+                  <TouchableOpacity onPress={() => onCollegeChange('All Colleges')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Ionicons name="close-circle" size={14} color="#38BDF8" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
         </View>
 
         <TouchableOpacity
@@ -279,7 +307,7 @@ const AcademicHeader = React.memo(({
 
 export default function AcademicHub() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ search?: string; q?: string; branch?: string; semester?: string }>();
+  const params = useLocalSearchParams<{ search?: string; q?: string; branch?: string; semester?: string; college?: string }>();
   const { materials, fetchMaterials, updateMaterial, deleteMaterial, isLoading, error } = useAcademicStore();
   const { user } = useAuthStore();
   const { width } = useWindowDimensions();
@@ -288,11 +316,19 @@ export default function AcademicHub() {
   const initialSearch = (params.search || params.q || '').toString();
   const initialBranch = params.branch && BRANCHES.includes(params.branch) ? params.branch : 'All';
   const initialSemester = params.semester && SEMESTERS.includes(params.semester) ? params.semester : 'All';
+  const initialCollege = (params.college || '').toString();
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
   const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
   const [selectedSemester, setSelectedSemester] = useState<string>(initialSemester);
+  const [selectedCollege, setSelectedCollege] = useState<string>(initialCollege || 'All Colleges');
+
+  useEffect(() => {
+    if (params.college) {
+      setSelectedCollege(params.college);
+    }
+  }, [params.college]);
 
   // Request Modal State
   const [isRequestModalVisible, setIsRequestModalVisible] = useState(false);
@@ -337,13 +373,13 @@ export default function AcademicHub() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Fetch materials on debounced search or filter changes
+  // Fetch materials on debounced search, college or filter changes
   useEffect(() => {
     const branchParam = selectedBranch === 'All' ? '' : selectedBranch;
     const semParam = selectedSemester === 'All' ? '' : selectedSemester;
 
-    fetchMaterials(branchParam, semParam, debouncedSearchQuery);
-  }, [selectedBranch, selectedSemester, debouncedSearchQuery]);
+    fetchMaterials(branchParam, semParam, debouncedSearchQuery, selectedCollege);
+  }, [selectedBranch, selectedSemester, debouncedSearchQuery, selectedCollege]);
 
   useEffect(() => {
     if (isRequestModalVisible) {
@@ -651,6 +687,8 @@ Details: ${requestDetails || 'None provided'}`;
               stats={stats}
               onResetFilters={handleResetFilters}
               onUploadPress={handleUploadPress}
+              selectedCollege={selectedCollege}
+              onCollegeChange={setSelectedCollege}
             />
           }
           columnWrapperStyle={numColumns > 1 ? [styles.row, filteredMaterials.length <= 2 && styles.sparseRow] : undefined}

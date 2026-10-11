@@ -114,13 +114,14 @@ router.post('/upload', protect, (req: any, res: any, next: any) => {
       semester,
       subject,
       uploadedBy: req.user._id,
+      college: req.body.college || req.user?.college || "",
     });
 
     await newNote.save();
     console.log("✅ Academic Material Saved:", newNote._id);
 
     // Populate uploadedBy before sending response
-    await newNote.populate('uploadedBy', 'name');
+    await newNote.populate('uploadedBy', 'name college avatar');
 
     res.status(201).json({
       success: true,
@@ -141,12 +142,15 @@ router.post('/upload', protect, (req: any, res: any, next: any) => {
 // 4. GET Route
 router.get('/', async (req: any, res: any) => {
   try {
-    const { branch, semester, search, q } = req.query;
+    const { branch, semester, search, q, college } = req.query;
     const searchTerm = (search || q || '').toString().trim();
     let query: any = {};
 
     if (branch && branch !== 'All') query.branch = branch;
     if (semester && semester !== 'All') query.semester = semester;
+    if (college && college !== 'All Colleges') {
+      query.college = college;
+    }
 
     if (searchTerm) {
       const searchRegex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
@@ -162,7 +166,7 @@ router.get('/', async (req: any, res: any) => {
 
     const notes = await Academic.find(query)
       .sort({ createdAt: -1 })
-      .populate('uploadedBy', 'name');
+      .populate('uploadedBy', 'name college avatar');
 
     res.status(200).json(notes);
   } catch (error) {

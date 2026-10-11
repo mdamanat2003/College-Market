@@ -14,33 +14,102 @@ import {
   TextInput,
 } from 'react-native';
 import Head from 'expo-router/head';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import Footer from '../../components/layout/Footer';
 import { Navbar } from '../../components/layout/Navbar';
 import { ProductCard } from '../../components/cards/ProductCard';
 import { useProductStore } from '../../store/productStore';
 import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
-import { COLLEGES } from '../../constants/colleges';
+import { COLLEGES, getCollegeSlug } from '../../constants/colleges';
 import { COLORS, RADIUS } from '../../theme/colors';
 
 const VISUAL_CATEGORIES = [
-  { id: 'All', label: 'All Items', icon: 'grid-outline', countLabel: 'All campus gear', color: '#38BDF8' },
-  { id: 'Books', label: 'Books & PYQs', icon: 'book-outline', countLabel: 'Textbooks, Notes', color: '#818CF8' },
-  { id: 'Electronics', label: 'Tech & Gadgets', icon: 'laptop-outline', countLabel: 'Calculators, Audio', color: '#34D399' },
-  { id: 'Vehicles', label: 'Cycles & Rides', icon: 'bicycle-outline', countLabel: 'Hostel cycles', color: '#F472B6' },
-  { id: 'Furniture', label: 'Hostel & Dorm', icon: 'bed-outline', countLabel: 'Mattresses, Tables', color: '#FBBF24' },
-  { id: 'Others', label: 'Lab & Tools', icon: 'flask-outline', countLabel: 'Coats, Drafters', color: '#A78BFA' },
+  {
+    id: 'All',
+    label: 'All Items',
+    badge: 'All Gear',
+    icon: 'grid-outline',
+    countLabel: 'All campus gear',
+    color: '#38BDF8',
+    subtitle: 'Choose your campus to jump directly into all campus gear and student listings.',
+    btnLabel: 'All Items',
+    targetRoute: '/(tabs)/marketplace',
+  },
+  {
+    id: 'Books',
+    label: 'Books & PYQs',
+    badge: 'PYQs',
+    icon: 'book-outline',
+    countLabel: 'Textbooks, Notes',
+    color: '#818CF8',
+    subtitle: 'Choose your campus to jump directly into previous year question papers.',
+    btnLabel: 'PYQs',
+    targetRoute: '/academic',
+  },
+  {
+    id: 'Electronics',
+    label: 'Tech & Gadgets',
+    badge: 'Tech & Gadgets',
+    icon: 'laptop-outline',
+    countLabel: 'Calculators, Audio',
+    color: '#34D399',
+    subtitle: 'Choose your campus to jump directly into tech & gadget listings.',
+    btnLabel: 'Tech & Gadgets',
+    targetRoute: '/(tabs)/marketplace',
+  },
+  {
+    id: 'Vehicles',
+    label: 'Cycles & Rides',
+    badge: 'Cycles & Rides',
+    icon: 'bicycle-outline',
+    countLabel: 'Hostel cycles',
+    color: '#F472B6',
+    subtitle: 'Choose your campus to jump directly into hostel cycles & rides listings.',
+    btnLabel: 'Cycles & Rides',
+    targetRoute: '/(tabs)/marketplace',
+  },
+  {
+    id: 'Furniture',
+    label: 'Hostel & Dorm',
+    badge: 'Hostel & Dorm',
+    icon: 'bed-outline',
+    countLabel: 'Mattresses, Tables',
+    color: '#FBBF24',
+    subtitle: 'Choose your campus to jump directly into hostel mattresses, tables & dorm gear.',
+    btnLabel: 'Hostel & Dorm',
+    targetRoute: '/(tabs)/marketplace',
+  },
+  {
+    id: 'Others',
+    label: 'Lab & Tools',
+    badge: 'Lab & Tools',
+    icon: 'flask-outline',
+    countLabel: 'Coats, Drafters',
+    color: '#A78BFA',
+    subtitle: 'Choose your campus to jump directly into lab coats, drafters & tools.',
+    btnLabel: 'Lab & Tools',
+    targetRoute: '/(tabs)/marketplace',
+  },
 ];
 
 export default function MarketplaceHome() {
   const router = useRouter();
+  const searchParams = useLocalSearchParams<{ category?: string; college?: string }>();
   const { user } = useAuthStore();
   const { products, fetchProducts, isLoading, searchQuery } = useProductStore();
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeCollege, setActiveCollege] = useState<string>(user?.college || 'All Colleges');
-  const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>(searchParams.category || 'All');
+  const [activeCollege, setActiveCollege] = useState<string>(searchParams.college || user?.college || 'All Colleges');
+
+  // Overview Modal State (Image 2 style)
+  const [isOverviewModalOpen, setIsOverviewModalOpen] = useState(false);
+  const [selectedModalCategory, setSelectedModalCategory] = useState<typeof VISUAL_CATEGORIES[0]>(VISUAL_CATEGORIES[1]);
+  const [tempSelectedCollege, setTempSelectedCollege] = useState<string>('Integral University');
   const [collegeSearch, setCollegeSearch] = useState('');
+  const [customCollegeInput, setCustomCollegeInput] = useState('');
+  const [isAddingCustomCollege, setIsAddingCustomCollege] = useState(false);
+  const [extraColleges, setExtraColleges] = useState<string[]>([]);
+
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<any>>(null);
 
@@ -54,12 +123,78 @@ export default function MarketplaceHome() {
     ? Math.min(effectiveWidth - H_PADDING, 480)
     : Math.floor((effectiveWidth - H_PADDING - (CARD_GAP * (numColumns - 1))) / numColumns);
 
+  const allAvailableColleges = useMemo(() => {
+    return Array.from(new Set([...COLLEGES, ...extraColleges]));
+  }, [extraColleges]);
+
   const filteredColleges = useMemo(() => {
-    if (!collegeSearch.trim()) return ['All Colleges', ...COLLEGES];
+    if (!collegeSearch.trim()) return ['All Colleges', ...allAvailableColleges];
     const q = collegeSearch.toLowerCase().trim();
-    const matches = COLLEGES.filter((c) => c.toLowerCase().includes(q));
+    const matches = allAvailableColleges.filter((c) => c.toLowerCase().includes(q));
     return ['All Colleges', ...matches];
-  }, [collegeSearch]);
+  }, [collegeSearch, allAvailableColleges]);
+
+  useEffect(() => {
+    if (searchParams.category && searchParams.category !== activeCategory) {
+      setActiveCategory(searchParams.category);
+    }
+    if (searchParams.college && searchParams.college !== activeCollege) {
+      setActiveCollege(searchParams.college);
+    }
+  }, [searchParams.category, searchParams.college]);
+
+  const handleCategoryCardPress = (cat: typeof VISUAL_CATEGORIES[0]) => {
+    setSelectedModalCategory(cat);
+    const initialChosen = activeCollege && activeCollege !== 'All Colleges'
+      ? activeCollege
+      : 'Integral University';
+    setTempSelectedCollege(initialChosen);
+    setCollegeSearch('');
+    setIsAddingCustomCollege(false);
+    setIsOverviewModalOpen(true);
+  };
+
+  const handleOpenCampusModal = () => {
+    const currentCat = VISUAL_CATEGORIES.find((c) => c.id === activeCategory) || VISUAL_CATEGORIES[0];
+    setSelectedModalCategory(currentCat);
+    setTempSelectedCollege(activeCollege !== 'All Colleges' ? activeCollege : 'Integral University');
+    setCollegeSearch('');
+    setIsAddingCustomCollege(false);
+    setIsOverviewModalOpen(true);
+  };
+
+  const handleAddCustomCollege = () => {
+    const trimmed = customCollegeInput.trim();
+    if (!trimmed) return;
+    if (!extraColleges.includes(trimmed)) {
+      setExtraColleges((prev) => [trimmed, ...prev]);
+    }
+    setTempSelectedCollege(trimmed);
+    setCustomCollegeInput('');
+    setIsAddingCustomCollege(false);
+  };
+
+  const handleConfirmRedirect = () => {
+    setIsOverviewModalOpen(false);
+
+    if (selectedModalCategory.id === 'Books') {
+      // Books & PYQs jumps directly into academic notes / PYQs as shown in Image 2
+      setActiveCollege(tempSelectedCollege);
+      setActiveCategory('Books');
+      router.push({
+        pathname: '/academic',
+        params: { college: tempSelectedCollege },
+      });
+    } else {
+      // Filter marketplace listings for this category and campus
+      setActiveCollege(tempSelectedCollege);
+      setActiveCategory(selectedModalCategory.id);
+      fetchProducts(selectedModalCategory.id, searchQuery, tempSelectedCollege);
+      setTimeout(() => {
+        listRef.current?.scrollToOffset({ offset: 360, animated: true });
+      }, 150);
+    }
+  };
 
   const handleBackToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -204,7 +339,7 @@ export default function MarketplaceHome() {
                 key={cat.id}
                 testID="category-chip"
                 style={[styles.visualCatCard, isSelected && styles.visualCatCardActive]}
-                onPress={() => setActiveCategory(cat.id)}
+                onPress={() => handleCategoryCardPress(cat)}
                 activeOpacity={0.8}
               >
                 <View style={[styles.visualCatIconWrap, isSelected && styles.visualCatIconWrapActive]}>
@@ -286,7 +421,7 @@ export default function MarketplaceHome() {
               styles.collegePill,
               activeCollege !== 'All Colleges' && activeCollege !== user?.college && styles.activeCollegePill,
             ]}
-            onPress={() => setIsCollegeModalOpen(true)}
+            onPress={handleOpenCampusModal}
             activeOpacity={0.75}
           >
             <Ionicons
@@ -391,67 +526,172 @@ export default function MarketplaceHome() {
         />
       </View>
 
-      {/* College Selection Modal */}
+      {/* College & Category Overview Modal (Image 2 style) */}
       <Modal
-        visible={isCollegeModalOpen}
+        visible={isOverviewModalOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setIsCollegeModalOpen(false)}
+        onRequestClose={() => setIsOverviewModalOpen(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, isPhone && styles.phoneModalBox]}>
-            <View style={styles.modalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Ionicons name="school-outline" size={20} color="#38BDF8" />
-                <Text style={styles.modalTitle}>Select Campus / College</Text>
+            {/* Header */}
+            <View style={styles.modalHeaderRow}>
+              <View style={styles.modalHeaderLeft}>
+                {/* Orange Flash / Lightning Icon Box */}
+                <View style={styles.modalFlashIconBox}>
+                  <Ionicons name="flash" size={19} color="#EA580C" />
+                </View>
+
+                {/* Title & Badge & Subtitle */}
+                <View style={styles.modalTitleBlock}>
+                  <View style={styles.modalTitleWithBadge}>
+                    <Text style={styles.modalTitleText}>Select Your College</Text>
+                    <View style={styles.modalCategoryBadge}>
+                      <Text style={styles.modalCategoryBadgeText}>
+                        {selectedModalCategory.badge}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={styles.modalSubtitleText} numberOfLines={2}>
+                    {selectedModalCategory.subtitle}
+                  </Text>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => setIsCollegeModalOpen(false)}>
-                <Ionicons name="close" size={22} color="#94A3B8" />
+
+              {/* Close Button */}
+              <TouchableOpacity
+                onPress={() => setIsOverviewModalOpen(false)}
+                style={styles.modalCloseBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={20} color="#94A3B8" />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalSearchRow}>
-              <Ionicons name="search" size={16} color="#94A3B8" />
+            {/* Search Row */}
+            <View style={styles.modalSearchInputBox}>
+              <Ionicons name="search" size={17} color="#94A3B8" />
               <TextInput
-                style={styles.modalSearchInput}
-                placeholder="Search college (e.g. BBIT, IIT, Jadavpur...)"
+                style={styles.modalSearchTextInput}
+                placeholder="Search colleges by name or city..."
                 placeholderTextColor="#64748B"
                 value={collegeSearch}
                 onChangeText={setCollegeSearch}
               />
               {collegeSearch ? (
-                <TouchableOpacity onPress={() => setCollegeSearch('')}>
+                <TouchableOpacity onPress={() => setCollegeSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Ionicons name="close-circle" size={16} color="#94A3B8" />
                 </TouchableOpacity>
               ) : null}
             </View>
 
-            <ScrollView style={styles.collegeListScroll} showsVerticalScrollIndicator={false}>
+            {/* Add Custom College Inline Form (if active) */}
+            {isAddingCustomCollege && (
+              <View style={styles.customCollegeAddBox}>
+                <TextInput
+                  style={styles.customCollegeInput}
+                  placeholder="Enter your college or campus name..."
+                  placeholderTextColor="#64748B"
+                  value={customCollegeInput}
+                  onChangeText={setCustomCollegeInput}
+                  autoFocus
+                />
+                <TouchableOpacity
+                  style={styles.customCollegeAddBtn}
+                  onPress={handleAddCustomCollege}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.customCollegeAddBtnText}>Add & Select</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Colleges List */}
+            <ScrollView style={styles.collegeItemsScroll} showsVerticalScrollIndicator={false}>
               {filteredColleges.map((col) => {
-                const isSelected = activeCollege === col;
+                const isSelected = tempSelectedCollege === col;
                 return (
                   <TouchableOpacity
                     key={col}
-                    style={[styles.collegeListItem, isSelected && styles.collegeListItemActive]}
-                    onPress={() => {
-                      setActiveCollege(col);
-                      setIsCollegeModalOpen(false);
-                      setCollegeSearch('');
-                    }}
+                    style={[styles.collegeCardItem, isSelected && styles.collegeCardItemActive]}
+                    onPress={() => setTempSelectedCollege(col)}
                     activeOpacity={0.7}
                   >
-                    <Ionicons
-                      name={isSelected ? "checkmark-circle" : "ellipse-outline"}
-                      size={18}
-                      color={isSelected ? "#38BDF8" : "#64748B"}
-                    />
-                    <Text style={[styles.collegeListText, isSelected && styles.collegeListTextActive]}>
-                      {col}
-                    </Text>
+                    <View style={[styles.collegeIconBox, isSelected && styles.collegeIconBoxActive]}>
+                      <Ionicons
+                        name="business-outline"
+                        size={18}
+                        color={isSelected ? '#38BDF8' : '#94A3B8'}
+                      />
+                    </View>
+                    <View style={styles.collegeInfoBlock}>
+                      <Text style={[styles.collegeCardName, isSelected && styles.collegeCardNameActive]}>
+                        {col}
+                      </Text>
+                      <Text style={styles.collegeCardSlug}>
+                        {getCollegeSlug(col)}
+                      </Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={19} color="#38BDF8" style={{ marginLeft: 6 }} />
+                    )}
                   </TouchableOpacity>
                 );
               })}
+
+              {filteredColleges.length === 0 && (
+                <View style={styles.noCollegesFoundBox}>
+                  <Text style={styles.noCollegesFoundText}>No matching campus found.</Text>
+                  <TouchableOpacity onPress={() => setIsAddingCustomCollege(true)}>
+                    <Text style={styles.addItHereInlineLink}>Add "{collegeSearch}" as a new college?</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </ScrollView>
+
+            {/* Footer Row */}
+            <View style={styles.modalFooterRow}>
+              {/* Left Link */}
+              <View style={styles.modalFooterLeft}>
+                <Text style={styles.cantFindFooterText}>
+                  Can't find your college?{' '}
+                  <Text
+                    style={styles.addHereLinkText}
+                    onPress={() => {
+                      if (collegeSearch.trim()) {
+                        setCustomCollegeInput(collegeSearch.trim());
+                      }
+                      setIsAddingCustomCollege((prev) => !prev);
+                    }}
+                  >
+                    Add it here
+                  </Text>
+                </Text>
+              </View>
+
+              {/* Right Action Buttons */}
+              <View style={styles.modalFooterButtonsRow}>
+                <TouchableOpacity
+                  style={styles.modalCancelBtn}
+                  onPress={() => setIsOverviewModalOpen(false)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={styles.modalCancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.modalRedirectBtn}
+                  onPress={handleConfirmRedirect}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.modalRedirectBtnText}>
+                    Go to {selectedModalCategory.btnLabel}
+                  </Text>
+                  <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -924,82 +1164,258 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
 
-  // --- MODAL STYLES ---
+  // --- MODAL STYLES (Image 2 Match) ---
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(0, 0, 0, 0.78)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
   modalBox: {
     width: '100%',
-    maxWidth: 500,
-    maxHeight: '75%',
-    backgroundColor: '#18181b',
-    borderRadius: 20,
+    maxWidth: 540,
+    maxHeight: '88%',
+    backgroundColor: '#131417',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    padding: 20,
+    borderColor: '#242630',
+    padding: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 28,
+    elevation: 12,
   },
   phoneModalBox: {
     maxWidth: '100%',
-    maxHeight: '85%',
+    maxHeight: '94%',
     padding: 16,
   },
-  modalHeader: {
+  modalHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
-  modalTitle: {
-    color: '#F8FAFC',
-    fontSize: 17,
-    fontWeight: '700',
+  modalHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+    paddingRight: 12,
+    gap: 12,
   },
-  modalSearchRow: {
+  modalFlashIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: '#2b1609',
+    borderWidth: 1,
+    borderColor: '#54290e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalTitleBlock: {
+    flex: 1,
+  },
+  modalTitleWithBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  modalTitleText: {
+    color: '#F8FAFC',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  modalCategoryBadge: {
+    backgroundColor: '#262732',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  modalCategoryBadgeText: {
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  modalSubtitleText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  modalCloseBtn: {
+    padding: 4,
+  },
+  modalSearchInputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0d0e11',
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#0284C7',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    height: 46,
     marginBottom: 14,
     gap: 8,
   },
-  modalSearchInput: {
+  modalSearchTextInput: {
     flex: 1,
     color: '#F8FAFC',
     fontSize: 14,
+    paddingVertical: 0,
   },
-  collegeListScroll: {
-    flexGrow: 0,
-  },
-  collegeListItem: {
+  customCollegeAddBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    backgroundColor: 'rgba(2, 132, 199, 0.08)',
     borderRadius: 10,
-    gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(2, 132, 199, 0.3)',
+    padding: 6,
+    marginBottom: 14,
+    gap: 8,
   },
-  collegeListItemActive: {
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-    borderBottomColor: 'transparent',
+  customCollegeInput: {
+    flex: 1,
+    color: '#F8FAFC',
+    fontSize: 13,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
-  collegeListText: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '500',
+  customCollegeAddBtn: {
+    backgroundColor: '#0284C7',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  customCollegeAddBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  collegeItemsScroll: {
+    maxHeight: 250,
+  },
+  collegeCardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#181920',
+    borderWidth: 1.5,
+    borderColor: '#242632',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+  },
+  collegeCardItemActive: {
+    backgroundColor: '#1a1d26',
+    borderColor: '#0284C7',
+  },
+  collegeIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: '#22242e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  collegeIconBoxActive: {
+    backgroundColor: 'rgba(2, 132, 199, 0.15)',
+  },
+  collegeInfoBlock: {
     flex: 1,
   },
-  collegeListTextActive: {
+  collegeCardName: {
+    color: '#F1F5F9',
+    fontSize: 14.5,
+    fontWeight: '600',
+  },
+  collegeCardNameActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  collegeCardSlug: {
+    color: '#828d9e',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  noCollegesFoundBox: {
+    paddingVertical: 24,
+    alignItems: 'center',
+    gap: 8,
+  },
+  noCollegesFoundText: {
+    color: '#94A3B8',
+    fontSize: 13,
+  },
+  addItHereInlineLink: {
     color: '#38BDF8',
+    fontSize: 13,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  modalFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#20222b',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  modalFooterLeft: {
+    flex: 1,
+    minWidth: 180,
+  },
+  cantFindFooterText: {
+    color: '#94A3B8',
+    fontSize: 12.5,
+  },
+  addHereLinkText: {
+    color: '#38BDF8',
+    fontWeight: '600',
+  },
+  modalFooterButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  modalCancelBtn: {
+    backgroundColor: '#22232a',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 20,
+  },
+  modalCancelBtnText: {
+    color: '#CBD5E1',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  modalRedirectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0284C7',
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 20,
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  modalRedirectBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '700',
   },
 });

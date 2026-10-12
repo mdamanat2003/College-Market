@@ -93,7 +93,13 @@ export const Navbar = () => {
               >
                 <Ionicons name="close-circle" size={18} color="#94A3B8" />
               </TouchableOpacity>
-            ) : null}
+            ) : (
+              Platform.OS === 'web' && (
+                <View style={styles.searchShortcutBadge}>
+                  <Text style={styles.searchShortcutText}>⌘K</Text>
+                </View>
+              )
+            )}
           </View>
         )}
 
@@ -309,7 +315,7 @@ const styles = StyleSheet.create({
     }),
   },
   header: {
-    height: 78,
+    height: 74,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -332,19 +338,19 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.xl,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(39, 39, 42, 0.65)',
+    backgroundColor: 'rgba(24, 24, 27, 0.72)',
     borderRadius: RADIUS.round,
     paddingHorizontal: 18,
-    height: 52,
+    height: 48,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   searchContainerFocused: {
     borderColor: '#38BDF8',
-    backgroundColor: 'rgba(39, 39, 42, 0.9)',
+    backgroundColor: 'rgba(24, 24, 27, 0.95)',
     ...Platform.select({
       web: {
-        boxShadow: '0 0 0 3px rgba(56, 189, 248, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+        boxShadow: '0 0 0 3px rgba(56, 189, 248, 0.2), 0 8px 24px rgba(0,0,0,0.35)',
       } as any,
       default: {
         shadowColor: '#38BDF8',
@@ -354,6 +360,21 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
     }),
+  },
+  searchShortcutBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    marginLeft: 6,
+  },
+  searchShortcutText: {
+    color: '#94A3B8',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   mobileSearchRow: {
     paddingHorizontal: 16,
@@ -415,13 +436,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: RADIUS.round,
     marginRight: 4,
     gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     ...Platform.select({
       web: {
-        boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)',
+        background: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)',
+        boxShadow: '0 4px 16px rgba(56, 189, 248, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
       } as any,
       default: {
         shadowColor: '#38BDF8',
@@ -507,16 +531,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   subHeader: {
-    height: 44,
+    height: 46,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(12, 13, 17, 0.65)',
   },
   navScrollContent: {
     flexGrow: 1,
     paddingHorizontal: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
     maxWidth: 1440,
     width: '100%',
     alignSelf: 'center',
@@ -529,10 +554,10 @@ const styles = StyleSheet.create({
   navItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
     borderRadius: RADIUS.round,
-    gap: 6,
+    gap: 7,
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -542,7 +567,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(56, 189, 248, 0.35)',
     ...Platform.select({
       web: {
-        boxShadow: '0 0 12px rgba(56, 189, 248, 0.25), inset 0 0 8px rgba(56, 189, 248, 0.1)',
+        boxShadow: '0 0 16px rgba(56, 189, 248, 0.22), inset 0 0 10px rgba(56, 189, 248, 0.08)',
       } as any,
       default: {
         shadowColor: '#38BDF8',

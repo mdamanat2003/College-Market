@@ -125,6 +125,7 @@ export default function MarketplaceHome() {
   const listRef = useRef<FlatList<any>>(null);
 
   const isPhone = width <= 560;
+  const isWideScreen = width >= 880;
   const numColumns = width >= 1150 ? 4 : width >= 820 ? 3 : width >= 560 ? 2 : 1;
   const H_PADDING = isPhone ? 16 : 28 * 2;
   const CARD_GAP = isPhone ? 16 : 24;
@@ -286,366 +287,162 @@ export default function MarketplaceHome() {
         </View>
       )}
 
-      {/* 2. Modern E-Commerce Hero Section */}
+      {/* 2. Modern High-Conversion Campus Hero Section */}
       <View style={[styles.heroCard, isPhone && styles.phoneHeroCard]}>
         <View style={styles.heroBackgroundGlow} />
+        <View style={styles.heroBackgroundGlowLeft} />
 
-        <View style={styles.heroContent}>
-          {/* Badge Row */}
-          <View style={styles.heroBadgeRow}>
-            <View style={styles.heroBadge}>
-              <Ionicons name="shield-checkmark" size={13} color="#38BDF8" />
-              <Text style={styles.heroBadgeText}>Verified Campus Network</Text>
+        <View style={[styles.heroContent, isWideScreen && styles.heroContentRow]}>
+          {/* Left Column: Core Value Proposition & Actions */}
+          <View style={[styles.heroLeftCol, isWideScreen && styles.heroLeftColWide]}>
+            {/* Badge Row */}
+            <View style={styles.heroBadgeRow}>
+              <View style={styles.heroBadge}>
+                <Ionicons name="shield-checkmark" size={13} color="#38BDF8" />
+                <Text style={styles.heroBadgeText}>Verified Campus Network</Text>
+              </View>
+              <View style={styles.heroLivePill}>
+                <View style={[styles.heroLiveDot, Platform.OS === 'web' && ({ className: 'pulse-dot' } as any)]} />
+                <Text style={styles.heroLiveText}>0% Platform Commission</Text>
+              </View>
             </View>
-            <View style={styles.heroLivePill}>
-              <View style={styles.heroLiveDot} />
-              <Text style={styles.heroLiveText}>0% Platform Commission</Text>
-            </View>
-          </View>
 
-          {/* Headline */}
-          <Text style={[styles.heroHeading, isPhone && styles.phoneHeroHeading]}>
-            Buy, Sell & Trade Gear With <Text style={styles.heroHighlight}>College Peers.</Text>
-          </Text>
-
-          <Text style={[styles.heroSubheading, isPhone && styles.phoneHeroSubheading]}>
-            Pre-owned textbooks, scientific calculators, hostel cycles, and verified semester question papers — traded directly within your campus.
-          </Text>
-
-          {/* Action Buttons */}
-          <View style={[styles.heroActionRow, isPhone && styles.phoneHeroActionRow]}>
-            <TouchableOpacity
-              style={styles.heroPrimaryBtn}
-              onPress={() => router.push(user ? '/add-product' : ('/(auth)/login?redirect=/add-product' as any))}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="add-circle" size={18} color="#09090b" />
-              <Text style={styles.heroPrimaryBtnText}>Sell College Gear</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.heroSecondaryBtn}
-              onPress={() => router.push('/academic')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="document-text-outline" size={17} color="#38BDF8" />
-              <Text style={styles.heroSecondaryBtnText}>PYQs & Exam Notes</Text>
-              <Ionicons name="arrow-forward" size={14} color="#38BDF8" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Trust Highlights */}
-          <View style={[styles.heroTrustBar, isPhone && styles.phoneHeroTrustBar]}>
-            <View style={styles.trustItem}>
-              <Ionicons name="people-outline" size={15} color="#94A3B8" />
-              <Text style={styles.trustText}>Hostel Peer Trading</Text>
-            </View>
-            <View style={styles.trustDot} />
-            <View style={styles.trustItem}>
-              <Ionicons name="chatbubbles-outline" size={15} color="#94A3B8" />
-              <Text style={styles.trustText}>Direct In-App Chat</Text>
-            </View>
-            <View style={styles.trustDot} />
-            <View style={styles.trustItem}>
-              <Ionicons name="lock-closed-outline" size={15} color="#94A3B8" />
-              <Text style={styles.trustText}>Escrow Protection</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* =========================================
-          2.1 ABOUT SECTION (Modern & Professional)
-      ========================================= */}
-      <View style={[styles.aboutSectionCard, isPhone && styles.phoneSectionCard]}>
-        <View style={styles.sectionHeaderWrap}>
-          <View style={styles.sectionKickerRow}>
-            <Ionicons name="sparkles" size={13} color="#38BDF8" />
-            <Text style={styles.sectionKickerText}>ABOUT OOPLABDH</Text>
-          </View>
-          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
-            Built by Students, Designed for Campuses.
-          </Text>
-          <Text style={styles.sectionLeadText}>
-            A dedicated campus ecosystem eliminating noisy WhatsApp spam, price gouging, and unverified strangers. Trade semester textbooks, lab gear, calculators, and hostel cycles within university boundaries with complete escrow protection.
-          </Text>
-        </View>
-
-        {/* 3 Pillar Cards */}
-        <View style={[styles.aboutPillarsGrid, isPhone && styles.phonePillarsGrid]}>
-          {/* Pillar 1 */}
-          <View style={styles.aboutPillarCard}>
-            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.25)' }]}>
-              <Ionicons name="shield-checkmark" size={20} color="#10B981" />
-            </View>
-            <Text style={styles.pillarTitle}>Verified Student Peers</Text>
-            <Text style={styles.pillarDesc}>
-              Every profile is authenticated with real student IDs and campus credentials, keeping bad actors and commercial spam off your campus network.
+            {/* Headline */}
+            <Text style={[styles.heroHeading, isPhone && styles.phoneHeroHeading]}>
+              Buy, Sell & Trade Gear With <Text style={styles.heroHighlight}>College Peers.</Text>
             </Text>
-            <View style={styles.pillarTag}>
-              <Text style={[styles.pillarTagText, { color: '#10B981' }]}>100% Student Only</Text>
-            </View>
-          </View>
 
-          {/* Pillar 2 */}
-          <View style={styles.aboutPillarCard}>
-            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.25)' }]}>
-              <Ionicons name="chatbubbles" size={20} color="#38BDF8" />
-            </View>
-            <Text style={styles.pillarTitle}>In-App Chat & Escrow</Text>
-            <Text style={styles.pillarDesc}>
-              Chat in real-time, negotiate prices, schedule physical hostel handoffs, and enjoy escrow protection where you keep 100% of your earnings.
+            <Text style={[styles.heroSubheading, isPhone && styles.phoneHeroSubheading]}>
+              Pre-owned textbooks, scientific calculators, hostel cycles, and verified semester question papers — traded directly within your campus.
             </Text>
-            <View style={styles.pillarTag}>
-              <Text style={[styles.pillarTagText, { color: '#38BDF8' }]}>₹0 Commission Cut</Text>
-            </View>
-          </View>
 
-          {/* Pillar 3 */}
-          <View style={styles.aboutPillarCard}>
-            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(129, 140, 248, 0.12)', borderColor: 'rgba(129, 140, 248, 0.25)' }]}>
-              <Ionicons name="book" size={20} color="#818CF8" />
-            </View>
-            <Text style={styles.pillarTitle}>Academic Hub & Free PYQs</Text>
-            <Text style={styles.pillarDesc}>
-              Senior peers upload free semester question papers, university syllabus notes, and lab manuals directly organized by branch and semester.
-            </Text>
-            <View style={styles.pillarTag}>
-              <Text style={[styles.pillarTagText, { color: '#818CF8' }]}>Free Peer Notes</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Action Link */}
-        <View style={styles.aboutBottomActions}>
-          <TouchableOpacity
-            style={styles.aboutActionBtn}
-            onPress={() => router.push('/about')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.aboutActionBtnText}>Meet our founders & story</Text>
-            <Ionicons name="arrow-forward" size={14} color="#38BDF8" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.aboutActionBtnSecondary}
-            onPress={() => router.push('/safety')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="lock-closed-outline" size={14} color="#94A3B8" />
-            <Text style={styles.aboutActionBtnSecondaryText}>Campus safety guide</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* =========================================
-          2.2 FACTS & IMPACT SECTION
-      ========================================= */}
-      <View style={[styles.factsSectionCard, isPhone && styles.phoneSectionCard]}>
-        <View style={styles.sectionHeaderWrap}>
-          <View style={[styles.sectionKickerRow, { borderColor: 'rgba(245, 158, 11, 0.3)', backgroundColor: 'rgba(245, 158, 11, 0.08)' }]}>
-            <Ionicons name="bar-chart" size={13} color="#F59E0B" />
-            <Text style={[styles.sectionKickerText, { color: '#F59E0B' }]}>PLATFORM FACTS & NUMBERS</Text>
-          </View>
-          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
-            Real Metrics Powering Campus Trade
-          </Text>
-          <Text style={styles.sectionLeadText}>
-            Transparent, peer-tested numbers that make Ooplabdh the definitive campus platform.
-          </Text>
-        </View>
-
-        {/* 4 Stats Grid */}
-        <View style={[styles.factsGrid, isPhone && styles.phoneFactsGrid]}>
-          {/* Stat 1 */}
-          <View style={styles.factCard}>
-            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-              <Ionicons name="people-outline" size={18} color="#10B981" />
-            </View>
-            <Text style={[styles.factNumber, { color: '#10B981' }]}>100%</Text>
-            <Text style={styles.factLabel}>Verified Students</Text>
-            <Text style={styles.factSubtext}>Student IDs & institutional credentials verified</Text>
-          </View>
-
-          {/* Stat 2 */}
-          <View style={styles.factCard}>
-            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(56, 189, 248, 0.1)' }]}>
-              <Ionicons name="wallet-outline" size={18} color="#38BDF8" />
-            </View>
-            <Text style={[styles.factNumber, { color: '#38BDF8' }]}>₹0</Text>
-            <Text style={styles.factLabel}>Platform Commission</Text>
-            <Text style={styles.factSubtext}>100% profit stays in students' pockets</Text>
-          </View>
-
-          {/* Stat 3 */}
-          <View style={styles.factCard}>
-            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
-              <Ionicons name="flash-outline" size={18} color="#F59E0B" />
-            </View>
-            <Text style={[styles.factNumber, { color: '#F59E0B' }]}>&lt; 2 Min</Text>
-            <Text style={styles.factLabel}>Avg. Reply Speed</Text>
-            <Text style={styles.factSubtext}>Instant in-app peer chat within hostel blocks</Text>
-          </View>
-
-          {/* Stat 4 */}
-          <View style={styles.factCard}>
-            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(167, 139, 250, 0.1)' }]}>
-              <Ionicons name="document-text-outline" size={18} color="#A78BFA" />
-            </View>
-            <Text style={[styles.factNumber, { color: '#A78BFA' }]}>1,200+</Text>
-            <Text style={styles.factLabel}>Free PYQs & Notes</Text>
-            <Text style={styles.factSubtext}>Engineering, sciences, and commerce archives</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* =========================================
-          2.3 CONTACT & SUPPORT SECTION
-      ========================================= */}
-      <View style={[styles.contactSectionCard, isPhone && styles.phoneSectionCard]}>
-        <View style={styles.sectionHeaderWrap}>
-          <View style={[styles.sectionKickerRow, { borderColor: 'rgba(16, 185, 129, 0.3)', backgroundColor: 'rgba(16, 185, 129, 0.08)' }]}>
-            <Ionicons name="mail-unread" size={13} color="#10B981" />
-            <Text style={[styles.sectionKickerText, { color: '#10B981' }]}>NEED HELP OR CAMPUS AMBASSADOR?</Text>
-          </View>
-          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
-            Get In Touch With The Student Team
-          </Text>
-          <Text style={styles.sectionLeadText}>
-            Want your college added to Ooplabdh, need deal resolution, or have product feedback? Send a message or join our student network directly.
-          </Text>
-        </View>
-
-        {/* 2-Column Split: Channels on Left, Quick Form on Right */}
-        <View style={[styles.contactSplitGrid, isPhone && styles.phoneContactSplitGrid]}>
-          {/* Left Column: Direct Links & Ambassadors */}
-          <View style={styles.contactLeftCol}>
-            {/* WhatsApp Community Card */}
-            <TouchableOpacity
-              style={styles.contactChannelCard}
-              onPress={() => openSocialLink(SOCIAL_LINKS.whatsapp, 'WhatsApp Community')}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(37, 211, 102, 0.15)' }]}>
-                <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.channelTitle}>Official WhatsApp Community</Text>
-                <Text style={styles.channelDesc}>Join your campus group for instant deals & peer alerts.</Text>
-              </View>
-              <Ionicons name="open-outline" size={16} color="#94A3B8" />
-            </TouchableOpacity>
-
-            {/* Instagram Card */}
-            <TouchableOpacity
-              style={styles.contactChannelCard}
-              onPress={() => openSocialLink(SOCIAL_LINKS.instagram, 'Instagram')}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(225, 48, 108, 0.15)' }]}>
-                <Ionicons name="logo-instagram" size={20} color="#E1306C" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.channelTitle}>Instagram @ooplabdh.shop</Text>
-                <Text style={styles.channelDesc}>Campus fest updates, features & giveaway news.</Text>
-              </View>
-              <Ionicons name="open-outline" size={16} color="#94A3B8" />
-            </TouchableOpacity>
-
-            {/* Direct Email Card */}
-            <View style={styles.contactChannelCard}>
-              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
-                <Ionicons name="mail-outline" size={20} color="#38BDF8" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.channelTitle}>Direct Student Desk</Text>
-                <Text style={styles.channelDesc}>support@ooplabdh.shop (Replies within 3 hours)</Text>
-              </View>
-            </View>
-
-            {/* Link to Full Contact & FAQ */}
-            <View style={styles.contactSubLinksRow}>
-              <TouchableOpacity onPress={() => router.push('/contact')} style={styles.subLinkBtn}>
-                <Text style={styles.subLinkBtnText}>Full Contact Center ➔</Text>
+            {/* Action Buttons */}
+            <View style={[styles.heroActionRow, isPhone && styles.phoneHeroActionRow]}>
+              <TouchableOpacity
+                testID="hero-primary"
+                style={styles.heroPrimaryBtn}
+                onPress={() => router.push(user ? '/add-product' : ('/(auth)/login?redirect=/add-product' as any))}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="add-circle" size={18} color="#09090b" />
+                <Text style={styles.heroPrimaryBtnText}>Sell College Gear</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/faq')} style={styles.subLinkBtn}>
-                <Text style={styles.subLinkBtnText}>Read FAQs ➔</Text>
+
+              <TouchableOpacity
+                testID="hero-secondary"
+                style={styles.heroSecondaryBtn}
+                onPress={() => router.push('/academic')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="document-text-outline" size={17} color="#38BDF8" />
+                <Text style={styles.heroSecondaryBtnText}>PYQs & Exam Notes</Text>
+                <Ionicons name="arrow-forward" size={14} color="#38BDF8" />
               </TouchableOpacity>
             </View>
-          </View>
 
-          {/* Right Column: Interactive Quick Message Form */}
-          <View style={styles.contactFormCard}>
-            <Text style={styles.formCardHeader}>Drop Us a Quick Message</Text>
-            <Text style={styles.formCardSub}>We'll review your query or college addition request immediately.</Text>
-
-            {contactSuccessMessage ? (
-              <View style={styles.contactSuccessBanner}>
-                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-                <Text style={styles.contactSuccessText}>{contactSuccessMessage}</Text>
+            {/* Trust Highlights */}
+            <View style={[styles.heroTrustBar, isPhone && styles.phoneHeroTrustBar]}>
+              <View style={styles.trustItem}>
+                <View style={styles.trustIconWrap}>
+                  <Ionicons name="people" size={13} color="#38BDF8" />
+                </View>
+                <Text style={styles.trustText}>Hostel Peer Trading</Text>
               </View>
-            ) : null}
-
-            <View style={styles.formField}>
-              <Text style={styles.formLabel}>Your Name</Text>
-              <TextInput
-                style={styles.formInput}
-                placeholder="e.g. Aman Sharma"
-                placeholderTextColor="#64748B"
-                value={contactName}
-                onChangeText={setContactName}
-              />
+              <View style={styles.trustDot} />
+              <View style={styles.trustItem}>
+                <View style={styles.trustIconWrap}>
+                  <Ionicons name="chatbubbles" size={13} color="#38BDF8" />
+                </View>
+                <Text style={styles.trustText}>Direct In-App Chat</Text>
+              </View>
+              <View style={styles.trustDot} />
+              <View style={styles.trustItem}>
+                <View style={[styles.trustIconWrap, { backgroundColor: 'rgba(16, 185, 129, 0.12)' }]}>
+                  <Ionicons name="shield-checkmark" size={13} color="#10B981" />
+                </View>
+                <Text style={styles.trustText}>Escrow Protection</Text>
+              </View>
             </View>
-
-            <View style={styles.formField}>
-              <Text style={styles.formLabel}>Your College / Campus</Text>
-              <TextInput
-                style={styles.formInput}
-                placeholder="e.g. Integral University, BBIT, AKTU..."
-                placeholderTextColor="#64748B"
-                value={contactCollege}
-                onChangeText={setContactCollege}
-              />
-            </View>
-
-            <View style={styles.formField}>
-              <Text style={styles.formLabel}>Message or Campus Request</Text>
-              <TextInput
-                style={[styles.formInput, styles.formTextArea]}
-                placeholder="How can we help or what would you like added?"
-                placeholderTextColor="#64748B"
-                value={contactMessage}
-                onChangeText={setContactMessage}
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.sendFormBtn, isSubmittingContact && { opacity: 0.7 }]}
-              onPress={handleContactSubmit}
-              disabled={isSubmittingContact}
-              activeOpacity={0.85}
-            >
-              {isSubmittingContact ? (
-                <ActivityIndicator size="small" color="#09090b" />
-              ) : (
-                <>
-                  <Text style={styles.sendFormBtnText}>Send to Student Team</Text>
-                  <Ionicons name="send" size={14} color="#09090b" />
-                </>
-              )}
-            </TouchableOpacity>
           </View>
-        </View>
-      </View>
 
-      {/* Transition Banner to Explore & Listings */}
-      <View style={styles.marketTransitionBar}>
-        <View style={styles.marketTransitionInner}>
-          <Ionicons name="cart" size={17} color="#38BDF8" />
-          <Text style={styles.marketTransitionText}>Browse Verified College Gear & Listings Below</Text>
-          <Ionicons name="arrow-down" size={14} color="#38BDF8" />
+          {/* Right Column: Interactive Live Campus Trading Deck (Desktop & Tablets) */}
+          {isWideScreen && (
+            <View style={styles.heroRightCol}>
+              {/* Primary Floating Showcase Deal Card */}
+              <View style={[styles.showcaseCard, Platform.OS === 'web' && ({ className: 'hero-floating-card' } as any)]}>
+                <View style={styles.showcaseCardTop}>
+                  <View style={styles.showcaseHotBadge}>
+                    <View style={[styles.heroLiveDot, Platform.OS === 'web' && ({ className: 'pulse-dot' } as any)]} />
+                    <Text style={styles.showcaseHotText}>🔥 Trending Campus Deal</Text>
+                  </View>
+                  <Text style={styles.showcaseCampusText}>Integral Univ • Hostel C</Text>
+                </View>
+
+                <View style={styles.showcaseProductRow}>
+                  <View style={styles.showcaseIconBox}>
+                    <Ionicons name="calculator-outline" size={26} color="#38BDF8" />
+                  </View>
+                  <View style={styles.showcaseInfoWrap}>
+                    <Text style={styles.showcaseTitle} numberOfLines={1}>Casio FX-991EX ClassWiz</Text>
+                    <Text style={styles.showcaseSub}>Scientific Calc • Like New Condition</Text>
+                    <View style={styles.showcasePriceRow}>
+                      <Text style={styles.showcasePrice}>₹650</Text>
+                      <Text style={styles.showcaseStrike}>₹1,420</Text>
+                      <View style={styles.showcaseDiscountPill}>
+                        <Text style={styles.showcaseDiscountText}>54% Off</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.showcaseFooterRow}>
+                  <View style={styles.showcaseSellerInfo}>
+                    <View style={styles.showcaseSellerAvatar}>
+                      <Text style={styles.showcaseSellerAvatarText}>A</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.showcaseSellerName}>Aman S. (3rd Yr CSE)</Text>
+                      <Text style={styles.showcaseSellerRating}>⭐ 4.9 • 18 campus deals</Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.showcaseActionBtn}
+                    onPress={() => router.push('/(tabs)/marketplace')}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="chatbubble-ellipses" size={13} color="#09090b" />
+                    <Text style={styles.showcaseActionBtnText}>Instant Chat</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Staggered Secondary Academic Deck Card */}
+              <View style={[styles.showcaseAcademicCard, Platform.OS === 'web' && ({ className: 'hero-floating-card-delayed' } as any)]}>
+                <View style={styles.showcaseAcademicIconBox}>
+                  <Ionicons name="book" size={18} color="#818CF8" />
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={styles.showcaseAcademicTitle} numberOfLines={1}>Sem 4 B.Tech Solved PYQs</Text>
+                  <Text style={styles.showcaseAcademicSub}>Free PDF • 240+ Senior Downloads</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.showcaseAcademicPill}
+                  onPress={() => router.push('/academic')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.showcaseAcademicPillText}>Free PDF</Text>
+                  <Ionicons name="arrow-forward" size={12} color="#818CF8" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Floating Escrow Guarantee Tag */}
+              <View style={styles.showcaseEscrowTag}>
+                <Ionicons name="shield-checkmark" size={13} color="#10B981" />
+                <Text style={styles.showcaseEscrowText}>Campus Escrow Protected • ₹0 Fees</Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
 
@@ -793,6 +590,300 @@ export default function MarketplaceHome() {
           {products.length} {products.length === 1 ? 'item' : 'items'} available
         </Text>
       </View>
+    </View>
+  );
+
+  // Footer Component containing About, Facts, Contact & Global Site Footer
+  const renderListFooter = () => (
+    <View style={styles.footerWrapper}>
+      {/* =========================================
+          1. ABOUT SECTION (Built by Students)
+      ========================================= */}
+      <View style={[styles.aboutSectionCard, isPhone && styles.phoneSectionCard]}>
+        <View style={styles.sectionHeaderWrap}>
+          <View style={styles.sectionKickerRow}>
+            <Ionicons name="sparkles" size={13} color="#38BDF8" />
+            <Text style={styles.sectionKickerText}>ABOUT OOPLABDH</Text>
+          </View>
+          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
+            Built by Students, Designed for Campuses.
+          </Text>
+          <Text style={styles.sectionLeadText}>
+            A dedicated campus ecosystem eliminating noisy WhatsApp spam, price gouging, and unverified strangers. Trade semester textbooks, lab gear, calculators, and hostel cycles within university boundaries with complete escrow protection.
+          </Text>
+        </View>
+
+        {/* 3 Pillar Cards */}
+        <View style={[styles.aboutPillarsGrid, isPhone && styles.phonePillarsGrid]}>
+          {/* Pillar 1 */}
+          <View style={styles.aboutPillarCard}>
+            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.25)' }]}>
+              <Ionicons name="shield-checkmark" size={20} color="#10B981" />
+            </View>
+            <Text style={styles.pillarTitle}>Verified Student Peers</Text>
+            <Text style={styles.pillarDesc}>
+              Every profile is authenticated with real student IDs and campus credentials, keeping bad actors and commercial spam off your campus network.
+            </Text>
+            <View style={styles.pillarTag}>
+              <Text style={[styles.pillarTagText, { color: '#10B981' }]}>100% Student Only</Text>
+            </View>
+          </View>
+
+          {/* Pillar 2 */}
+          <View style={styles.aboutPillarCard}>
+            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.25)' }]}>
+              <Ionicons name="chatbubbles" size={20} color="#38BDF8" />
+            </View>
+            <Text style={styles.pillarTitle}>In-App Chat & Escrow</Text>
+            <Text style={styles.pillarDesc}>
+              Chat in real-time, negotiate prices, schedule physical hostel handoffs, and enjoy escrow protection where you keep 100% of your earnings.
+            </Text>
+            <View style={styles.pillarTag}>
+              <Text style={[styles.pillarTagText, { color: '#38BDF8' }]}>₹0 Commission Cut</Text>
+            </View>
+          </View>
+
+          {/* Pillar 3 */}
+          <View style={styles.aboutPillarCard}>
+            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(129, 140, 248, 0.12)', borderColor: 'rgba(129, 140, 248, 0.25)' }]}>
+              <Ionicons name="book" size={20} color="#818CF8" />
+            </View>
+            <Text style={styles.pillarTitle}>Academic Hub & Free PYQs</Text>
+            <Text style={styles.pillarDesc}>
+              Senior peers upload free semester question papers, university syllabus notes, and lab manuals directly organized by branch and semester.
+            </Text>
+            <View style={styles.pillarTag}>
+              <Text style={[styles.pillarTagText, { color: '#818CF8' }]}>Free Peer Notes</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Action Link */}
+        <View style={styles.aboutBottomActions}>
+          <TouchableOpacity
+            style={styles.aboutActionBtn}
+            onPress={() => router.push('/about')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.aboutActionBtnText}>Meet our founders & story</Text>
+            <Ionicons name="arrow-forward" size={14} color="#38BDF8" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.aboutActionBtnSecondary}
+            onPress={() => router.push('/safety')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="lock-closed-outline" size={14} color="#94A3B8" />
+            <Text style={styles.aboutActionBtnSecondaryText}>Campus safety guide</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* =========================================
+          2. FACTS & IMPACT SECTION
+      ========================================= */}
+      <View style={[styles.factsSectionCard, isPhone && styles.phoneSectionCard]}>
+        <View style={styles.sectionHeaderWrap}>
+          <View style={[styles.sectionKickerRow, { borderColor: 'rgba(245, 158, 11, 0.3)', backgroundColor: 'rgba(245, 158, 11, 0.08)' }]}>
+            <Ionicons name="bar-chart" size={13} color="#F59E0B" />
+            <Text style={[styles.sectionKickerText, { color: '#F59E0B' }]}>PLATFORM FACTS & NUMBERS</Text>
+          </View>
+          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
+            Real Metrics Powering Campus Trade
+          </Text>
+          <Text style={styles.sectionLeadText}>
+            Transparent, peer-tested numbers that make Ooplabdh the definitive campus platform.
+          </Text>
+        </View>
+
+        {/* 4 Stats Grid */}
+        <View style={[styles.factsGrid, isPhone && styles.phoneFactsGrid]}>
+          {/* Stat 1 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+              <Ionicons name="people-outline" size={18} color="#10B981" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#10B981' }]}>100%</Text>
+            <Text style={styles.factLabel}>Verified Students</Text>
+            <Text style={styles.factSubtext}>Student IDs & institutional credentials verified</Text>
+          </View>
+
+          {/* Stat 2 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(56, 189, 248, 0.1)' }]}>
+              <Ionicons name="wallet-outline" size={18} color="#38BDF8" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#38BDF8' }]}>₹0</Text>
+            <Text style={styles.factLabel}>Platform Commission</Text>
+            <Text style={styles.factSubtext}>100% profit stays in students' pockets</Text>
+          </View>
+
+          {/* Stat 3 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
+              <Ionicons name="flash-outline" size={18} color="#F59E0B" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#F59E0B' }]}>&lt; 2 Min</Text>
+            <Text style={styles.factLabel}>Avg. Reply Speed</Text>
+            <Text style={styles.factSubtext}>Instant in-app peer chat within hostel blocks</Text>
+          </View>
+
+          {/* Stat 4 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(167, 139, 250, 0.1)' }]}>
+              <Ionicons name="document-text-outline" size={18} color="#A78BFA" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#A78BFA' }]}>1,200+</Text>
+            <Text style={styles.factLabel}>Free PYQs & Notes</Text>
+            <Text style={styles.factSubtext}>Engineering, sciences, and commerce archives</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* =========================================
+          3. CONTACT & SUPPORT SECTION
+      ========================================= */}
+      <View style={[styles.contactSectionCard, isPhone && styles.phoneSectionCard]}>
+        <View style={styles.sectionHeaderWrap}>
+          <View style={[styles.sectionKickerRow, { borderColor: 'rgba(16, 185, 129, 0.3)', backgroundColor: 'rgba(16, 185, 129, 0.08)' }]}>
+            <Ionicons name="mail-unread" size={13} color="#10B981" />
+            <Text style={[styles.sectionKickerText, { color: '#10B981' }]}>NEED HELP OR CAMPUS AMBASSADOR?</Text>
+          </View>
+          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
+            Get In Touch With The Student Team
+          </Text>
+          <Text style={styles.sectionLeadText}>
+            Want your college added to Ooplabdh, need deal resolution, or have product feedback? Send a message or join our student network directly.
+          </Text>
+        </View>
+
+        {/* 2-Column Split: Channels on Left, Quick Form on Right */}
+        <View style={[styles.contactSplitGrid, isPhone && styles.phoneContactSplitGrid]}>
+          {/* Left Column: Direct Links & Ambassadors */}
+          <View style={styles.contactLeftCol}>
+            {/* WhatsApp Community Card */}
+            <TouchableOpacity
+              style={styles.contactChannelCard}
+              onPress={() => openSocialLink(SOCIAL_LINKS.whatsapp, 'WhatsApp Community')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(37, 211, 102, 0.15)' }]}>
+                <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.channelTitle}>Official WhatsApp Community</Text>
+                <Text style={styles.channelDesc}>Join your campus group for instant deals & peer alerts.</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#94A3B8" />
+            </TouchableOpacity>
+
+            {/* Instagram Card */}
+            <TouchableOpacity
+              style={styles.contactChannelCard}
+              onPress={() => openSocialLink(SOCIAL_LINKS.instagram, 'Instagram')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(225, 48, 108, 0.15)' }]}>
+                <Ionicons name="logo-instagram" size={20} color="#E1306C" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.channelTitle}>Instagram @ooplabdh.shop</Text>
+                <Text style={styles.channelDesc}>Campus fest updates, features & giveaway news.</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#94A3B8" />
+            </TouchableOpacity>
+
+            {/* Direct Email Card */}
+            <View style={styles.contactChannelCard}>
+              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+                <Ionicons name="mail-outline" size={20} color="#38BDF8" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.channelTitle}>Direct Student Desk</Text>
+                <Text style={styles.channelDesc}>support@ooplabdh.shop (Replies within 3 hours)</Text>
+              </View>
+            </View>
+
+            {/* Link to Full Contact & FAQ */}
+            <View style={styles.contactSubLinksRow}>
+              <TouchableOpacity onPress={() => router.push('/contact')} style={styles.subLinkBtn}>
+                <Text style={styles.subLinkBtnText}>Full Contact Center ➔</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/faq')} style={styles.subLinkBtn}>
+                <Text style={styles.subLinkBtnText}>Read FAQs ➔</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Right Column: Interactive Quick Message Form */}
+          <View style={styles.contactFormCard}>
+            <Text style={styles.formCardHeader}>Drop Us a Quick Message</Text>
+            <Text style={styles.formCardSub}>We'll review your query or college addition request immediately.</Text>
+
+            {contactSuccessMessage ? (
+              <View style={styles.contactSuccessBanner}>
+                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                <Text style={styles.contactSuccessText}>{contactSuccessMessage}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Your Name</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="e.g. Aman Sharma"
+                placeholderTextColor="#64748B"
+                value={contactName}
+                onChangeText={setContactName}
+              />
+            </View>
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Your College / Campus</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="e.g. Integral University, BBIT, AKTU..."
+                placeholderTextColor="#64748B"
+                value={contactCollege}
+                onChangeText={setContactCollege}
+              />
+            </View>
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Message or Campus Request</Text>
+              <TextInput
+                style={[styles.formInput, styles.formTextArea]}
+                placeholder="How can we help or what would you like added?"
+                placeholderTextColor="#64748B"
+                value={contactMessage}
+                onChangeText={setContactMessage}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.sendFormBtn, isSubmittingContact && { opacity: 0.7 }]}
+              onPress={handleContactSubmit}
+              disabled={isSubmittingContact}
+              activeOpacity={0.85}
+            >
+              {isSubmittingContact ? (
+                <ActivityIndicator size="small" color="#09090b" />
+              ) : (
+                <>
+                  <Text style={styles.sendFormBtnText}>Send to Student Team</Text>
+                  <Ionicons name="send" size={14} color="#09090b" />
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* Global Footer */}
+      <Footer onBackToTop={handleBackToTop} />
     </View>
   );
 
@@ -1077,17 +1168,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 14,
     borderRadius: 24,
-    backgroundColor: '#111116',
+    backgroundColor: '#0c0f18',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(56, 189, 248, 0.25)',
     overflow: 'hidden',
     position: 'relative',
     ...Platform.select({
       web: {
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.45)',
+        background: 'linear-gradient(135deg, rgba(14, 18, 28, 0.96) 0%, rgba(10, 13, 22, 0.98) 100%)',
+        boxShadow: '0 24px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
       } as any,
       default: {
-        elevation: 4,
+        elevation: 6,
       },
     }),
   },
@@ -1097,33 +1190,60 @@ const styles = StyleSheet.create({
   },
   heroBackgroundGlow: {
     position: 'absolute',
-    top: -80,
-    right: -80,
+    top: -90,
+    right: -90,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    ...Platform.select({
+      web: {
+        filter: 'blur(75px)',
+      } as any,
+    }),
+  },
+  heroBackgroundGlowLeft: {
+    position: 'absolute',
+    bottom: -80,
+    left: -80,
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: 'rgba(56, 189, 248, 0.09)',
+    backgroundColor: 'rgba(99, 102, 241, 0.08)',
     ...Platform.select({
       web: {
-        filter: 'blur(60px)',
+        filter: 'blur(70px)',
       } as any,
     }),
   },
   heroContent: {
     padding: 28,
   },
+  heroContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 34,
+    gap: 28,
+  },
+  heroLeftCol: {
+    flex: 1,
+  },
+  heroLeftColWide: {
+    maxWidth: 640,
+  },
   heroBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     flexWrap: 'wrap',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
     borderWidth: 1,
     borderColor: 'rgba(56, 189, 248, 0.25)',
     borderRadius: 999,
@@ -1133,7 +1253,8 @@ const styles = StyleSheet.create({
   heroBadgeText: {
     color: '#38BDF8',
     fontSize: 11.5,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   heroLivePill: {
     flexDirection: 'row',
@@ -1141,9 +1262,9 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
     borderRadius: 999,
-    paddingHorizontal: 10,
+    paddingHorizontal: 11,
     paddingVertical: 5,
   },
   heroLiveDot: {
@@ -1154,16 +1275,16 @@ const styles = StyleSheet.create({
   },
   heroLiveText: {
     color: '#6EE7B7',
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   heroHeading: {
     color: '#F8FAFC',
-    fontSize: 32,
-    lineHeight: 40,
+    fontSize: 34,
+    lineHeight: 42,
     fontWeight: '800',
-    letterSpacing: -0.8,
-    marginBottom: 10,
+    letterSpacing: -0.9,
+    marginBottom: 12,
     maxWidth: 720,
   },
   phoneHeroHeading: {
@@ -1176,9 +1297,9 @@ const styles = StyleSheet.create({
   heroSubheading: {
     color: '#94A3B8',
     fontSize: 15,
-    lineHeight: 22,
-    maxWidth: 680,
-    marginBottom: 22,
+    lineHeight: 23,
+    maxWidth: 640,
+    marginBottom: 24,
   },
   phoneHeroSubheading: {
     fontSize: 13.5,
@@ -1190,7 +1311,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     flexWrap: 'wrap',
-    marginBottom: 20,
+    marginBottom: 22,
   },
   phoneHeroActionRow: {
     gap: 10,
@@ -1200,12 +1321,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#38BDF8',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     ...Platform.select({
       web: {
-        boxShadow: '0 8px 20px rgba(56, 189, 248, 0.4)',
+        background: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)',
+        boxShadow: '0 8px 24px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
       } as any,
       default: {
         elevation: 4,
@@ -1214,31 +1338,37 @@ const styles = StyleSheet.create({
   },
   heroPrimaryBtnText: {
     color: '#09090b',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 14.5,
+    fontWeight: '800',
   },
   heroSecondaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 12,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 20,
+    paddingVertical: 13,
+    borderRadius: 14,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+      } as any,
+    }),
   },
   heroSecondaryBtnText: {
-    color: '#38BDF8',
+    color: '#F8FAFC',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   heroTrustBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     flexWrap: 'wrap',
-    paddingTop: 16,
+    paddingTop: 18,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
@@ -1248,18 +1378,272 @@ const styles = StyleSheet.create({
   trustItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
+  },
+  trustIconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   trustDot: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#475569',
+    backgroundColor: '#334155',
   },
   trustText: {
     color: '#94A3B8',
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+
+  // --- HERO RIGHT SHOWCASE DECK STYLES ---
+  heroRightCol: {
+    flex: 0.9,
+    maxWidth: 480,
+    width: '100%',
+    position: 'relative',
+    paddingVertical: 6,
+  },
+  heroRightAmbientGlow: {
+    position: 'absolute',
+    top: '20%',
+    left: '10%',
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    ...Platform.select({
+      web: {
+        filter: 'blur(60px)',
+      } as any,
+    }),
+  },
+  showcaseCard: {
+    backgroundColor: 'rgba(18, 22, 34, 0.88)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+    borderTopColor: 'rgba(56, 189, 248, 0.45)',
+    padding: 18,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(56, 189, 248, 0.12)',
+      } as any,
+      default: {
+        elevation: 6,
+      },
+    }),
+  },
+  showcaseCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  showcaseHotBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.25)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  showcaseHotText: {
+    color: '#F87171',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  showcaseCampusText: {
+    color: '#94A3B8',
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  showcaseProductRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 16,
+  },
+  showcaseIconBox: {
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  showcaseInfoWrap: {
+    flex: 1,
+  },
+  showcaseTitle: {
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  showcaseSub: {
+    color: '#94A3B8',
     fontSize: 12,
-    fontWeight: '500',
+    marginBottom: 6,
+  },
+  showcasePriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  showcasePrice: {
+    color: '#38BDF8',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  showcaseStrike: {
+    color: '#64748B',
+    fontSize: 12.5,
+    textDecorationLine: 'line-through',
+  },
+  showcaseDiscountPill: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  showcaseDiscountText: {
+    color: '#10B981',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  showcaseFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  showcaseSellerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  showcaseSellerAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(56, 189, 248, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  showcaseSellerAvatarText: {
+    color: '#38BDF8',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  showcaseSellerName: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  showcaseSellerRating: {
+    color: '#94A3B8',
+    fontSize: 10.5,
+  },
+  showcaseActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#38BDF8',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 12px rgba(56, 189, 248, 0.35)',
+      } as any,
+    }),
+  },
+  showcaseActionBtnText: {
+    color: '#09090b',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  showcaseAcademicCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: 'rgba(15, 20, 32, 0.92)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+    padding: 12,
+    marginTop: 12,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(16px)',
+        boxShadow: '0 12px 28px rgba(0, 0, 0, 0.45)',
+      } as any,
+    }),
+  },
+  showcaseAcademicIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(129, 140, 248, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  showcaseAcademicTitle: {
+    color: '#F8FAFC',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  showcaseAcademicSub: {
+    color: '#94A3B8',
+    fontSize: 11,
+  },
+  showcaseAcademicPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(129, 140, 248, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  showcaseAcademicPillText: {
+    color: '#818CF8',
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  showcaseEscrowTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    marginTop: 10,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.22)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  showcaseEscrowText: {
+    color: '#10B981',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
 
   // --- VISUAL CATEGORIES STYLES ---
@@ -1758,39 +2142,73 @@ const styles = StyleSheet.create({
 
   // --- ABOUT SECTION STYLES ---
   aboutSectionCard: {
-    backgroundColor: '#121317',
-    borderRadius: 20,
+    marginHorizontal: 16,
+    backgroundColor: '#0c0f18',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
-    padding: 24,
-    marginBottom: 20,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(56, 189, 248, 0.28)',
+    padding: 28,
+    marginBottom: 22,
     overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        background: 'linear-gradient(135deg, rgba(14, 18, 28, 0.95) 0%, rgba(10, 13, 22, 0.98) 100%)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+      } as any,
+      default: {
+        elevation: 4,
+      },
+    }),
   },
   factsSectionCard: {
-    backgroundColor: '#121317',
-    borderRadius: 20,
+    marginHorizontal: 16,
+    backgroundColor: '#0c0f18',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
-    padding: 24,
-    marginBottom: 20,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(245, 158, 11, 0.28)',
+    padding: 28,
+    marginBottom: 22,
     overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        background: 'linear-gradient(135deg, rgba(14, 18, 28, 0.95) 0%, rgba(10, 13, 22, 0.98) 100%)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+      } as any,
+      default: {
+        elevation: 4,
+      },
+    }),
   },
   contactSectionCard: {
-    backgroundColor: '#121317',
-    borderRadius: 20,
+    marginHorizontal: 16,
+    backgroundColor: '#0c0f18',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
-    padding: 24,
-    marginBottom: 24,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(16, 185, 129, 0.28)',
+    padding: 28,
+    marginBottom: 26,
     overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        background: 'linear-gradient(135deg, rgba(14, 18, 28, 0.95) 0%, rgba(10, 13, 22, 0.98) 100%)',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+      } as any,
+      default: {
+        elevation: 4,
+      },
+    }),
   },
   phoneSectionCard: {
-    padding: 16,
-    borderRadius: 16,
+    marginHorizontal: 12,
+    padding: 18,
+    borderRadius: 20,
     marginBottom: 16,
   },
   sectionHeaderWrap: {
-    marginBottom: 20,
+    marginBottom: 22,
   },
   sectionKickerRow: {
     flexDirection: 'row',
@@ -1800,39 +2218,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(56, 189, 248, 0.08)',
     borderColor: 'rgba(56, 189, 248, 0.25)',
     borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
     borderRadius: 20,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   sectionKickerText: {
     color: '#38BDF8',
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.8,
   },
   sectionHeading: {
     color: '#F8FAFC',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
-    letterSpacing: -0.4,
-    lineHeight: 28,
+    letterSpacing: -0.5,
+    lineHeight: 32,
     marginBottom: 8,
   },
   phoneSectionHeading: {
-    fontSize: 18,
-    lineHeight: 24,
+    fontSize: 19,
+    lineHeight: 26,
   },
   sectionLeadText: {
     color: '#94A3B8',
-    fontSize: 13.5,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 22,
     maxWidth: 720,
   },
   aboutPillarsGrid: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 18,
+    marginBottom: 20,
   },
   phonePillarsGrid: {
     flexDirection: 'column',
@@ -1840,33 +2258,40 @@ const styles = StyleSheet.create({
   },
   aboutPillarCard: {
     flex: 1,
-    backgroundColor: '#181920',
-    borderRadius: 14,
+    backgroundColor: 'rgba(18, 22, 34, 0.75)',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    padding: 18,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    padding: 20,
     justifyContent: 'space-between',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      } as any,
+    }),
   },
   pillarIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
+    width: 46,
+    height: 46,
+    borderRadius: 13,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   pillarTitle: {
     color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 6,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 8,
+    letterSpacing: -0.2,
   },
   pillarDesc: {
     color: '#94A3B8',
-    fontSize: 12.5,
-    lineHeight: 18,
-    marginBottom: 12,
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 14,
   },
   pillarTag: {
     alignSelf: 'flex-start',
@@ -1918,36 +2343,42 @@ const styles = StyleSheet.create({
   },
   factCard: {
     flex: 1,
-    backgroundColor: '#181920',
-    borderRadius: 14,
+    backgroundColor: 'rgba(18, 22, 34, 0.75)',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    padding: 18,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    padding: 20,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      } as any,
+    }),
   },
   factIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   factNumber: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
-    letterSpacing: -0.5,
-    marginBottom: 2,
+    letterSpacing: -0.6,
+    marginBottom: 4,
   },
   factLabel: {
-    color: '#F1F5F9',
-    fontSize: 13.5,
-    fontWeight: '700',
+    color: '#F8FAFC',
+    fontSize: 14,
+    fontWeight: '800',
     marginBottom: 4,
   },
   factSubtext: {
-    color: '#64748B',
-    fontSize: 11.5,
-    lineHeight: 16,
+    color: '#94A3B8',
+    fontSize: 12,
+    lineHeight: 17,
   },
 
   // --- CONTACT SPLIT STYLES ---
@@ -1966,34 +2397,40 @@ const styles = StyleSheet.create({
   contactChannelCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#181920',
-    borderRadius: 12,
+    backgroundColor: 'rgba(18, 22, 34, 0.75)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    padding: 12,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    padding: 14,
     gap: 12,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+      } as any,
+    }),
   },
   channelIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   channelTitle: {
-    color: '#F1F5F9',
-    fontSize: 13.5,
+    color: '#F8FAFC',
+    fontSize: 14,
     fontWeight: '700',
   },
   channelDesc: {
-    color: '#828d9e',
-    fontSize: 11.5,
+    color: '#94A3B8',
+    fontSize: 12,
     marginTop: 2,
   },
   contactSubLinksRow: {
     flexDirection: 'row',
-    gap: 14,
-    marginTop: 6,
+    gap: 16,
+    marginTop: 8,
     flexWrap: 'wrap',
   },
   subLinkBtn: {
@@ -2001,27 +2438,34 @@ const styles = StyleSheet.create({
   },
   subLinkBtnText: {
     color: '#38BDF8',
-    fontSize: 12.5,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
   },
   contactFormCard: {
     flex: 1,
-    backgroundColor: '#16171e',
-    borderRadius: 14,
+    backgroundColor: 'rgba(18, 22, 34, 0.82)',
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 18,
+    padding: 22,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(14px)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      } as any,
+    }),
   },
   formCardHeader: {
     color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 2,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 4,
+    letterSpacing: -0.2,
   },
   formCardSub: {
-    color: '#828d9e',
-    fontSize: 12,
-    marginBottom: 14,
+    color: '#94A3B8',
+    fontSize: 12.5,
+    marginBottom: 16,
   },
   contactSuccessBanner: {
     flexDirection: 'row',

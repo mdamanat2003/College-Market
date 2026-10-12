@@ -59,12 +59,37 @@ export default function RootLayout() {
         margin: 0;
         min-height: 100%;
         width: 100%;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
       }
 
       body {
         overflow-x: hidden;
-        background: linear-gradient(180deg, #09090b 0%, #0f172a 100%);
+        background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 45%), linear-gradient(180deg, #09090b 0%, #0c101d 100%);
         background-attachment: fixed;
+      }
+
+      @keyframes floatSlow {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-7px); }
+      }
+      @keyframes floatSlowDelay {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+      }
+      @keyframes pulseDot {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.3); opacity: 1; }
+      }
+      .hero-floating-card {
+        animation: floatSlow 6s ease-in-out infinite !important;
+      }
+      .hero-floating-card-delayed {
+        animation: floatSlowDelay 7s ease-in-out infinite 1s !important;
+      }
+      .pulse-dot {
+        animation: pulseDot 2s ease-in-out infinite !important;
       }
 
       /* Branded Spinner Rotation Animation */

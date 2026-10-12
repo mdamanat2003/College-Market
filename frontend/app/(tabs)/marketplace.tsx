@@ -12,6 +12,7 @@ import {
   RefreshControl,
   Modal,
   TextInput,
+  Alert,
 } from 'react-native';
 import Head from 'expo-router/head';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -23,6 +24,8 @@ import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 import { COLLEGES, getCollegeSlug } from '../../constants/colleges';
 import { COLORS, RADIUS } from '../../theme/colors';
+import { api } from '../../services/api';
+import { SOCIAL_LINKS, openSocialLink } from '../../constants/socialLinks';
 
 const VISUAL_CATEGORIES = [
   {
@@ -110,6 +113,14 @@ export default function MarketplaceHome() {
   const [isAddingCustomCollege, setIsAddingCustomCollege] = useState(false);
   const [extraColleges, setExtraColleges] = useState<string[]>([]);
 
+  // Contact Form State
+  const [contactName, setContactName] = useState(user?.name || '');
+  const [contactEmail, setContactEmail] = useState(user?.email || '');
+  const [contactCollege, setContactCollege] = useState(user?.college || '');
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+  const [contactSuccessMessage, setContactSuccessMessage] = useState('');
+
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<any>>(null);
 
@@ -172,6 +183,37 @@ export default function MarketplaceHome() {
     setTempSelectedCollege(trimmed);
     setCustomCollegeInput('');
     setIsAddingCustomCollege(false);
+  };
+
+  const handleContactSubmit = async () => {
+    if (!contactName.trim()) {
+      Alert.alert('Required', 'Please enter your name.');
+      return;
+    }
+    if (!contactMessage.trim()) {
+      Alert.alert('Required', 'Please enter your message or question.');
+      return;
+    }
+
+    setIsSubmittingContact(true);
+    try {
+      const emailToSend = contactEmail.trim() || user?.email || 'anonymous@campus.edu';
+      const fullMessage = `[Campus: ${contactCollege.trim() || user?.college || 'Not specified'}]\n${contactMessage.trim()}`;
+      await api.post('/requests', {
+        name: contactName.trim(),
+        email: emailToSend,
+        message: fullMessage,
+      });
+
+      setContactSuccessMessage('Message sent successfully! Our campus support team will review it.');
+      setContactMessage('');
+      setTimeout(() => setContactSuccessMessage(''), 6000);
+    } catch (err: any) {
+      console.error('Contact submit error:', err);
+      Alert.alert('Error', err?.response?.data?.message || 'Unable to submit message right now. Please try again.');
+    } finally {
+      setIsSubmittingContact(false);
+    }
   };
 
   const handleConfirmRedirect = () => {
@@ -309,6 +351,301 @@ export default function MarketplaceHome() {
               <Text style={styles.trustText}>Escrow Protection</Text>
             </View>
           </View>
+        </View>
+      </View>
+
+      {/* =========================================
+          2.1 ABOUT SECTION (Modern & Professional)
+      ========================================= */}
+      <View style={[styles.aboutSectionCard, isPhone && styles.phoneSectionCard]}>
+        <View style={styles.sectionHeaderWrap}>
+          <View style={styles.sectionKickerRow}>
+            <Ionicons name="sparkles" size={13} color="#38BDF8" />
+            <Text style={styles.sectionKickerText}>ABOUT OOPLABDH</Text>
+          </View>
+          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
+            Built by Students, Designed for Campuses.
+          </Text>
+          <Text style={styles.sectionLeadText}>
+            A dedicated campus ecosystem eliminating noisy WhatsApp spam, price gouging, and unverified strangers. Trade semester textbooks, lab gear, calculators, and hostel cycles within university boundaries with complete escrow protection.
+          </Text>
+        </View>
+
+        {/* 3 Pillar Cards */}
+        <View style={[styles.aboutPillarsGrid, isPhone && styles.phonePillarsGrid]}>
+          {/* Pillar 1 */}
+          <View style={styles.aboutPillarCard}>
+            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.25)' }]}>
+              <Ionicons name="shield-checkmark" size={20} color="#10B981" />
+            </View>
+            <Text style={styles.pillarTitle}>Verified Student Peers</Text>
+            <Text style={styles.pillarDesc}>
+              Every profile is authenticated with real student IDs and campus credentials, keeping bad actors and commercial spam off your campus network.
+            </Text>
+            <View style={styles.pillarTag}>
+              <Text style={[styles.pillarTagText, { color: '#10B981' }]}>100% Student Only</Text>
+            </View>
+          </View>
+
+          {/* Pillar 2 */}
+          <View style={styles.aboutPillarCard}>
+            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.25)' }]}>
+              <Ionicons name="chatbubbles" size={20} color="#38BDF8" />
+            </View>
+            <Text style={styles.pillarTitle}>In-App Chat & Escrow</Text>
+            <Text style={styles.pillarDesc}>
+              Chat in real-time, negotiate prices, schedule physical hostel handoffs, and enjoy escrow protection where you keep 100% of your earnings.
+            </Text>
+            <View style={styles.pillarTag}>
+              <Text style={[styles.pillarTagText, { color: '#38BDF8' }]}>₹0 Commission Cut</Text>
+            </View>
+          </View>
+
+          {/* Pillar 3 */}
+          <View style={styles.aboutPillarCard}>
+            <View style={[styles.pillarIconBox, { backgroundColor: 'rgba(129, 140, 248, 0.12)', borderColor: 'rgba(129, 140, 248, 0.25)' }]}>
+              <Ionicons name="book" size={20} color="#818CF8" />
+            </View>
+            <Text style={styles.pillarTitle}>Academic Hub & Free PYQs</Text>
+            <Text style={styles.pillarDesc}>
+              Senior peers upload free semester question papers, university syllabus notes, and lab manuals directly organized by branch and semester.
+            </Text>
+            <View style={styles.pillarTag}>
+              <Text style={[styles.pillarTagText, { color: '#818CF8' }]}>Free Peer Notes</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Action Link */}
+        <View style={styles.aboutBottomActions}>
+          <TouchableOpacity
+            style={styles.aboutActionBtn}
+            onPress={() => router.push('/about')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.aboutActionBtnText}>Meet our founders & story</Text>
+            <Ionicons name="arrow-forward" size={14} color="#38BDF8" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.aboutActionBtnSecondary}
+            onPress={() => router.push('/safety')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="lock-closed-outline" size={14} color="#94A3B8" />
+            <Text style={styles.aboutActionBtnSecondaryText}>Campus safety guide</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* =========================================
+          2.2 FACTS & IMPACT SECTION
+      ========================================= */}
+      <View style={[styles.factsSectionCard, isPhone && styles.phoneSectionCard]}>
+        <View style={styles.sectionHeaderWrap}>
+          <View style={[styles.sectionKickerRow, { borderColor: 'rgba(245, 158, 11, 0.3)', backgroundColor: 'rgba(245, 158, 11, 0.08)' }]}>
+            <Ionicons name="bar-chart" size={13} color="#F59E0B" />
+            <Text style={[styles.sectionKickerText, { color: '#F59E0B' }]}>PLATFORM FACTS & NUMBERS</Text>
+          </View>
+          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
+            Real Metrics Powering Campus Trade
+          </Text>
+          <Text style={styles.sectionLeadText}>
+            Transparent, peer-tested numbers that make Ooplabdh the definitive campus platform.
+          </Text>
+        </View>
+
+        {/* 4 Stats Grid */}
+        <View style={[styles.factsGrid, isPhone && styles.phoneFactsGrid]}>
+          {/* Stat 1 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+              <Ionicons name="people-outline" size={18} color="#10B981" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#10B981' }]}>100%</Text>
+            <Text style={styles.factLabel}>Verified Students</Text>
+            <Text style={styles.factSubtext}>Student IDs & institutional credentials verified</Text>
+          </View>
+
+          {/* Stat 2 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(56, 189, 248, 0.1)' }]}>
+              <Ionicons name="wallet-outline" size={18} color="#38BDF8" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#38BDF8' }]}>₹0</Text>
+            <Text style={styles.factLabel}>Platform Commission</Text>
+            <Text style={styles.factSubtext}>100% profit stays in students' pockets</Text>
+          </View>
+
+          {/* Stat 3 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
+              <Ionicons name="flash-outline" size={18} color="#F59E0B" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#F59E0B' }]}>&lt; 2 Min</Text>
+            <Text style={styles.factLabel}>Avg. Reply Speed</Text>
+            <Text style={styles.factSubtext}>Instant in-app peer chat within hostel blocks</Text>
+          </View>
+
+          {/* Stat 4 */}
+          <View style={styles.factCard}>
+            <View style={[styles.factIconWrap, { backgroundColor: 'rgba(167, 139, 250, 0.1)' }]}>
+              <Ionicons name="document-text-outline" size={18} color="#A78BFA" />
+            </View>
+            <Text style={[styles.factNumber, { color: '#A78BFA' }]}>1,200+</Text>
+            <Text style={styles.factLabel}>Free PYQs & Notes</Text>
+            <Text style={styles.factSubtext}>Engineering, sciences, and commerce archives</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* =========================================
+          2.3 CONTACT & SUPPORT SECTION
+      ========================================= */}
+      <View style={[styles.contactSectionCard, isPhone && styles.phoneSectionCard]}>
+        <View style={styles.sectionHeaderWrap}>
+          <View style={[styles.sectionKickerRow, { borderColor: 'rgba(16, 185, 129, 0.3)', backgroundColor: 'rgba(16, 185, 129, 0.08)' }]}>
+            <Ionicons name="mail-unread" size={13} color="#10B981" />
+            <Text style={[styles.sectionKickerText, { color: '#10B981' }]}>NEED HELP OR CAMPUS AMBASSADOR?</Text>
+          </View>
+          <Text style={[styles.sectionHeading, isPhone && styles.phoneSectionHeading]}>
+            Get In Touch With The Student Team
+          </Text>
+          <Text style={styles.sectionLeadText}>
+            Want your college added to Ooplabdh, need deal resolution, or have product feedback? Send a message or join our student network directly.
+          </Text>
+        </View>
+
+        {/* 2-Column Split: Channels on Left, Quick Form on Right */}
+        <View style={[styles.contactSplitGrid, isPhone && styles.phoneContactSplitGrid]}>
+          {/* Left Column: Direct Links & Ambassadors */}
+          <View style={styles.contactLeftCol}>
+            {/* WhatsApp Community Card */}
+            <TouchableOpacity
+              style={styles.contactChannelCard}
+              onPress={() => openSocialLink(SOCIAL_LINKS.whatsapp, 'WhatsApp Community')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(37, 211, 102, 0.15)' }]}>
+                <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.channelTitle}>Official WhatsApp Community</Text>
+                <Text style={styles.channelDesc}>Join your campus group for instant deals & peer alerts.</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#94A3B8" />
+            </TouchableOpacity>
+
+            {/* Instagram Card */}
+            <TouchableOpacity
+              style={styles.contactChannelCard}
+              onPress={() => openSocialLink(SOCIAL_LINKS.instagram, 'Instagram')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(225, 48, 108, 0.15)' }]}>
+                <Ionicons name="logo-instagram" size={20} color="#E1306C" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.channelTitle}>Instagram @ooplabdh.shop</Text>
+                <Text style={styles.channelDesc}>Campus fest updates, features & giveaway news.</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#94A3B8" />
+            </TouchableOpacity>
+
+            {/* Direct Email Card */}
+            <View style={styles.contactChannelCard}>
+              <View style={[styles.channelIconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+                <Ionicons name="mail-outline" size={20} color="#38BDF8" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.channelTitle}>Direct Student Desk</Text>
+                <Text style={styles.channelDesc}>support@ooplabdh.shop (Replies within 3 hours)</Text>
+              </View>
+            </View>
+
+            {/* Link to Full Contact & FAQ */}
+            <View style={styles.contactSubLinksRow}>
+              <TouchableOpacity onPress={() => router.push('/contact')} style={styles.subLinkBtn}>
+                <Text style={styles.subLinkBtnText}>Full Contact Center ➔</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/faq')} style={styles.subLinkBtn}>
+                <Text style={styles.subLinkBtnText}>Read FAQs ➔</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Right Column: Interactive Quick Message Form */}
+          <View style={styles.contactFormCard}>
+            <Text style={styles.formCardHeader}>Drop Us a Quick Message</Text>
+            <Text style={styles.formCardSub}>We'll review your query or college addition request immediately.</Text>
+
+            {contactSuccessMessage ? (
+              <View style={styles.contactSuccessBanner}>
+                <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                <Text style={styles.contactSuccessText}>{contactSuccessMessage}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Your Name</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="e.g. Aman Sharma"
+                placeholderTextColor="#64748B"
+                value={contactName}
+                onChangeText={setContactName}
+              />
+            </View>
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Your College / Campus</Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="e.g. Integral University, BBIT, AKTU..."
+                placeholderTextColor="#64748B"
+                value={contactCollege}
+                onChangeText={setContactCollege}
+              />
+            </View>
+
+            <View style={styles.formField}>
+              <Text style={styles.formLabel}>Message or Campus Request</Text>
+              <TextInput
+                style={[styles.formInput, styles.formTextArea]}
+                placeholder="How can we help or what would you like added?"
+                placeholderTextColor="#64748B"
+                value={contactMessage}
+                onChangeText={setContactMessage}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.sendFormBtn, isSubmittingContact && { opacity: 0.7 }]}
+              onPress={handleContactSubmit}
+              disabled={isSubmittingContact}
+              activeOpacity={0.85}
+            >
+              {isSubmittingContact ? (
+                <ActivityIndicator size="small" color="#09090b" />
+              ) : (
+                <>
+                  <Text style={styles.sendFormBtnText}>Send to Student Team</Text>
+                  <Ionicons name="send" size={14} color="#09090b" />
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* Transition Banner to Explore & Listings */}
+      <View style={styles.marketTransitionBar}>
+        <View style={styles.marketTransitionInner}>
+          <Ionicons name="cart" size={17} color="#38BDF8" />
+          <Text style={styles.marketTransitionText}>Browse Verified College Gear & Listings Below</Text>
+          <Ionicons name="arrow-down" size={14} color="#38BDF8" />
         </View>
       </View>
 
@@ -1415,6 +1752,350 @@ const styles = StyleSheet.create({
   },
   modalRedirectBtnText: {
     color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  // --- ABOUT SECTION STYLES ---
+  aboutSectionCard: {
+    backgroundColor: '#121317',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    padding: 24,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  factsSectionCard: {
+    backgroundColor: '#121317',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    padding: 24,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  contactSectionCard: {
+    backgroundColor: '#121317',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    padding: 24,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  phoneSectionCard: {
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  sectionHeaderWrap: {
+    marginBottom: 20,
+  },
+  sectionKickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginBottom: 10,
+  },
+  sectionKickerText: {
+    color: '#38BDF8',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  sectionHeading: {
+    color: '#F8FAFC',
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+    lineHeight: 28,
+    marginBottom: 8,
+  },
+  phoneSectionHeading: {
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  sectionLeadText: {
+    color: '#94A3B8',
+    fontSize: 13.5,
+    lineHeight: 20,
+    maxWidth: 720,
+  },
+  aboutPillarsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 18,
+  },
+  phonePillarsGrid: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  aboutPillarCard: {
+    flex: 1,
+    backgroundColor: '#181920',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 18,
+    justifyContent: 'space-between',
+  },
+  pillarIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  pillarTitle: {
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  pillarDesc: {
+    color: '#94A3B8',
+    fontSize: 12.5,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  pillarTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  pillarTagText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  aboutBottomActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingTop: 8,
+    flexWrap: 'wrap',
+  },
+  aboutActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  aboutActionBtnText: {
+    color: '#38BDF8',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  aboutActionBtnSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  aboutActionBtnSecondaryText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+
+  // --- FACTS GRID STYLES ---
+  factsGrid: {
+    flexDirection: 'row',
+    gap: 14,
+  },
+  phoneFactsGrid: {
+    flexDirection: 'column',
+    gap: 10,
+  },
+  factCard: {
+    flex: 1,
+    backgroundColor: '#181920',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 18,
+  },
+  factIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  factNumber: {
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 2,
+  },
+  factLabel: {
+    color: '#F1F5F9',
+    fontSize: 13.5,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  factSubtext: {
+    color: '#64748B',
+    fontSize: 11.5,
+    lineHeight: 16,
+  },
+
+  // --- CONTACT SPLIT STYLES ---
+  contactSplitGrid: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  phoneContactSplitGrid: {
+    flexDirection: 'column',
+    gap: 16,
+  },
+  contactLeftCol: {
+    flex: 1,
+    gap: 10,
+  },
+  contactChannelCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#181920',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 12,
+    gap: 12,
+  },
+  channelIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  channelTitle: {
+    color: '#F1F5F9',
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  channelDesc: {
+    color: '#828d9e',
+    fontSize: 11.5,
+    marginTop: 2,
+  },
+  contactSubLinksRow: {
+    flexDirection: 'row',
+    gap: 14,
+    marginTop: 6,
+    flexWrap: 'wrap',
+  },
+  subLinkBtn: {
+    paddingVertical: 4,
+  },
+  subLinkBtnText: {
+    color: '#38BDF8',
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  contactFormCard: {
+    flex: 1,
+    backgroundColor: '#16171e',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: 18,
+  },
+  formCardHeader: {
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  formCardSub: {
+    color: '#828d9e',
+    fontSize: 12,
+    marginBottom: 14,
+  },
+  contactSuccessBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+  },
+  contactSuccessText: {
+    color: '#10B981',
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+  },
+  formField: {
+    marginBottom: 12,
+  },
+  formLabel: {
+    color: '#CBD5E1',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  formInput: {
+    backgroundColor: '#0d0e12',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#252733',
+    color: '#F8FAFC',
+    fontSize: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  formTextArea: {
+    height: 70,
+    textAlignVertical: 'top',
+  },
+  sendFormBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#38BDF8',
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  sendFormBtnText: {
+    color: '#09090b',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  marketTransitionBar: {
+    paddingVertical: 6,
+    marginBottom: 12,
+  },
+  marketTransitionInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(56, 189, 248, 0.06)',
+    borderColor: 'rgba(56, 189, 248, 0.2)',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  marketTransitionText: {
+    color: '#38BDF8',
     fontSize: 13,
     fontWeight: '700',
   },

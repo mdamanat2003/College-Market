@@ -945,11 +945,7 @@ export default function MarketplaceHome() {
               </View>
             )
           }
-          ListFooterComponent={
-            <View style={styles.footerWrapper}>
-              <Footer onBackToTop={handleBackToTop} />
-            </View>
-          }
+          ListFooterComponent={renderListFooter}
           renderItem={renderItem}
         />
       </View>
@@ -1882,7 +1878,9 @@ const styles = StyleSheet.create({
   },
   footerWrapper: {
     width: '100%',
-    marginTop: 40,
+    maxWidth: 1440,
+    alignSelf: 'center',
+    marginTop: 32,
   },
 
   // --- MODAL STYLES (Image 2 Match) ---

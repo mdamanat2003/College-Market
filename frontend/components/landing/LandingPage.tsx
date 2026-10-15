@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView, Alert, RefreshControl } from 'react-native';
+import { Animated, Easing, Platform, View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions, Pressable, Modal, TextInput, KeyboardAvoidingView, Alert, RefreshControl, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Head from 'expo-router/head';
@@ -82,8 +82,6 @@ export default function LandingPage() {
   const [newReviewText, setNewReviewText] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  const welcomeGradient = useRef(new Animated.Value(0)).current;
-  const textColorAnim = useRef(new Animated.Value(0)).current;
 
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
@@ -168,12 +166,6 @@ export default function LandingPage() {
   }, [socket]);
 
   useEffect(() => {
-    // Faster, livelier welcome animations
-    const gradientAnimation = Animated.loop(Animated.timing(welcomeGradient, { toValue: 1, duration: 5000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }));
-    const colorAnimation = Animated.loop(Animated.timing(textColorAnim, { toValue: 1, duration: 3500, easing: Easing.linear, useNativeDriver: false }));
-    gradientAnimation.start();
-    colorAnimation.start();
-
     const scrollSpeed = 1.5;
     const intervalId = setInterval(() => {
       if (reviewsScrollRef.current && !isReviewModalVisible) { // Modal open hone par scroll rok do
@@ -187,11 +179,9 @@ export default function LandingPage() {
     }, 20);
 
     return () => {
-      gradientAnimation.stop();
-      colorAnimation.stop();
       clearInterval(intervalId);
     };
-  }, [welcomeGradient, textColorAnim, isReviewModalVisible]);
+  }, [isReviewModalVisible]);
 
   const handleSubmitReview = async () => {
     const trimmedName = newName.trim();
@@ -248,19 +238,6 @@ export default function LandingPage() {
     }
   };
 
-  const gradientLayerTwoOpacity = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1, 0] });
-  const gradientLayerThreeOpacity = welcomeGradient.interpolate({ inputRange: [0, 0.35, 0.75, 1], outputRange: [0.65, 0, 1, 0.65] });
-  const gradientDriftLarge = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [-28, 28, -28] });
-  const welcomeTextScale = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1.09, 1] });
-  const welcomeTextLift = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: [6, -6, 6] });
-  const welcomeTextRotate = welcomeGradient.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['-2deg', '2deg', '-2deg'] });
-  const welcomeTitleTransform = isMobile
-    ? [{ translateY: welcomeTextLift }, { rotate: welcomeTextRotate }]
-    : [{ translateY: welcomeTextLift }, { scale: welcomeTextScale }, { rotate: welcomeTextRotate }];
-  const animatedTextColor = textColorAnim.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: ['#38BDF8', '#818CF8', '#C084FC', '#818CF8', '#38BDF8'],
-  });
 
   return (
     <>
@@ -296,52 +273,79 @@ export default function LandingPage() {
 
         <View style={styles.content}>
 
-          <View style={[styles.welcomeBand, isMobile && styles.welcomeBandMobile]}>
-            <View style={[styles.welcomeCard, isMobile && styles.welcomeCardMobile]}>
-              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientBase, { transform: [{ translateX: gradientDriftLarge }, { scale: 1.05 }] }]} />
-              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerTwo, { opacity: gradientLayerTwoOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.08 }] }]} />
-              <Animated.View style={[styles.welcomeGradientLayer, styles.welcomeGradientLayerThree, { opacity: gradientLayerThreeOpacity, transform: [{ translateX: gradientDriftLarge }, { scale: 1.12 }] }]} />
-              <View style={styles.welcomeSheen} />
+          {/* ========================================================
+              Campus Hero Banner (Your Campus. Your Marketplace.)
+          ======================================================== */}
+          <View style={[styles.bannerWrapper, isMobile && styles.bannerWrapperMobile]}>
+            {Platform.OS === 'web' && (
+              <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+                Ooplabdh - Your Campus. Your Marketplace.
+              </h1>
+            )}
 
-              <View style={styles.heroContentInside}>
-                {Platform.OS === 'web' ? (
-                  <h1 style={{ margin: 0, padding: 0, fontSize: 'inherit', fontWeight: 'inherit', color: 'inherit', textAlign: 'inherit', textTransform: 'inherit' }}>
-                    <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
-                      {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
-                    </Animated.Text>
-                  </h1>
-                ) : (
-                  <Animated.Text style={[styles.welcomeTitle, isMobile && styles.welcomeTitleMobile, isCompact && styles.welcomeTitleCompact, { transform: welcomeTitleTransform, color: animatedTextColor }]}>
-                    {isMobile ? <>WELCOME TO{'\n'}OOPLABDH</> : 'WELCOME TO OOPLABDH'}
-                  </Animated.Text>
+            <View style={styles.bannerContainer}>
+              {/* Dynamic Theme Glow Behind the Banner */}
+              <View style={styles.bannerAmbientGlowLeft} />
+              <View style={styles.bannerAmbientGlowRight} />
+
+              {/* Main Banner Card */}
+              <View style={styles.bannerCard}>
+                <Image
+                  source={require('../../assets/images/marketplace-banner.png')}
+                  style={styles.bannerImage}
+                  resizeMode="contain"
+                  accessibilityLabel="Your Campus. Your Marketplace. Ooplabdh"
+                />
+
+                {/* Desktop/Tablet Interactive Hotspots over Banner Buttons */}
+                {!isMobile && (
+                  <View style={styles.hotspotOverlay} pointerEvents="box-none">
+                    <TouchableOpacity
+                      testID="banner-sell-btn"
+                      style={styles.hotspotSellBtn}
+                      onPress={() => router.push(user ? '/add-product' : ('/(auth)/login?redirect=/add-product' as any))}
+                      activeOpacity={0.75}
+                      accessibilityLabel="Sell / Explore"
+                    />
+
+                    <TouchableOpacity
+                      testID="banner-pyq-btn"
+                      style={styles.hotspotPyqBtn}
+                      onPress={() => router.push('/academic')}
+                      activeOpacity={0.75}
+                      accessibilityLabel="Browse PYQs & Books"
+                    />
+                  </View>
                 )}
+              </View>
 
-                <Text style={[styles.welcomeSubtitle, isMobile && styles.welcomeSubtitleMobile]}>
-                  Your secure college marketplace. Buy, sell, and request notes with confidence.
-                </Text>
-
-                <View style={[styles.welcomeButtons, isMobile && styles.welcomeButtonsMobile]}>
+              {/* Mobile Action Buttons - prominently placed below banner for easy touch reach */}
+              {isMobile && (
+                <View style={styles.bannerMobileButtonsRow}>
                   <TouchableOpacity
-                    testID="hero-primary"
-                    style={styles.heroPrimaryBtn}
-                    onPress={() => router.push('/(tabs)/marketplace')}
+                    testID="banner-mobile-sell"
+                    style={styles.bannerMobilePrimaryBtn}
+                    onPress={() => router.push(user ? '/add-product' : ('/(auth)/login?redirect=/add-product' as any))}
+                    activeOpacity={0.85}
                   >
-                    <Text style={styles.heroPrimaryText}>Explore Market</Text>
-                    <Ionicons name="cart-outline" size={16} color="#09090b" />
+                    <Ionicons name="add-circle" size={18} color="#060B14" />
+                    <Text style={styles.bannerMobilePrimaryText}>+ Sell / Explore</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    testID="hero-secondary"
-                    style={styles.heroSecondaryBtn}
+                    testID="banner-mobile-pyq"
+                    style={styles.bannerMobileSecondaryBtn}
                     onPress={() => router.push('/academic')}
+                    activeOpacity={0.85}
                   >
-                    <Text style={styles.heroSecondaryText}>PyQ & Notes</Text>
-                    <Ionicons name="book-outline" size={16} color="#fff" />
+                    <Ionicons name="book-outline" size={16} color="#38BDF8" />
+                    <Text style={styles.bannerMobileSecondaryText}>Browse PYQs & Books</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              )}
             </View>
           </View>
+
 
           <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
             <View style={[styles.heroCopy, isDesktop && styles.heroCopyDesktop]}>
@@ -566,16 +570,16 @@ export default function LandingPage() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#0A0A0A' },
+  page: { flex: 1, backgroundColor: '#060913' },
   content: { paddingBottom: 0, paddingTop: 14, maxWidth: 1400, width: '100%', alignSelf: 'center', paddingHorizontal: 12 },
   glowBlue: {
     position: 'absolute',
-    top: 80,
+    top: 60,
     right: -90,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'rgba(59,130,246,0.12)',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
     ...Platform.select({
       web: {
         filter: 'blur(90px)',
@@ -587,10 +591,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 320,
     left: -120,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: 'rgba(124,58,237,0.1)',
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
     ...Platform.select({
       web: {
         filter: 'blur(100px)',
@@ -599,138 +603,218 @@ const styles = StyleSheet.create({
     }),
   },
   navWrap: { paddingHorizontal: SPACING.md, marginBottom: SPACING.lg },
-  welcomeBand: { width: '100%', paddingHorizontal: SPACING.md, paddingTop: 6, paddingBottom: 28, backgroundColor: 'transparent' },
-  welcomeBandMobile: { paddingHorizontal: 10, paddingBottom: 22 },
-  welcomeCard: {
+
+  // --- CAMPUS HERO BANNER STYLES ---
+  bannerWrapper: {
     width: '100%',
-    paddingVertical: 44,
-    borderRadius: 30,
-    overflow: 'hidden',
+    paddingHorizontal: SPACING.md,
+    paddingTop: 8,
+    paddingBottom: 28,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  bannerWrapperMobile: {
+    paddingHorizontal: 8,
+    paddingBottom: 20,
+    paddingTop: 4,
+  },
+  bannerContainer: {
+    width: '100%',
+    maxWidth: 1240,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  bannerAmbientGlowLeft: {
+    position: 'absolute',
+    top: '10%',
+    left: '-4%',
+    width: '38%',
+    height: '65%',
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderRadius: 999,
     ...Platform.select({
       web: {
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+        filter: 'blur(70px)',
+      } as any,
+    }),
+  },
+  bannerAmbientGlowRight: {
+    position: 'absolute',
+    top: '15%',
+    right: '-4%',
+    width: '42%',
+    height: '65%',
+    backgroundColor: 'rgba(2, 132, 199, 0.15)',
+    borderRadius: 999,
+    ...Platform.select({
+      web: {
+        filter: 'blur(80px)',
+      } as any,
+    }),
+  },
+  bannerCard: {
+    width: '100%',
+    borderRadius: 22,
+    overflow: 'hidden',
+    backgroundColor: '#070C18',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.28)',
+    borderTopColor: 'rgba(56, 189, 248, 0.55)',
+    position: 'relative',
+    ...Platform.select({
+      web: {
+        boxShadow: '0 24px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(56, 189, 248, 0.15)',
       } as any,
       default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 18 },
-        shadowOpacity: 0.25,
-        shadowRadius: 32,
         elevation: 8,
+        shadowColor: '#0284C7',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.35,
+        shadowRadius: 20,
       },
     }),
   },
-  welcomeCardMobile: {
-    paddingHorizontal: 14,
-    borderRadius: 24,
-    paddingVertical: 36,
-    shadowColor: 'transparent',
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
+  bannerImage: {
+    width: '100%',
+    aspectRatio: 1024 / 434,
+    borderRadius: 20,
+  },
+  hotspotOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+  },
+  hotspotSellBtn: {
+    position: 'absolute',
+    top: '68%',
+    height: '18%',
+    left: '4.8%',
+    width: '17.2%',
+    borderRadius: 28,
     ...Platform.select({
       web: {
-        boxShadow: 'none',
+        cursor: 'pointer',
       } as any,
-      default: {},
     }),
   },
-  welcomeGradientLayer: { position: 'absolute', top: -28, right: -40, bottom: -28, left: -40 },
-  welcomeGradientBase: { backgroundColor: '#09090b', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(120deg, #09090b 0%, #1e1b4b 50%, #020617 100%)', backgroundSize: '200% 200%' } as any : null) },
-  welcomeGradientLayerTwo: { backgroundColor: '#1e1e24', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #0f172a 0%, #311042 50%, #09090b 100%)', backgroundSize: '200% 200%' } as any : null) },
-  welcomeGradientLayerThree: { backgroundColor: '#09090b', ...(Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(145deg, #09090b 0%, #172554 50%, #2e1065 100%)', backgroundSize: '220% 220%' } as any : null) },
-  welcomeSheen: { position: 'absolute', top: 1, right: 1, bottom: 1, left: 1, borderRadius: 29, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  welcomeTitle: { fontSize: 62, lineHeight: 70, fontWeight: '900', textAlign: 'center', letterSpacing: -1.5, textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8, zIndex: 10 },
-  welcomeTitleMobile: { width: '100%', fontSize: 34, lineHeight: 40, letterSpacing: -0.5, paddingHorizontal: 4 },
-  welcomeTitleCompact: { fontSize: 28, lineHeight: 34 },
-  heroContentInside: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    zIndex: 10,
+  hotspotPyqBtn: {
+    position: 'absolute',
+    top: '68%',
+    height: '18%',
+    left: '23.4%',
+    width: '22.8%',
+    borderRadius: 28,
+    ...Platform.select({
+      web: {
+        cursor: 'pointer',
+      } as any,
+    }),
   },
-  welcomeSubtitle: {
-    color: 'rgba(255, 255, 255, 0.72)',
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
-    marginTop: 14,
-    maxWidth: 600,
-    fontWeight: '500',
-    zIndex: 10,
-  },
-  welcomeSubtitleMobile: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 10,
-    paddingHorizontal: 12,
-  },
-  welcomeButtons: {
+  bannerMobileButtonsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginTop: 24,
-    zIndex: 10,
-  },
-  welcomeButtonsMobile: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    width: '100%',
-    paddingHorizontal: 20,
+    justifyContent: 'center',
     gap: 10,
+    width: '100%',
+    marginTop: 14,
   },
-  heroPrimaryBtn: {
+  bannerMobilePrimaryBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-    borderRadius: 999,
+    gap: 6,
+    backgroundColor: '#38BDF8',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 4px 16px rgba(56, 189, 248, 0.35)',
+      } as any,
+      default: {
+        elevation: 3,
+      },
+    }),
   },
-  heroPrimaryText: {
-    color: '#09090b',
-    fontSize: 14,
+  bannerMobilePrimaryText: {
+    color: '#060B14',
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  bannerMobileSecondaryBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(10, 16, 32, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.35)',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+  },
+  bannerMobileSecondaryText: {
+    color: '#F8FAFC',
+    fontSize: 13,
     fontWeight: '700',
   },
-  heroSecondaryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-    borderRadius: 999,
-  },
-  heroSecondaryText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+
   hero: { paddingHorizontal: SPACING.md, paddingTop: 28, gap: 24 },
   heroDesktop: { flexDirection: 'row', alignItems: 'center', gap: 28 },
   heroCopy: { minWidth: 0 },
   heroCopyDesktop: { flex: 1 },
-  pill: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 18 },
-  pillText: { color: 'rgba(255,255,255,0.82)', fontSize: 13, fontWeight: '700' },
+  pill: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.25)',
+    marginBottom: 18,
+  },
+  pillText: { color: '#7DD3FC', fontSize: 13, fontWeight: '700' },
   headline: { color: '#fff', fontSize: 52, lineHeight: 58, fontWeight: '900', maxWidth: 640 },
   headlineMobile: { fontSize: 34, lineHeight: 40, maxWidth: 420 },
   headlineCompact: { fontSize: 30, lineHeight: 36 },
   subheadline: { marginTop: 18, color: 'rgba(255,255,255,0.68)', fontSize: 16, lineHeight: 26, maxWidth: 640 },
   heroButtons: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 24, flexWrap: 'wrap' },
   heroButtonsMobile: { flexDirection: 'column', alignItems: 'stretch' },
-  primaryButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#fff', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 999 },
-  primaryButtonText: { color: '#0a0a0a', fontSize: 14, fontWeight: '800' },
-  secondaryButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-  secondaryButtonText: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '700' },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#38BDF8',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 999,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 8px 24px rgba(56, 189, 248, 0.35)',
+      } as any,
+      default: {
+        elevation: 4,
+      },
+    }),
+  },
+  primaryButtonText: { color: '#060B14', fontSize: 14, fontWeight: '800' },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(12, 18, 34, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 999,
+  },
+  secondaryButtonText: { color: '#E2E8F0', fontSize: 14, fontWeight: '700' },
   statsRow: { marginTop: 28, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statsRowMobile: { gap: 10 },
   statCard: { minWidth: 120, padding: 16, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
@@ -799,13 +883,13 @@ const styles = StyleSheet.create({
   sellerName: { color: '#fff', fontSize: 14, fontWeight: '700', flexShrink: 1 },
   sellerTextBlock: { flex: 1, minWidth: 0 },
   sellerMeta: { color: 'rgba(255,255,255,0.58)', fontSize: 12, marginTop: 3 },
-  sectionCopyCentered: { paddingHorizontal: SPACING.md, marginTop: 56, alignItems: 'center', justifyContent: 'center' },
-  sectionHeaderCentered: { paddingHorizontal: SPACING.md, marginTop: 48, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  sectionCopyCentered: { paddingHorizontal: SPACING.md, marginTop: 80, alignItems: 'center', justifyContent: 'center' },
+  sectionHeaderCentered: { paddingHorizontal: SPACING.md, marginTop: 72, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   sectionLabel: { color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 4, fontSize: 20, fontWeight: '800', marginBottom: 10, textAlign: 'center' },
   sectionLabelLeft: { color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 4, fontSize: 18, fontWeight: '800', marginBottom: 10 },
   sectionTitleLarge: { color: '#fff', fontSize: 38, lineHeight: 46, fontWeight: '800', maxWidth: 800, textAlign: 'center' },
   sectionBodyCentered: { marginTop: 16, color: 'rgba(255,255,255,0.68)', fontSize: 16, lineHeight: 26, maxWidth: 720, textAlign: 'center' },
-  feature2DGrid: { paddingHorizontal: SPACING.md, marginTop: 24, flexDirection: 'row', flexWrap: 'wrap', gap: 16, width: '100%' },
+  feature2DGrid: { paddingHorizontal: SPACING.md, marginTop: 28, flexDirection: 'row', flexWrap: 'wrap', gap: 16, width: '100%' },
   gridTablet: {},
   gridDesktop: { gap: 20 },
   gridFeatureCard: { backgroundColor: '#121214', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 28, padding: 24, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%', minHeight: 220, overflow: 'hidden', ...Platform.select({ web: { transitionProperty: 'all', transitionDuration: '300ms' } as any, default: {} }) },
@@ -823,7 +907,7 @@ const styles = StyleSheet.create({
   featureDescription: { color: 'rgba(255,255,255,0.6)', fontSize: 14, lineHeight: 22 },
 
   // Rating Section
-  ratingSection: { marginTop: 80, width: '100%' },
+  ratingSection: { marginTop: 100, width: '100%' },
   ratingHeader: { alignItems: 'center', marginBottom: 30 },
   ratingStarsRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
   ratingNumber: { color: '#fff', fontSize: 34, fontWeight: '900', letterSpacing: -1 },
@@ -845,7 +929,7 @@ const styles = StyleSheet.create({
   reviewerName: { color: '#fff', fontSize: 15, fontWeight: '700' },
   reviewerDate: { color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 2, textTransform: 'uppercase' },
 
-  ctaPanel: { marginHorizontal: SPACING.md, marginTop: 64, marginBottom: 60, borderRadius: 28, padding: 24, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' },
+  ctaPanel: { marginHorizontal: SPACING.md, marginTop: 80, marginBottom: 72, borderRadius: 28, padding: 24, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' },
   ctaTextBlock: { flex: 1, minWidth: 240 },
   ctaTitle: { color: '#fff', fontSize: 24, lineHeight: 32, fontWeight: '800', maxWidth: 650 },
 

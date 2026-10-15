@@ -401,7 +401,7 @@ export default function MarketplaceHome() {
                       <Text style={styles.showcaseSellerAvatarText}>A</Text>
                     </View>
                     <View>
-                      <Text style={styles.showcaseSellerName}>Aman S. (3rd Yr CSE)</Text>
+                      <Text style={styles.showcaseSellerName}>Amanst S. (3rd Yr CSE)</Text>
                       <Text style={styles.showcaseSellerRating}>⭐ 4.9 • 18 campus deals</Text>
                     </View>
                   </View>
@@ -1162,7 +1162,8 @@ const styles = StyleSheet.create({
   // --- HERO STYLES ---
   heroCard: {
     marginHorizontal: 16,
-    marginTop: 14,
+    marginTop: 22,
+    marginBottom: 36,
     borderRadius: 24,
     backgroundColor: '#0c0f18',
     borderWidth: 1,
@@ -1183,6 +1184,7 @@ const styles = StyleSheet.create({
   phoneHeroCard: {
     borderRadius: 20,
     marginHorizontal: 12,
+    marginBottom: 26,
   },
   heroBackgroundGlow: {
     position: 'absolute',
@@ -1644,14 +1646,15 @@ const styles = StyleSheet.create({
 
   // --- VISUAL CATEGORIES STYLES ---
   categorySectionWrap: {
-    marginTop: 22,
+    marginTop: 40,
+    marginBottom: 16,
     paddingHorizontal: 16,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
     color: '#F8FAFC',
@@ -1726,14 +1729,15 @@ const styles = StyleSheet.create({
 
   // --- FILTER SECTION STYLES ---
   filterSection: {
-    marginTop: 20,
+    marginTop: 38,
+    marginBottom: 16,
     paddingHorizontal: 16,
   },
   filterHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 14,
   },
   filterSectionTitle: {
     color: '#94A3B8',
@@ -1782,8 +1786,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: 44,
+    marginBottom: 24,
     paddingHorizontal: 16,
     flexWrap: 'wrap',
     gap: 8,
@@ -1875,12 +1879,6 @@ const styles = StyleSheet.create({
     color: '#09090b',
     fontSize: 13,
     fontWeight: '700',
-  },
-  footerWrapper: {
-    width: '100%',
-    maxWidth: 1440,
-    alignSelf: 'center',
-    marginTop: 32,
   },
 
   // --- MODAL STYLES (Image 2 Match) ---
@@ -2138,7 +2136,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // --- ABOUT SECTION STYLES ---
+  // --- FOOTER AND ABOUT SECTION STYLES ---
+  footerWrapper: {
+    width: '100%',
+    maxWidth: 1440,
+    alignSelf: 'center',
+    marginTop: 64,
+  },
   aboutSectionCard: {
     marginHorizontal: 16,
     backgroundColor: '#0c0f18',
@@ -2146,8 +2150,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderTopColor: 'rgba(56, 189, 248, 0.28)',
-    padding: 28,
-    marginBottom: 22,
+    padding: 32,
+    marginBottom: 44,
     overflow: 'hidden',
     ...Platform.select({
       web: {
@@ -2166,8 +2170,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderTopColor: 'rgba(245, 158, 11, 0.28)',
-    padding: 28,
-    marginBottom: 22,
+    padding: 32,
+    marginBottom: 44,
     overflow: 'hidden',
     ...Platform.select({
       web: {
@@ -2186,8 +2190,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderTopColor: 'rgba(16, 185, 129, 0.28)',
-    padding: 28,
-    marginBottom: 26,
+    padding: 32,
+    marginBottom: 52,
     overflow: 'hidden',
     ...Platform.select({
       web: {
@@ -2201,9 +2205,9 @@ const styles = StyleSheet.create({
   },
   phoneSectionCard: {
     marginHorizontal: 12,
-    padding: 18,
+    padding: 20,
     borderRadius: 20,
-    marginBottom: 16,
+    marginBottom: 28,
   },
   sectionHeaderWrap: {
     marginBottom: 22,

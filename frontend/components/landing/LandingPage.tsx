@@ -8,6 +8,7 @@ import axios from 'axios';
 
 import Footer from '../layout/Footer';
 import { PublicNavbar } from '../layout/PublicNavbar';
+import HeroBanner from './HeroBanner';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
 import { api, SOCKET_URL } from '../../services/api';
@@ -274,77 +275,14 @@ export default function LandingPage() {
         <View style={styles.content}>
 
           {/* ========================================================
-              Campus Hero Banner (Your Campus. Your Marketplace.)
+              Campus Hero Banner (Native Design)
           ======================================================== */}
-          <View style={[styles.bannerWrapper, isMobile && styles.bannerWrapperMobile]}>
-            {Platform.OS === 'web' && (
-              <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
-                Ooplabdh - Your Campus. Your Marketplace.
-              </h1>
-            )}
-
-            <View style={styles.bannerContainer}>
-              {/* Dynamic Theme Glow Behind the Banner */}
-              <View style={styles.bannerAmbientGlowLeft} />
-              <View style={styles.bannerAmbientGlowRight} />
-
-              {/* Main Banner Card */}
-              <View style={styles.bannerCard}>
-                <Image
-                  source={require('../../assets/images/marketplace-banner.png')}
-                  style={styles.bannerImage}
-                  resizeMode="contain"
-                  accessibilityLabel="Your Campus. Your Marketplace. Ooplabdh"
-                />
-
-                {/* Desktop/Tablet Interactive Hotspots over Banner Buttons */}
-                {!isMobile && (
-                  <View style={styles.hotspotOverlay} pointerEvents="box-none">
-                    <TouchableOpacity
-                      testID="banner-sell-btn"
-                      style={styles.hotspotSellBtn}
-                      onPress={() => router.push(user ? '/add-product' : ('/(auth)/login?redirect=/add-product' as any))}
-                      activeOpacity={0.75}
-                      accessibilityLabel="Sell / Explore"
-                    />
-
-                    <TouchableOpacity
-                      testID="banner-pyq-btn"
-                      style={styles.hotspotPyqBtn}
-                      onPress={() => router.push('/academic')}
-                      activeOpacity={0.75}
-                      accessibilityLabel="Browse PYQs & Books"
-                    />
-                  </View>
-                )}
-              </View>
-
-              {/* Mobile Action Buttons - prominently placed below banner for easy touch reach */}
-              {isMobile && (
-                <View style={styles.bannerMobileButtonsRow}>
-                  <TouchableOpacity
-                    testID="banner-mobile-sell"
-                    style={styles.bannerMobilePrimaryBtn}
-                    onPress={() => router.push(user ? '/add-product' : ('/(auth)/login?redirect=/add-product' as any))}
-                    activeOpacity={0.85}
-                  >
-                    <Ionicons name="add-circle" size={18} color="#060B14" />
-                    <Text style={styles.bannerMobilePrimaryText}>+ Sell / Explore</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    testID="banner-mobile-pyq"
-                    style={styles.bannerMobileSecondaryBtn}
-                    onPress={() => router.push('/academic')}
-                    activeOpacity={0.85}
-                  >
-                    <Ionicons name="book-outline" size={16} color="#38BDF8" />
-                    <Text style={styles.bannerMobileSecondaryText}>Browse PYQs & Books</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          </View>
+          {Platform.OS === 'web' && (
+            <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+              Ooplabdh - Your Campus. Your Marketplace.
+            </h1>
+          )}
+          <HeroBanner />
 
 
           <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
@@ -603,161 +541,6 @@ const styles = StyleSheet.create({
     }),
   },
   navWrap: { paddingHorizontal: SPACING.md, marginBottom: SPACING.lg },
-
-  // --- CAMPUS HERO BANNER STYLES ---
-  bannerWrapper: {
-    width: '100%',
-    paddingHorizontal: SPACING.md,
-    paddingTop: 8,
-    paddingBottom: 28,
-    alignItems: 'center',
-  },
-  bannerWrapperMobile: {
-    paddingHorizontal: 8,
-    paddingBottom: 20,
-    paddingTop: 4,
-  },
-  bannerContainer: {
-    width: '100%',
-    maxWidth: 1240,
-    position: 'relative',
-    alignItems: 'center',
-  },
-  bannerAmbientGlowLeft: {
-    position: 'absolute',
-    top: '10%',
-    left: '-4%',
-    width: '38%',
-    height: '65%',
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-    borderRadius: 999,
-    ...Platform.select({
-      web: {
-        filter: 'blur(70px)',
-      } as any,
-    }),
-  },
-  bannerAmbientGlowRight: {
-    position: 'absolute',
-    top: '15%',
-    right: '-4%',
-    width: '42%',
-    height: '65%',
-    backgroundColor: 'rgba(2, 132, 199, 0.15)',
-    borderRadius: 999,
-    ...Platform.select({
-      web: {
-        filter: 'blur(80px)',
-      } as any,
-    }),
-  },
-  bannerCard: {
-    width: '100%',
-    borderRadius: 22,
-    overflow: 'hidden',
-    backgroundColor: '#070C18',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.28)',
-    borderTopColor: 'rgba(56, 189, 248, 0.55)',
-    position: 'relative',
-    ...Platform.select({
-      web: {
-        boxShadow: '0 24px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(56, 189, 248, 0.15)',
-      } as any,
-      default: {
-        elevation: 8,
-        shadowColor: '#0284C7',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.35,
-        shadowRadius: 20,
-      },
-    }),
-  },
-  bannerImage: {
-    width: '100%',
-    aspectRatio: 1024 / 434,
-    borderRadius: 20,
-  },
-  hotspotOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 10,
-  },
-  hotspotSellBtn: {
-    position: 'absolute',
-    top: '68%',
-    height: '18%',
-    left: '4.8%',
-    width: '17.2%',
-    borderRadius: 28,
-    ...Platform.select({
-      web: {
-        cursor: 'pointer',
-      } as any,
-    }),
-  },
-  hotspotPyqBtn: {
-    position: 'absolute',
-    top: '68%',
-    height: '18%',
-    left: '23.4%',
-    width: '22.8%',
-    borderRadius: 28,
-    ...Platform.select({
-      web: {
-        cursor: 'pointer',
-      } as any,
-    }),
-  },
-  bannerMobileButtonsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    width: '100%',
-    marginTop: 14,
-  },
-  bannerMobilePrimaryBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#38BDF8',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    ...Platform.select({
-      web: {
-        boxShadow: '0 4px 16px rgba(56, 189, 248, 0.35)',
-      } as any,
-      default: {
-        elevation: 3,
-      },
-    }),
-  },
-  bannerMobilePrimaryText: {
-    color: '#060B14',
-    fontSize: 13.5,
-    fontWeight: '800',
-  },
-  bannerMobileSecondaryBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(10, 16, 32, 0.85)',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.35)',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-  },
-  bannerMobileSecondaryText: {
-    color: '#F8FAFC',
-    fontSize: 13,
-    fontWeight: '700',
-  },
 
   hero: { paddingHorizontal: SPACING.md, paddingTop: 28, gap: 24 },
   heroDesktop: { flexDirection: 'row', alignItems: 'center', gap: 28 },
